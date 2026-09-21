@@ -1,0 +1,52 @@
+cff-version: 1.2.0
+message: "If you use this paper or its Lean 4 verification artifact, please cite it as below."
+title: "Formal Falsification of the Completeness of a Single Fixed-Memory Component for Open Inversion Tasks"
+abstract: >-
+  The paper proves, by a deductive impossibility argument, that no single fixed-memory component can be
+  complete on its own for open inversion tasks: tasks whose observations are ill-posed, whose required
+  context strength is heterogeneous and content-addressed by the evidence, whose inference inputs are not
+  constrained by the training distribution, and whose demand rule cannot be given within any pre-given
+  tolerance on the open set by any values frozen before inference begins. The argument runs along a
+  decision axis: the content of a context rule is a set of numbers; values instantiated by current
+  evidence or by analytic invariants are Mode A, and values frozen at inference time from training-corpus
+  statistics or manual setting are Mode B. Generalization on the open set requires Mode A, while neural
+  networks and Bayesian networks are Mode B carriers, so the falsification closes. The algebraic skeleton
+  of the argument chain is machine verified with Lean 4 and Mathlib, with zero sorry and zero warnings,
+  and the axiom budget of the load-bearing declarations is Lean's own standard set. This repository holds
+  the JMLR LaTeX sources, the compiled paper, and the Lean 4 artifact.
+authors:
+  - family-names: Zhang
+    given-names: Shuo
+    email: 202400103083@stumail.sztu.edu.cn
+    affiliation: "Shenzhen Technology University"
+type: software
+date-released: "2026-09-21"
+license: MIT
+license-url: "https://github.com/aki-xavier/frozen-axis/blob/main/LICENSE"
+repository-code: "https://github.com/aki-xavier/frozen-axis"
+url: "https://github.com/aki-xavier/frozen-axis"
+keywords:
+  - open inversion tasks
+  - completeness
+  - formal falsification
+  - fixed-memory component
+  - decision axis
+  - distributional openness
+  - Lean 4
+  - machine-verified proof
+preferred-citation:
+  type: unpublished
+  title: "Formal Falsification of the Completeness of a Single Fixed-Memory Component for Open Inversion Tasks"
+  authors:
+    - family-names: Zhang
+      given-names: Shuo
+      affiliation: "Shenzhen Technology University"
+  year: 2026
+  status: submitted
+  license: CC-BY-4.0
+  license-url: "https://github.com/aki-xavier/frozen-axis/blob/main/LICENSE-PAPER"
+  url: "https://github.com/aki-xavier/frozen-axis"
+  notes: >-
+    Manuscript submitted to the Journal of Machine Learning Research. The LaTeX sources of the paper
+    (CC BY 4.0) and the Lean 4 verification artifact (MIT) are in this repository; the paper is
+    paper.pdf at the repository root, and the artifact is under lean-proof/.

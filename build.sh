@@ -6,10 +6,12 @@
 #
 #   ./build.sh            # build main.tex   (modular source, out: build-main/)
 #   ./build.sh paper      # build paper.tex  (single file,    out: build-paper/)
+#   ./build.sh release    # refresh paper.tex from sections/, build it, and
+#                         # copy the result to ./paper.pdf (the committed PDF)
 #   ./build.sh --help
 #
 # Run `python3 flatten.py` first if you edited sections/*.tex and want the
-# single-file version refreshed.
+# single-file version refreshed. The `release` target does this for you.
 #
 # Portability: no hard-coded TeX path. The script uses $PDFLATEX / $BIBTEX when
 # set, otherwise whatever is first on PATH, otherwise it probes the standard
@@ -24,10 +26,13 @@ cd -- "$SCRIPT_DIR"
 
 usage() {
   cat <<'EOF'
-Usage: ./build.sh [main|paper]
+Usage: ./build.sh [main|paper|release]
 
-  main    build main.tex  (modular source)       -> build-main/main.pdf
-  paper   build paper.tex (single-file version)  -> build-paper/paper.pdf
+  main     build main.tex  (modular source)       -> build-main/main.pdf
+  paper    build paper.tex (single-file version)  -> build-paper/paper.pdf
+  release  refresh paper.tex from main.tex + sections/*.tex via flatten.py,
+           build it, and copy the result to ./paper.pdf at the repository
+           root. Refuses to overwrite ./paper.pdf if the build reports errors.
   (default: main)
 
 Environment overrides:
@@ -38,11 +43,22 @@ EOF
 }
 
 TARGET="${1:-main}"
+RELEASE=0
 case "$TARGET" in
   -h|--help) usage; exit 0 ;;
   main|paper) ;;
+  release) RELEASE=1; TARGET=paper ;;
   *) echo "build.sh: unknown target '$TARGET'" >&2; usage >&2; exit 2 ;;
 esac
+
+if [ "$RELEASE" -eq 1 ] && ! command -v python3 >/dev/null 2>&1; then
+  cat >&2 <<'EOF'
+build.sh: python3 not found, and the `release` target needs it to refresh
+paper.tex from main.tex + sections/*.tex. Run `./build.sh paper` instead and
+copy build-paper/paper.pdf to ./paper.pdf by hand.
+EOF
+  exit 127
+fi
 
 PDFLATEX_CMD="${PDFLATEX:-pdflatex}"
 BIBTEX_CMD="${BIBTEX:-bibtex}"
@@ -97,6 +113,14 @@ mkdir -p "$OUT"
 # grep exits 1 on no match, which is a normal result here (not a failure).
 count() { grep -cE "$1" "$2" 2>/dev/null || true; }
 
+# The release target publishes the single-file version, so refresh it from the
+# modular sources first; otherwise the committed PDF could silently lag behind
+# sections/*.tex.
+if [ "$RELEASE" -eq 1 ]; then
+  echo "--- flatten (paper.tex from main.tex + sections/*.tex) ---"
+  python3 "$SCRIPT_DIR/flatten.py"
+fi
+
 # Three pdflatex passes with bibtex in between. Per-pass failures are reported
 # in the summary below rather than aborting the run, so a missing .bbl on the
 # first pass is not fatal.
@@ -119,3 +143,26 @@ echo "overfull:    $(count 'Overfull' "$OUT/pass3.log")"
 grep -E "Output written" "$OUT/pass3.log" || echo "NO PDF PRODUCED"
 echo "--- bibtex ---"
 tail -3 "$OUT/bibtex.log"
+
+# The release target copies the fresh build over the committed paper.pdf, but
+# only when the build is clean: a broken or missing PDF never reaches the root.
+if [ "$RELEASE" -eq 1 ]; then
+  ERRORS="$(count '^! ' "$OUT/pass3.log")"
+  SRC="$OUT/$TARGET.pdf"
+  if [ "$ERRORS" != "0" ]; then
+    echo "release: $ERRORS LaTeX error(s); see $OUT/pass3.log. paper.pdf NOT updated." >&2
+    exit 1
+  fi
+  if [ ! -f "$SRC" ]; then
+    echo "release: no PDF produced at $SRC. paper.pdf NOT updated." >&2
+    exit 1
+  fi
+  cp -f -- "$SRC" "$SCRIPT_DIR/paper.pdf"
+  echo "--- release ---"
+  echo "updated paper.pdf from $SRC ($(wc -c < "$SCRIPT_DIR/paper.pdf" | tr -d ' ') bytes)"
+  # pdflatex stamps CreationDate/ModDate into the PDF, so rebuilding unchanged
+  # sources still yields a different byte stream. Compare rendered text rather
+  # than bytes when asking whether the paper actually changed.
+  echo "note: PDF builds embed a timestamp, so paper.pdf differs byte-wise on every"
+  echo "      build; use 'pdftotext -layout' to compare rendered text instead."
+fi

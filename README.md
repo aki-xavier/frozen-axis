@@ -27,6 +27,7 @@ This repository contains a theoretical paper (English, LaTeX source) together wi
 | `package-lean-proof.sh` | Packaging script: includes source and version-lock files, excludes the build cache |
 | `LICENSE` | MIT license, covering the code and the Lean artifact |
 | `LICENSE-PAPER` | CC BY 4.0, covering the paper text, bibliography and compiled PDF |
+| `CITATION.cff` | Citation metadata (Citation File Format 1.2.0), with the paper as the preferred citation |
 
 ## Building
 
@@ -35,6 +36,12 @@ Paper (a local TeX distribution is required; JMLR production also compiles with 
 ```bash
 ./build.sh          # build main.tex (modular source, output to build-main/)
 ./build.sh paper    # build paper.tex (single-file submission version, output to build-paper/)
+```
+
+Publish the released PDF. This refreshes `paper.tex` from `main.tex` + `sections/*.tex` first, builds it, and copies the result over the committed `paper.pdf` at the repository root, so the published PDF cannot drift from the sources; it refuses to overwrite `paper.pdf` if the build reports LaTeX errors:
+
+```bash
+./build.sh release
 ```
 
 Refresh the single-file submission version after editing `sections/*.tex`:

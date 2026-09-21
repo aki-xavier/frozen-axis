@@ -944,6 +944,268 @@ theorem frozen_table_not_modeA (W : Pixel → ℝ) (i : Pixel) (hW : W i ≠ 0)
   have hfeq : d 1 = e 1 := by nlinarith [hcore, hd0]
   exact hd1 hfeq
 
+/-! ## 8.10 From the objective to the general first-order condition
+
+Section 8.9 states the demand-ratio algebra for a general pairwise potential and
+takes the stationarity condition as given, the same convention Lemma 1 of the
+paper uses for the quadratic case. This section removes that gap on the toy
+carrier: it differentiates the objective along the coordinate line of one
+position, derives the per-position coefficient `KappaPhi` of a general even
+differentiable potential, and obtains the stationarity condition from a local
+minimum rather than assuming it. The last theorem of the section derives the
+paper's first-order condition of Lemma 1 from the quadratic objective, with the
+normalization of constant factors made explicit as the scalar `2λ`. -/
+
+/-- The per-position coefficient of a pairwise potential `φ` with derivative
+`φ'`: the paper's `κ_i^φ`. For an even `φ` it is the coordinate derivative of the
+pairwise term (`PairwiseTerm_hasDerivAt`), and for the squared potential it is
+`kappa` up to the constant factor that Lemma 1 normalizes
+(`KappaPhi_quadratic`). -/
+def KappaPhi (φ' : ℝ → ℝ) (d : Depth) (i : Pixel) : ℝ :=
+  2 * ∑ j : Pixel, φ' (d i - d j)
+
+/-- The pairwise term of the objective with a general potential. -/
+def PairwiseTerm (φ : ℝ → ℝ) (d : Depth) : ℝ :=
+  ∑ a : Pixel, ∑ b : Pixel, φ (d a - d b)
+
+example (d : Depth) (i a b : Pixel) :
+    HasDerivAt (fun t : ℝ => Function.update d i t a - Function.update d i t b)
+      ((if a = i then (1 : ℝ) else 0) - (if b = i then (1 : ℝ) else 0)) (d i) := by
+  by_cases hai : a = i <;> by_cases hbi : b = i
+  · have hfun : (fun t : ℝ => Function.update d i t a - Function.update d i t b)
+        = fun _ => 0 := by
+      funext t
+      rw [hai, hbi, Function.update_self, sub_self]
+    rw [hfun]
+    simpa [hai, hbi] using hasDerivAt_const (d i) (0 : ℝ)
+  · have hfun : (fun t : ℝ => Function.update d i t a - Function.update d i t b)
+        = fun t => t - d b := by
+      funext t
+      rw [hai, Function.update_self, Function.update_of_ne hbi t d]
+    rw [hfun]
+    simpa [hai, hbi] using
+      (hasDerivAt_id' (d i)).sub_const (d b)
+  · have hfun : (fun t : ℝ => Function.update d i t a - Function.update d i t b)
+        = fun t => d a - t := by
+      funext t
+      rw [hbi, Function.update_of_ne hai t d, Function.update_self]
+    rw [hfun]
+    simpa [hai, hbi] using
+      (hasDerivAt_id' (d i)).const_sub (d a)
+  · have hfun : (fun t : ℝ => Function.update d i t a - Function.update d i t b)
+        = fun _ => d a - d b := by
+      funext t
+      rw [Function.update_of_ne hai t d, Function.update_of_ne hbi t d]
+    rw [hfun]
+    simpa [hai, hbi] using hasDerivAt_const (d i) (d a - d b)
+
+theorem deriv_odd_of_even {φ φ' : ℝ → ℝ} (heven : ∀ x, φ (-x) = φ x)
+    (hφ : ∀ x, HasDerivAt φ (φ' x) x) (x : ℝ) : φ' (-x) = -φ' x := by
+  have hcomp : HasDerivAt (fun y : ℝ => φ (-y)) (φ' (-x) * (-1)) x :=
+    (hφ (-x)).comp x (hasDerivAt_neg' x)
+  rw [funext heven] at hcomp
+  have h := (hφ x).unique hcomp
+  linarith
+
+private lemma hasDerivAt_pairwise_term {φ φ' : ℝ → ℝ}
+    (hφ : ∀ x, HasDerivAt φ (φ' x) x) (d : Depth) (i a b : Pixel) :
+    HasDerivAt (fun t : ℝ => φ (Function.update d i t a - Function.update d i t b))
+      (((if a = i then (1 : ℝ) else 0) - (if b = i then (1 : ℝ) else 0))
+        * φ' (d a - d b)) (d i) := by
+  have hinner : HasDerivAt (fun t : ℝ => Function.update d i t a - Function.update d i t b)
+      ((if a = i then (1 : ℝ) else 0) - (if b = i then (1 : ℝ) else 0)) (d i) := by
+    by_cases hai : a = i <;> by_cases hbi : b = i
+    · have hfun : (fun t : ℝ => Function.update d i t a - Function.update d i t b)
+          = fun _ => 0 := by
+        funext t
+        rw [hai, hbi, Function.update_self, sub_self]
+      rw [hfun]
+      simpa [hai, hbi] using hasDerivAt_const (d i) (0 : ℝ)
+    · have hfun : (fun t : ℝ => Function.update d i t a - Function.update d i t b)
+          = fun t => t - d b := by
+        funext t
+        rw [hai, Function.update_self, Function.update_of_ne hbi t d]
+      rw [hfun]
+      simpa [hai, hbi] using (hasDerivAt_id' (d i)).sub_const (d b)
+    · have hfun : (fun t : ℝ => Function.update d i t a - Function.update d i t b)
+          = fun t => d a - t := by
+        funext t
+        rw [hbi, Function.update_of_ne hai t d, Function.update_self]
+      rw [hfun]
+      simpa [hai, hbi] using (hasDerivAt_id' (d i)).const_sub (d a)
+    · have hfun : (fun t : ℝ => Function.update d i t a - Function.update d i t b)
+          = fun _ => d a - d b := by
+        funext t
+        rw [Function.update_of_ne hai t d, Function.update_of_ne hbi t d]
+      rw [hfun]
+      simpa [hai, hbi] using hasDerivAt_const (d i) (d a - d b)
+  have hφ' : HasDerivAt φ (φ' (d a - d b))
+      (Function.update d i (d i) a - Function.update d i (d i) b) := by
+    rw [Function.update_eq_self]
+    exact hφ (d a - d b)
+  have h := hφ'.comp (d i) hinner
+  rw [mul_comm] at h
+  exact h
+
+theorem pairCoef_sum (φ' : ℝ → ℝ) (d : Depth) (i : Pixel)
+    (hodd : ∀ x, φ' (-x) = -φ' x) :
+    (∑ a : Pixel, ∑ b : Pixel,
+        ((if a = i then (1 : ℝ) else 0) - (if b = i then (1 : ℝ) else 0))
+          * φ' (d a - d b)) = KappaPhi φ' d i := by
+  have hstep : ∀ a b : Pixel,
+      ((if a = i then (1 : ℝ) else 0) - (if b = i then (1 : ℝ) else 0))
+          * φ' (d a - d b)
+        = (if a = i then φ' (d i - d b) else 0)
+          - (if b = i then φ' (d a - d i) else 0) := by
+    intro a b
+    by_cases ha : a = i <;> by_cases hb : b = i <;> simp [ha, hb]
+  rw [Finset.sum_congr rfl (fun a _ => Finset.sum_congr rfl (fun b _ => hstep a b))]
+  have hinner : ∀ a : Pixel,
+      (∑ b : Pixel, ((if a = i then φ' (d i - d b) else 0)
+          - (if b = i then φ' (d a - d i) else 0)))
+        = (∑ b : Pixel, (if a = i then φ' (d i - d b) else 0))
+          - ∑ b : Pixel, (if b = i then φ' (d a - d i) else 0) :=
+    fun a => by rw [Finset.sum_sub_distrib]
+  rw [Finset.sum_congr rfl (fun a _ => hinner a), Finset.sum_sub_distrib]
+  have hX : (∑ a : Pixel, ∑ b : Pixel, (if a = i then φ' (d i - d b) else 0))
+      = ∑ b : Pixel, φ' (d i - d b) := by
+    rw [Finset.sum_eq_single i]
+    · simp
+    · intro a _ ha
+      simp [ha]
+    · intro h
+      exact absurd (Finset.mem_univ i) h
+  have hY : (∑ a : Pixel, ∑ b : Pixel, (if b = i then φ' (d a - d i) else 0))
+      = ∑ a : Pixel, φ' (d a - d i) := by
+    refine Finset.sum_congr rfl (fun a _ => ?_)
+    rw [Finset.sum_eq_single i]
+    · simp
+    · intro b _ hb
+      simp [hb]
+    · intro h
+      exact absurd (Finset.mem_univ i) h
+  have hYneg : (∑ a : Pixel, φ' (d a - d i)) = -(∑ a : Pixel, φ' (d i - d a)) := by
+    rw [← Finset.sum_neg_distrib]
+    refine Finset.sum_congr rfl (fun a _ => ?_)
+    have h := hodd (d i - d a)
+    rwa [neg_sub] at h
+  rw [hX, hY, hYneg]
+  unfold KappaPhi
+  ring
+
+theorem PairwiseTerm_hasDerivAt {φ φ' : ℝ → ℝ} (heven : ∀ x, φ (-x) = φ x)
+    (hφ : ∀ x, HasDerivAt φ (φ' x) x) (d : Depth) (i : Pixel) :
+    HasDerivAt (fun t : ℝ => PairwiseTerm φ (Function.update d i t))
+      (KappaPhi φ' d i) (d i) := by
+  have houter : HasDerivAt
+      (fun t : ℝ => ∑ a : Pixel, ∑ b : Pixel,
+        φ (Function.update d i t a - Function.update d i t b))
+      (∑ a : Pixel, ∑ b : Pixel,
+        ((if a = i then (1 : ℝ) else 0) - (if b = i then (1 : ℝ) else 0))
+          * φ' (d a - d b)) (d i) := by
+    refine HasDerivAt.fun_sum
+      (u := (Finset.univ : Finset Pixel))
+      (A := fun a t => ∑ b : Pixel, φ (Function.update d i t a - Function.update d i t b))
+      (A' := fun a => ∑ b : Pixel,
+        ((if a = i then (1 : ℝ) else 0) - (if b = i then (1 : ℝ) else 0))
+          * φ' (d a - d b)) ?_
+    intro a _
+    exact HasDerivAt.fun_sum
+      (u := (Finset.univ : Finset Pixel))
+      (A := fun b t => φ (Function.update d i t a - Function.update d i t b))
+      (A' := fun b => ((if a = i then (1 : ℝ) else 0) - (if b = i then (1 : ℝ) else 0))
+        * φ' (d a - d b)) (fun b _ => hasDerivAt_pairwise_term hφ d i a b)
+  rw [pairCoef_sum φ' d i (deriv_odd_of_even heven hφ)] at houter
+  exact houter
+
+/-- The objective of a separable data term with a general pairwise potential. -/
+def GeneralObjective (φ : ℝ → ℝ) (f : Pixel → ℝ → ℝ) (lambda : ℝ) (d : Depth) : ℝ :=
+  (∑ k : Pixel, f k (d k)) + lambda * PairwiseTerm φ d
+
+theorem dataTerm_hasDerivAt {f f' : Pixel → ℝ → ℝ}
+    (hf : ∀ k x, HasDerivAt (f k) (f' k x) x) (d : Depth) (i : Pixel) :
+    HasDerivAt (fun t : ℝ => ∑ k : Pixel, f k (Function.update d i t k))
+      (f' i (d i)) (d i) := by
+  have hterm : ∀ k : Pixel, HasDerivAt (fun t : ℝ => f k (Function.update d i t k))
+      (if k = i then f' k (d i) else 0) (d i) := by
+    intro k
+    by_cases hk : k = i
+    · rw [hk]
+      have hfun : (fun t : ℝ => f i (Function.update d i t i)) = f i := by
+        funext t
+        rw [Function.update_self]
+      rw [hfun]
+      simpa using hf i (d i)
+    · have hfun : (fun t : ℝ => f k (Function.update d i t k)) = fun _ => f k (d k) := by
+        funext t
+        rw [Function.update_of_ne hk t d]
+      rw [hfun]
+      simpa [hk] using hasDerivAt_const (d i) (f k (d k))
+  have hsum := HasDerivAt.fun_sum (u := (Finset.univ : Finset Pixel))
+    (A := fun k t => f k (Function.update d i t k))
+    (A' := fun k => if k = i then f' k (d i) else 0) (fun k _ => hterm k)
+  have hsingle : (∑ k : Pixel, (if k = i then f' k (d i) else 0)) = f' i (d i) := by
+    rw [Finset.sum_eq_single i]
+    · simp
+    · intro k _ hk
+      simp [hk]
+    · intro h
+      exact absurd (Finset.mem_univ i) h
+  rw [hsingle] at hsum
+  exact hsum
+
+theorem GeneralObjective_hasDerivAt {φ φ' : ℝ → ℝ} {f f' : Pixel → ℝ → ℝ}
+    (heven : ∀ x, φ (-x) = φ x) (hφ : ∀ x, HasDerivAt φ (φ' x) x)
+    (hf : ∀ k x, HasDerivAt (f k) (f' k x) x) (lambda : ℝ) (d : Depth)
+    (i : Pixel) :
+    HasDerivAt (fun t : ℝ => GeneralObjective φ f lambda (Function.update d i t))
+      (f' i (d i) + lambda * KappaPhi φ' d i) (d i) := by
+  have hdata := dataTerm_hasDerivAt hf d i
+  have hpair := (PairwiseTerm_hasDerivAt heven hφ d i).const_mul lambda
+  have hsum := hdata.add hpair
+  convert hsum using 1
+  funext t
+  rfl
+
+theorem general_first_order_of_local_min {φ φ' : ℝ → ℝ} {f f' : Pixel → ℝ → ℝ}
+    (heven : ∀ x, φ (-x) = φ x) (hφ : ∀ x, HasDerivAt φ (φ' x) x)
+    (hf : ∀ k x, HasDerivAt (f k) (f' k x) x) (lambda : ℝ) (d : Depth) (i : Pixel)
+    (hmin : IsLocalMin (fun t : ℝ =>
+      GeneralObjective φ f lambda (Function.update d i t)) (d i)) :
+    f' i (d i) + lambda * KappaPhi φ' d i = 0 :=
+  hmin.hasDerivAt_eq_zero (GeneralObjective_hasDerivAt heven hφ hf lambda d i)
+
+
+theorem hasDerivAt_sq (x : ℝ) : HasDerivAt (fun t : ℝ => t ^ 2) (2 * x) x := by
+  simpa using hasDerivAt_pow 2 x
+
+theorem KappaPhi_quadratic (d : Depth) (i : Pixel) :
+    KappaPhi (fun x : ℝ => 2 * x) d i = 4 * kappa d i := by
+  unfold KappaPhi kappa
+  rw [Finset.mul_sum, Finset.mul_sum]
+  ring_nf
+
+theorem FirstOrder_of_quadratic_local_min (x d : Depth) (lambda : ℝ) (i : Pixel)
+    (hmin : IsLocalMin (fun t : ℝ => GeneralObjective (fun y : ℝ => y ^ 2)
+      (fun k t => (x k - t) ^ 2) lambda (Function.update d i t)) (d i)) :
+    FirstOrder x d (2 * lambda) i := by
+  have heven : ∀ y : ℝ, (fun z : ℝ => z ^ 2) (-y) = (fun z : ℝ => z ^ 2) y := by
+    intro y
+    ring
+  have hf : ∀ (k : Pixel) (t : ℝ), HasDerivAt (fun s : ℝ => (x k - s) ^ 2) (2 * (t - x k)) t := by
+    intro k t
+    have hinner : HasDerivAt (fun s : ℝ => x k - s) (-1) t :=
+      (hasDerivAt_id' t).const_sub (x k)
+    have h := (hasDerivAt_sq (x k - t)).comp t hinner
+    convert h using 1
+    · ext s
+      rfl
+    · ring
+  have hfoc := general_first_order_of_local_min heven hasDerivAt_sq hf lambda d i hmin
+  rw [KappaPhi_quadratic] at hfoc
+  unfold FirstOrder
+  linarith
+
 /-! ## 9. Check summary -/
 
 #check illPosed_of_hole
@@ -1000,5 +1262,17 @@ theorem frozen_table_not_modeA (W : Pixel → ℝ) (i : Pixel) (hW : W i ≠ 0)
 #check position_wise_escape_witness
 #check tableRule
 #check frozen_table_not_modeA
+#check KappaPhi
+#check PairwiseTerm
+#check GeneralObjective
+#check deriv_odd_of_even
+#check pairCoef_sum
+#check PairwiseTerm_hasDerivAt
+#check dataTerm_hasDerivAt
+#check GeneralObjective_hasDerivAt
+#check general_first_order_of_local_min
+#check hasDerivAt_sq
+#check KappaPhi_quadratic
+#check FirstOrder_of_quadratic_local_min
 
 end FormalProof

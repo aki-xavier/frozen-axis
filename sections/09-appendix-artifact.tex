@@ -9,7 +9,7 @@ The artifact is a self-contained Lean~4 project distributed in the \texttt{lean-
 \begin{center}
 \texttt{https://github.com/aki-xavier/frozen-axis}
 \end{center}
-under the \texttt{lean-proof} path. It consists of four files: \texttt{FormalProof.lean}, the single development file of 1004 lines containing every definition, lemma, proposition, theorem, the final theorem, the example variants, and the generalization upgrades; \texttt{lakefile.lean}, which pins Mathlib to the matching release; \texttt{lake-manifest.json}, which locks every transitive dependency to an exact revision; and \texttt{lean-toolchain}, which pins the toolchain to \texttt{leanprover/lean4:v4.34.0}. No component outside this directory is required.
+under the \texttt{lean-proof} path. It consists of four files: \texttt{FormalProof.lean}, the single development file of 1278 lines containing every definition, lemma, proposition, theorem, the final theorem, the example variants, and the generalization upgrades; \texttt{lakefile.lean}, which pins Mathlib to the matching release; \texttt{lake-manifest.json}, which locks every transitive dependency to an exact revision; and \texttt{lean-toolchain}, which pins the toolchain to \texttt{leanprover/lean4:v4.34.0}. No component outside this directory is required.
 
 Reproduction is a single command from inside the directory:
 \begin{center}
@@ -21,7 +21,7 @@ The build was executed on the developer's machine at the blob hash recorded in S
 \end{center}
 for each of \texttt{finale}, \texttt{lemma1\_sharp}, and \texttt{tail\_realization}, and, by the same command, for the remaining declarations of the development. These three are Lean's own standard axioms, the ones every Mathlib development inherits; in particular the list contains no \texttt{sorryAx}, so no step of the chain is discharged by an unproved assertion. The artifact is therefore auditable at the level of the proof term, not merely at the level of a reported build outcome.
 
-One scope remark belongs here, because it delimits what the artifact does and does not certify. The verified content is the deductive chain: definitions, the mask criterion, Lemmas 1 to 3, Propositions 4 and 6, Theorems 5 and 7, and their composition in \texttt{finale}. The premises of that chain which concern the modeling side rather than the algebra are not certified, because they are not theorems: the satisfaction of Criterion P4 on real tasks appears as an explicit premise parameter, the continuous-side Euler--Lagrange derivation is not formalized, including the differentiation that produces \eqref{eq:focgeneral} from a general pairwise potential, and network nondegeneracy is a checkable property. Section~\ref{sec:layers} assigns each component its tier, and Table~\ref{tab:layers} is the authoritative statement of that boundary.
+One scope remark belongs here, because it delimits what the artifact does and does not certify. The verified content is the deductive chain: definitions, the mask criterion, Lemmas 1 to 3, Propositions 4 and 6, Theorems 5 and 7, and their composition in \texttt{finale}. The premises of that chain which concern the modeling side rather than the algebra are not certified, because they are not theorems: the satisfaction of Criterion P4 on real tasks appears as an explicit premise parameter, the continuous-side Euler--Lagrange derivation is not formalized, in the sense of the correspondence that turns the variational objective into pointwise form, while its discrete counterpart, the per-position coefficient \eqref{eq:focgeneral} of an arbitrary even differentiable potential together with the first-order condition it yields, is machine-checked; and network nondegeneracy is a checkable property. Section~\ref{sec:layers} assigns each component its tier, and Table~\ref{tab:layers} is the authoritative statement of that boundary.
 
 \subsection{Index from Paper Items to Machine-Checked Declarations}
 
@@ -57,7 +57,7 @@ Criterion P4, component form (Section~\ref{sec:p4}) & premise parameter \texttt{
 \hline
 Lemma 1 & \texttt{lemma1\_sharp}, \texttt{lemma1\_final}, \texttt{foc\_proportionality} & A\\
 \hline
-Lemma 1, general form, \eqref{eq:proportiongeneral} and \eqref{eq:tablecondition} & \texttt{general\ttu proportionality}, \texttt{scalar\ttu family\ttu iff\ttu ratio\ttu agrees}, \texttt{frozen\ttu family\ttu two\ttu configs\ttu iff}, \texttt{position\ttu wise\ttu escape\ttu witness} & A\\
+Lemma 1, general form, \eqref{eq:focgeneral} onward & \texttt{general\ttu proportionality}, \texttt{scalar\ttu family\ttu iff\ttu ratio\ttu agrees}, \texttt{frozen\ttu family\ttu two\ttu configs\ttu iff}, \texttt{position\ttu wise\ttu escape\ttu witness}, \texttt{KappaPhi\ttu quadratic}, \texttt{general\ttu first\ttu order\ttu of\ttu local\ttu min} & A\\
 \hline
 Lemma 2, extrinsic side & \texttt{lemma2\_full}, \texttt{lemma2\_E\_stationary\_infeasible} & A\\
 \hline
@@ -86,7 +86,7 @@ Network nondegeneracy & checkable property; not formalized & C\\
 \end{tabular}
 \end{table}
 
-Three entries in Table~\ref{tab:artifact} deserve emphasis because they are the ones a reader is most likely to look for. First, Criterion P4 is listed as Tier C and as a premise parameter rather than as a formalized definition: the verified form of Lemma 3 consumes \texttt{hGapPositive}, the hypothesis that the risk gap exceeds the bound, and does not attempt to formalize either the criterion or its component form of Section~\ref{sec:p4}, in which the barrier, bounded-description, and realization conditions are combined into the risk-gap floor by the barrier-to-gap inequality. This is the same dislocation already stated in Section~\ref{ch:verify}, recorded here in the index so that it cannot be missed. Second, the collision construction and the classification and closure declarations are Tier A: their proofs quantify over arbitrary index types, so the toy carrier plays no role in them and the toy end and the continuous end are both instantiations of one proof. Third, Definition~2's indexed family is listed as Tier~A rather than as Tier~C: the family, its constant and frozen specializations, and the algebra of the demand ratio are machine-checked, so what a reader cannot verify from the artifact is not the indexed reading but the step in which a general pairwise potential becomes the coefficient \eqref{eq:focgeneral}, together with the operator-valued couplings that the general form does not claim.
+Three entries in Table~\ref{tab:artifact} deserve emphasis because they are the ones a reader is most likely to look for. First, Criterion P4 is listed as Tier C and as a premise parameter rather than as a formalized definition: the verified form of Lemma 3 consumes \texttt{hGapPositive}, the hypothesis that the risk gap exceeds the bound, and does not attempt to formalize either the criterion or its component form of Section~\ref{sec:p4}, in which the barrier, bounded-description, and realization conditions are combined into the risk-gap floor by the barrier-to-gap inequality. This is the same dislocation already stated in Section~\ref{ch:verify}, recorded here in the index so that it cannot be missed. Second, the collision construction and the classification and closure declarations are Tier A: their proofs quantify over arbitrary index types, so the toy carrier plays no role in them and the toy end and the continuous end are both instantiations of one proof. Fourth, the general form's premise is a derived statement rather than an assumption: the artifact differentiates the objective along a coordinate line, obtains the per-position coefficient of an arbitrary even differentiable potential, and reaches the first-order condition at a local minimum through the one-dimensional Fermat theorem, with the paper's normalization of constant factors recovered as an explicit scalar. The same derivation is carried out for the quadratic objective, which is where the paper's own stationarity condition of Lemma~1 comes from. Third, Definition~2's indexed family is listed as Tier~A rather than as Tier~C: the family, its constant and frozen specializations, and the algebra of the demand ratio are machine-checked, so what a reader cannot verify from the artifact is not the indexed reading but the step in which a general pairwise potential becomes the coefficient \eqref{eq:focgeneral}, together with the operator-valued couplings that the general form does not claim.
 
 \subsection{Machine-Checked Statements of the Load-Bearing Declarations}
 
@@ -162,6 +162,62 @@ theorem frozen_table_not_modeA (W : Pixel -> R) (i : Pixel) (hW : W i != 0)
 \end{verbatim}
 \end{quote}
 \noindent This has the shape of \texttt{neural\ttu not\ttu modeA} with the scalar entry \texttt{W} replaced by the table entry \texttt{W i}, so the number of entries does not enter: it is the machine-checked form of the sentence that one scalar is a parameter table and a million parameters are a parameter table as well.
+
+The derivation of the general first-order condition from the objective, which is what makes the general form's premise a consequence rather than an assumption. The statements are given in full because this is the one place where analysis, rather than algebra, enters the verification:
+\begin{quote}
+\small
+\begin{verbatim}
+theorem deriv_odd_of_even {phi phi' : R -> R}
+    (heven : forall x, phi (-x) = phi x)
+    (hphi : forall x, HasDerivAt phi (phi' x) x) (x : R) :
+    phi' (-x) = -phi' x
+
+theorem PairwiseTerm_hasDerivAt {phi phi' : R -> R}
+    (heven : forall x, phi (-x) = phi x)
+    (hphi : forall x, HasDerivAt phi (phi' x) x)
+    (d : Depth) (i : Pixel) :
+    HasDerivAt (fun t => PairwiseTerm phi (Function.update d i t))
+      (KappaPhi phi' d i) (d i)
+
+theorem dataTerm_hasDerivAt {f f' : Pixel -> R -> R}
+    (hf : forall k x, HasDerivAt (f k) (f' k x) x)
+    (d : Depth) (i : Pixel) :
+    HasDerivAt (fun t => sum k, f k (Function.update d i t k))
+      (f' i (d i)) (d i)
+
+theorem GeneralObjective_hasDerivAt {phi phi' : R -> R}
+    {f f' : Pixel -> R -> R}
+    (heven : forall x, phi (-x) = phi x)
+    (hphi : forall x, HasDerivAt phi (phi' x) x)
+    (hf : forall k x, HasDerivAt (f k) (f' k x) x)
+    (lambda : R) (d : Depth) (i : Pixel) :
+    HasDerivAt (fun t => GeneralObjective phi f lambda
+      (Function.update d i t))
+      (f' i (d i) + lambda * KappaPhi phi' d i) (d i)
+
+theorem general_first_order_of_local_min {phi phi' : R -> R}
+    {f f' : Pixel -> R -> R}
+    (heven : forall x, phi (-x) = phi x)
+    (hphi : forall x, HasDerivAt phi (phi' x) x)
+    (hf : forall k x, HasDerivAt (f k) (f' k x) x)
+    (lambda : R) (d : Depth) (i : Pixel)
+    (hmin : IsLocalMin (fun t => GeneralObjective phi f lambda
+      (Function.update d i t)) (d i)) :
+    f' i (d i) + lambda * KappaPhi phi' d i = 0
+
+theorem KappaPhi_quadratic (d : Depth) (i : Pixel) :
+    KappaPhi (fun x => 2 * x) d i = 4 * kappa d i
+
+theorem FirstOrder_of_quadratic_local_min (x d : Depth)
+    (lambda : R) (i : Pixel)
+    (hmin : IsLocalMin (fun t => GeneralObjective (fun y => y ^ 2)
+      (fun k t => (x k - t) ^ 2) lambda
+      (Function.update d i t)) (d i)) :
+    FirstOrder x d (2 * lambda) i
+\end{verbatim}
+\end{quote}
+
+Note what the last statement says. The paper's stationarity condition of Lemma~1 assumes the first-order form and normalizes the constant factors by hand; here the condition is obtained from the quadratic objective as it stands, and the normalization is an explicit scalar: stationarity at a local minimum along a coordinate line holds exactly with the scalar \texttt{2 * lambda}, because the data term contributes \texttt{2 (d\ttu i - x\ttu i)} and the squared potential contributes \texttt{4 * lambda * kappa\ttu i}. The premise is thereby derived rather than assumed, and the derivation uses no property of the carrier beyond the differentiability of the potential and of the data term.
 
 The measure-theoretic core of Lemma 3, in its general form and with upper-tail realization demoted from premise to theorem:
 

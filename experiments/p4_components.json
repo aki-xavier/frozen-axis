@@ -1,0 +1,11 @@
+{
+ "n_pairs": 24,
+ "delta_median": 0.06859621530908165,
+ "delta_max": 0.0770289861789448,
+ "p_realized": 0.015625,
+ "Lambda_max": 0.539942726455345,
+ "rho_benchmark": 0.029727888205470464,
+ "kappa_floor": -0.029723293048483423,
+ "gap_measured_frozen": -0.016764563380273646,
+ "gap_min_frozen": -0.06404724283337443
+}

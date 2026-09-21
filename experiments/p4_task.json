@@ -1,0 +1,80 @@
+{
+ "id": {
+  "task": {
+   "N": 64,
+   "hole": 12,
+   "sigma": 0.25,
+   "lambda_lo": 0.05,
+   "lambda_hi": 6.0,
+   "tau": 0.5,
+   "edge_amp": 0.8,
+   "eta": 0.02,
+   "regime": "id",
+   "n_pairs": 2
+  },
+  "delta_median": 5.95,
+  "p_realized": 0.028846153846153848,
+  "Lambda_max": 0.6330902418210446,
+  "rho_benchmark": 5.0476220703125,
+  "kappa_estimated_threshold": -4.983795447716346,
+  "rho_A0": 0.0,
+  "kappa_A0": 0.06382662259615386,
+  "gap_measured_frozen": 2.3955740051306895,
+  "gap_min_frozen": -0.8115257594770249,
+  "downstream_gap_mean": 0.0043916145732241915,
+  "downstream_gap_min": -0.0031990358495533897,
+  "train_loss_frozen": 6.78487065259768
+ },
+ "ood_shift": {
+  "task": {
+   "N": 64,
+   "hole": 12,
+   "sigma": 0.25,
+   "lambda_lo": 0.05,
+   "lambda_hi": 6.0,
+   "tau": 0.5,
+   "edge_amp": 0.8,
+   "eta": 0.02,
+   "regime": "ood_shift",
+   "n_pairs": 7
+  },
+  "delta_median": 5.95,
+  "p_realized": 0.02197802197802198,
+  "Lambda_max": 0.6610255588150419,
+  "rho_benchmark": 4.955428059895834,
+  "kappa_estimated_threshold": -4.906798252203526,
+  "rho_A0": 0.0,
+  "kappa_A0": 0.0486298076923077,
+  "gap_measured_frozen": 2.2823045839253338,
+  "gap_min_frozen": -0.32309150952249954,
+  "downstream_gap_mean": -0.0011812665028865714,
+  "downstream_gap_min": -0.01986470478457256,
+  "train_loss_frozen": 6.78487065259768
+ },
+ "ood_noise": {
+  "task": {
+   "N": 64,
+   "hole": 12,
+   "sigma": 0.25,
+   "lambda_lo": 0.05,
+   "lambda_hi": 6.0,
+   "tau": 0.5,
+   "edge_amp": 0.8,
+   "eta": 0.02,
+   "regime": "ood_noise",
+   "n_pairs": 3
+  },
+  "delta_median": 5.95,
+  "p_realized": 0.019230769230769232,
+  "Lambda_max": 0.6330902418210446,
+  "rho_benchmark": 12.054366861979169,
+  "kappa_estimated_threshold": -12.0118157802484,
+  "rho_A0": 0.0,
+  "kappa_A0": 0.042551081730769234,
+  "gap_measured_frozen": -2.9457336474842806,
+  "gap_min_frozen": -7.628204487611573,
+  "downstream_gap_mean": -0.04615287545991278,
+  "downstream_gap_min": -0.0766510125536338,
+  "train_loss_frozen": 6.78487065259768
+ }
+}

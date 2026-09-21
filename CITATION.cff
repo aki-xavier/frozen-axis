@@ -27,7 +27,6 @@ repository-code: "https://github.com/aki-xavier/frozen-axis"
 url: "https://github.com/aki-xavier/frozen-axis"
 keywords:
   - open inversion tasks
-  - completeness
   - formal falsification
   - fixed-memory component
   - decision axis

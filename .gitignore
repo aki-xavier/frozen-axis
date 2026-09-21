@@ -7,6 +7,10 @@ build-main/
 build-paper/
 build-*/
 
+# Python
+__pycache__/
+*.pyc
+
 # pdflatex / bibtex intermediates
 *.aux
 *.log

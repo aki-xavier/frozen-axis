@@ -1,0 +1,121 @@
+% !TeX program = pdflatex
+%=======================================================================
+% Formal Falsification of the Completeness of a Single Fixed-Memory
+% Component for Open Inversion Tasks
+%
+% LaTeX version in the official JMLR style (jmlr2e.sty, from
+% https://github.com/JmlrOrg/jmlr-style-file -- do not modify the .sty).
+%
+% Environment mapping:
+%   LaTeX environment              numbering in the paper
+%   ------------------------------ ----------------------
+%   claim       (unnumbered)       Claim R
+%   uprop       (unnumbered)       Proposition [Mask Criterion]
+%   lemma       (shared)           Lemma 1..3
+%   proposition (shared)           Proposition 4, 6
+%   theorem     (shared)           Theorem 5, 7
+%   defn        (separate)         Definition 1..4
+% The lemma/proposition/theorem counter is shared, so the sequence reads
+% Lemma 1, Lemma 2, Lemma 3, Proposition 4, Theorem 5, Proposition 6,
+% Theorem 7 -- exactly as referenced throughout the text.
+%
+% The \acks block required by JMLR (funding and competing-interest
+% disclosure) is present below, ahead of the bibliography.
+% The \jmlrheading volume/pages/paper-id fields are assigned by the JMLR
+% editor at acceptance; they are left empty here.
+%=======================================================================
+
+\documentclass[twoside,11pt]{article}
+
+% Any additional packages must be included after jmlr2e.
+% jmlr2e already provides epsfig, amssymb, natbib, graphicx and hyperref.
+\usepackage{jmlr2e}
+\usepackage{amsmath}
+\usepackage{array}
+
+% --- theorem environments -------------------------------------------
+% jmlr2e defines theorem, lemma, proposition, corollary, remark,
+% definition, ... all sharing one counter. The paper numbers definitions
+% separately (Definition 1..4), so `defn` gets its own counter; the
+% lemma/proposition/theorem counter stays shared, which reproduces the
+% numbering Lemma 1, Lemma 2, Lemma 3, Proposition 4, Theorem 5,
+% Proposition 6, Theorem 7 used in the text.
+\newtheorem{defn}{Definition}
+
+% Two unnumbered, named environments (Claim R; Proposition [Mask
+% Criterion]). Defined by hand so that amsthm is not needed and the
+% official .sty stays untouched.
+\makeatletter
+\newenvironment{claim}[1][]{\par\medskip\noindent\textbf{Claim\ifx\relax#1\relax\else\ #1\fi:}\ \itshape}{\par\medskip}
+\newenvironment{uprop}[1][]{\par\medskip\noindent\textbf{Proposition\ifx\relax#1\relax\else\ (#1)\fi:}\ \itshape}{\par\medskip}
+\makeatother
+
+% --- helpers --------------------------------------------------------
+% Lead-in of a proof sketch and the right-aligned end-of-proof box,
+% reproducing the "Argument." paragraphs of the paper.
+\newcommand{\argument}{\par\medskip\noindent\textbf{Argument.}\ }
+\newcommand{\qedbox}{\hfill$\square$}
+\newcommand{\ev}{\mathrm{ev}}
+
+% --- headline -------------------------------------------------------
+% {volume}{year}{pages}{submitted}{published}{paper id}{authors}
+% Leave the publication date blank: it is filled in by the editor.
+\jmlrheading{}{}{}{9/26}{}{}{Shuo Zhang}
+\ShortHeadings{Formal Falsification of Solo Completeness}{Zhang}
+\firstpageno{1}
+
+\hypersetup{hidelinks}
+
+\begin{document}
+
+\title{Formal Falsification of the Completeness of a Single Fixed-Memory Component for Open Inversion Tasks}
+
+% NOTE: the author block is present because JMLR submissions are not
+% anonymous.
+\author{\name Shuo Zhang \email 202400103083@stumail.sztu.edu.cn \\
+       \addr Shenzhen Technology University\\
+       3002 Lantian Road, Pingshan District\\
+       Shenzhen, Guangdong, China 518118}
+
+% The action editor is assigned by JMLR after submission.
+\editor{Action Editor}
+
+\maketitle
+
+\begin{abstract}%
+Many inference tasks share a common difficulty: local observations do not suffice to determine the structure being sought, context must be brought in, and how strongly context should be used varies with position and time. Real-time 3D reconstruction, image restoration, and online state estimation all belong to this class, which this paper calls open inversion tasks. The class is delimited by four criteria: observations are ill-posed, the required context strength is heterogeneous and content-addressed by the evidence, inference inputs are not constrained by the training distribution, and the demand rule cannot be given within any pre-given tolerance on the open set by any values frozen before inference begins. This paper proves that no single fixed-memory component can complete such tasks on its own. A fixed-memory component is one whose context rules are frozen into parameters that do not change at inference time and whose values come from a training corpus or from manual setting; neural networks (NN) and Bayesian networks (BN) are its two canonical instances. The argument unfolds along a decision axis: the content of a context rule is a set of numbers, and numbers have only two possible sources. Values given on the spot by current evidence or by analytic invariants are called Mode A; values given offline from training-corpus statistics or manual setting and frozen at inference time are called Mode B. The two are mutually exclusive and exhaustive, because a number either comes into existence at inference time or already exists before inference begins, and there is no third state. Generalization on the open set requires rules of Mode A, while the rules of a fixed-memory component belong to Mode B, and the falsification closes at this point. Bayesian networks have two further failure sources: the absence of a perceptual proposal layer, and treewidth blow-up when the source of structure is missing. What is falsified is solo use rather than the components themselves: high accuracy on closed benchmarks is a weak claim and is fully compatible with our conclusion. All derivations are formal and rely on no experimental data. The algebraic skeleton of the argument chain has been machine-verified with Lean 4 and Mathlib, with zero \texttt{sorry} and zero warnings; the carrier-independent algebraic core and the structured general forms are machine-proved at general types, the theorems on the toy carrier are special cases of them, and the remaining modeling components on the continuous side are listed explicitly in Section~\ref{ch:verify}.
+\end{abstract}
+
+\begin{keywords}
+  open inversion tasks; completeness; formal falsification; fixed-memory component; decision axis; open set
+\end{keywords}
+
+\input{sections/01-introduction}
+\input{sections/02-related-work}
+\input{sections/03-formalization}
+\input{sections/04-decision-axis}
+\input{sections/05-formal-falsification}
+\input{sections/06-formal-verification}
+\input{sections/07-discussion}
+\input{sections/08-conclusion}
+
+% JMLR requires an Acknowledgements and Disclosure of Funding section,
+% placed before the appendices and the references. It must declare both
+% (i) financial activities supporting the work and (ii) competing
+% interests outside the submitted work.
+%
+% The author has confirmed that this work received no specific funding,
+% so the funding declaration below is final (no placeholder remains).
+\acks{The Lean~4 development reported in Section~\ref{ch:verify} was carried out with the Lean~4 proof assistant and its mathematical library Mathlib; the author thanks the Mathlib community for maintaining it. The verified artifact described in Section~\ref{ch:verify} is distributed in the \texttt{lean-proof} directory of the paper's repository, together with the \texttt{lean-toolchain} file that pins the toolchain version.
+
+Funding: this research received no specific funding.
+
+Competing interests: the author declares no competing interests.}
+
+\vskip 0.2in
+\bibliography{reference}
+
+\appendix
+\input{sections/09-appendix-artifact}
+
+\end{document}

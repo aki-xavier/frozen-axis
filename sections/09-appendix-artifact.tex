@@ -1,0 +1,169 @@
+\section{Artifact Index of the Lean 4 Verification}
+\label{app:artifact}
+
+Section~\ref{ch:verify} reports the machine verification of the algebraic skeleton. This appendix makes that claim inspectable without access to the artifact: it records where the artifact lives, how it is reproduced, what its axiom budget is, which paper item each machine-checked declaration discharges, and under exactly which premises the load-bearing declarations hold.
+
+\subsection{Layout, Reproduction, and Axiom Budget}
+
+The artifact is a self-contained Lean~4 project distributed in the \texttt{lean-proof} directory of the project repository at
+\begin{center}
+\texttt{https://github.com/aki-xavier/frozen-axis}
+\end{center}
+under the \texttt{lean-proof} path. It consists of four files: \texttt{FormalProof.lean}, the single development file of 699 lines containing every definition, lemma, proposition, theorem, the final theorem, and the generalization upgrades; \texttt{lakefile.lean}, which pins Mathlib to the matching release; \texttt{lake-manifest.json}, which locks every transitive dependency to an exact revision; and \texttt{lean-toolchain}, which pins the toolchain to \texttt{leanprover/lean4:v4.34.0}. No component outside this directory is required.
+
+Reproduction is a single command from inside the directory:
+\begin{center}
+\texttt{cd lean-proof \&\& lake build}
+\end{center}
+The build was executed on the developer's machine at the blob hash recorded in Section~\ref{ch:verify} and terminates with zero errors, zero warnings, and zero occurrences of \texttt{sorry}; the development also contains no \texttt{axiom} declaration of its own. The reproducible form of this claim, stronger than the \texttt{sorry}-count, is the axiom budget: the command \texttt{\#print axioms} applied to the load-bearing declarations returns
+\begin{center}
+\texttt{[propext, Classical.choice, Quot.sound]}
+\end{center}
+for each of \texttt{finale}, \texttt{lemma1\_sharp}, and \texttt{tail\_realization}, and, by the same command, for the remaining declarations of the development. These three are Lean's own standard axioms, the ones every Mathlib development inherits; in particular the list contains no \texttt{sorryAx}, so no step of the chain is discharged by an unproved assertion. The artifact is therefore auditable at the level of the proof term, not merely at the level of a reported build outcome.
+
+One scope remark belongs here, because it delimits what the artifact does and does not certify. The verified content is the deductive chain: definitions, the mask criterion, Lemmas 1 to 3, Propositions 4 and 6, Theorems 5 and 7, and their composition in \texttt{finale}. The premises of that chain which concern the modeling side rather than the algebra are not certified, because they are not theorems: the satisfaction of Criterion P4 on real tasks appears as an explicit premise parameter, the continuous-side Euler--Lagrange derivation is not formalized, and network nondegeneracy is a checkable property. Section~\ref{sec:layers} assigns each component its tier, and Table~\ref{tab:layers} is the authoritative statement of that boundary.
+
+\subsection{Index from Paper Items to Machine-Checked Declarations}
+
+Table~\ref{tab:artifact} lists the correspondence. The tier column repeats the assignment of Table~\ref{tab:layers} so that the reader can see, for each paper item, whether its machine-checked form is carrier-independent (Tier A), anchored on a Mathlib structure theorem (Tier B), or outside the machine guarantee (Tier C).
+
+\begin{table}[htbp]
+\caption{Index from paper items to Lean 4 declarations. Declaration names are those of \texttt{FormalProof.lean}. Tier A: carrier-independent algebraic core; Tier B: structured general forms anchored on Mathlib; Tier C: modeling components not covered by the machine guarantee.}
+\label{tab:artifact}
+\centering
+\small
+\renewcommand{\arraystretch}{0.92}
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{0.26\textwidth}>{\raggedright\arraybackslash}p{0.56\textwidth}>{\centering\arraybackslash}p{0.09\textwidth}@{}}
+\hline
+\textbf{Paper item} & \textbf{Lean declaration} & \textbf{Tier}\\
+\hline
+Definition 1 (ill-posedness), Criterion P1 & \texttt{IllPosed}, \texttt{P1} & B\\
+\hline
+Mask criterion, both directions & \texttt{illPosed\_of\_hole}, \texttt{not\_illPosed\_of\_full} & B\\
+\hline
+Mask criterion in kernel form & \texttt{illPosed\_iff\_nontrivial\_ker} & B\\
+\hline
+Definition 2 (context rule) & \texttt{ContextRule} & A\\
+\hline
+Definition 3 (Mode A / Mode B) & \texttt{IsModeA}, \texttt{DependsOnlyOn}, \texttt{IsModeB} & A\\
+\hline
+Definition 4 (Paradigm E / I) & \texttt{ParadigmE}, \texttt{ParadigmI}, \texttt{IsParadigmI} & A\\
+\hline
+Criterion P2 (heterogeneity) & \texttt{P2}, \texttt{p2\_gives\_nonconst}, \texttt{hetero\_gives\_nonconst} & B\\
+\hline
+Criterion P3 (open set) & \texttt{P3}, \texttt{p3\_implies\_p1} & A\\
+\hline
+Criterion P4 & premise parameter \texttt{hGapPositive}; not formalized as a criterion & C\\
+\hline
+Lemma 1 & \texttt{lemma1\_sharp}, \texttt{lemma1\_final}, \texttt{foc\_proportionality} & A\\
+\hline
+Lemma 2, extrinsic side & \texttt{lemma2\_full}, \texttt{lemma2\_E\_stationary\_infeasible} & A\\
+\hline
+Lemma 2, endogenous side & \texttt{paradigmI\_unique\_minimizer}, \texttt{paradigmI\_inner\_unique}, \texttt{paradigmI\_L2\_ae} & A and B\\
+\hline
+Lemma 3, toy form & \texttt{lemma3\_final2} & B\\
+\hline
+Lemma 3, general measure form & \texttt{lemma3\_general}, \texttt{tail\_realization} & B\\
+\hline
+Lemma 3, gap mechanism & \texttt{modeB\_positive\_gap}, \texttt{modeA\_loss\_lower\_bound}, \texttt{modeA\_loss\_attained}, \texttt{toy\_positive\_gap} & A\\
+\hline
+Propositions 4 and 6 (NN / BN are Mode B) & \texttt{neural\_isModeB}, \texttt{neural\_not\_modeA}, \texttt{spn\_isModeB}, \texttt{spn\_not\_modeA} & A\\
+\hline
+Nondegeneracy lemma & \texttt{nondeg\_not\_dependsOn} & A\\
+\hline
+Collision construction & \texttt{collision\_of\_masked}, \texttt{collision\_general} & A and B\\
+\hline
+Theorems 5 and 7 (closures) & \texttt{theorem5}, \texttt{theorem7\_spn} & A\\
+\hline
+Final theorem & \texttt{finale} & A and B\\
+\hline
+Continuous-side optimality & Euler--Lagrange derivation; not formalized & C\\
+\hline
+Network nondegeneracy & checkable property; not formalized & C\\
+\hline
+\end{tabular}
+\end{table}
+
+Two entries in Table~\ref{tab:artifact} deserve emphasis because they are the ones a reader is most likely to look for. First, Criterion P4 is listed as Tier C and as a premise parameter rather than as a formalized definition: the verified form of Lemma 3 consumes \texttt{hGapPositive}, the hypothesis that the risk gap exceeds the bound, and does not attempt to formalize the quantified criterion itself. This is the same dislocation already stated in Section~\ref{ch:verify}, recorded here in the index so that it cannot be missed. Second, the collision construction and the classification and closure declarations are Tier A: their proofs quantify over arbitrary index types, so the toy carrier plays no role in them and the toy end and the continuous end are both instantiations of one proof.
+
+\subsection{Machine-Checked Statements of the Load-Bearing Declarations}
+
+The index names the declarations; the premises are what a reader must inspect to judge the strength of the claim. The listing below gives the statements of the load-bearing declarations verbatim in their logical content, transliterated to ASCII for typesetting (\texttt{R} for the reals, \texttt{not}, \texttt{forall}, \texttt{exists}, \texttt{and}, \texttt{->}, \texttt{!=}, \texttt{>=}, \texttt{<=} for the corresponding symbols). The Unicode source is in the artifact.
+
+The two declarations that carry the shape exclusion of Lemmas 1 and 2:
+
+\begin{quote}
+\small
+\begin{verbatim}
+theorem lemma1_sharp {x d : Depth} {lambda : R} {i j : Pixel}
+    (h1 : FirstOrder x d lambda i) (h2 : FirstOrder x d lambda j)
+    (hHetero : (x i - d i) * kappa d j != (x j - d j) * kappa d i) :
+    False
+
+theorem lemma2_full {d : Depth} {i j : Pixel}
+    (hHetero : kappa d i != kappa d j) :
+    (not exists lambda, lambda != 0 and
+      ParadigmEFirstOrder d lambda i and ParadigmEFirstOrder d lambda j)
+    and forall pred, IsParadigmI pred ->
+        exists p, (forall y, pred p <= pred y) and
+                  (forall y, pred y = pred p -> y = p)
+\end{verbatim}
+\end{quote}
+
+The measure-theoretic core of Lemma 3, in its general form and with upper-tail realization demoted from premise to theorem:
+
+\begin{quote}
+\small
+\begin{verbatim}
+theorem tail_realization {Omega : Type} [MeasurableSpace Omega]
+    {mu : Measure Omega} [IsProbabilityMeasure mu] {f : Omega -> R}
+    (hf : Integrable f mu) :
+    exists omega, integral f dmu <= f omega
+
+theorem lemma3_general {Omega : Type} [MeasurableSpace Omega]
+    {mu : Measure Omega} [IsProbabilityMeasure mu]
+    {loss : Omega -> R} (hloss : Integrable loss mu)
+    {rmin eps : R} (hmin : 0 <= rmin) (hgap : integral loss dmu - rmin > eps)
+    (hbound : forall omega, loss omega <= eps) :
+    False
+\end{verbatim}
+\end{quote}
+
+Note what is and is not a premise here. In \texttt{lemma3\_general} the upper-tail realization premise no longer appears: it is discharged by \texttt{tail\_realization}, which holds for an arbitrary probability measure and an arbitrary integrable function. The premises that remain are the two the paper declares: a risk gap exceeding the bound, and nonnegativity of the minimum risk. The carrier side, the collision argument, and the two closures:
+
+\begin{quote}
+\small
+\begin{verbatim}
+theorem neural_not_modeA (W : R) (hW : W != 0)
+    (d e : Depth) (hd0 : d 0 = e 0) (hd1 : d 1 != e 1) :
+    not IsModeA (neuralRule W)
+
+theorem theorem5 (sys : System) (hP3 : P3 sys) (W : R) (hW : W != 0) :
+    not IsModeA (neuralRule W)
+
+theorem theorem7_spn (sys : System) (hP3 : P3 sys)
+    (p : SpnParams) (hw : p.w != 0) :
+    not IsModeA (spnRule p)
+\end{verbatim}
+\end{quote}
+
+Finally the composition itself, which is the existential negation's algebraic form in one conjunction:
+
+\begin{quote}
+\small
+\begin{verbatim}
+theorem finale (sys : System) (hP3 : P3 sys)
+    (m : MeasureSetup) (eps : R) (heps : eps > 0) (W : R) (hW : W != 0)
+    (hTail : exists d, m.lossR (neuralRule W) d >= m.riskP (neuralRule W))
+    (hGapPositive : m.gapP (neuralRule W) > eps)
+    (hNonnegMin : m.riskMin (neuralRule W) >= 0) :
+    not IsModeA (neuralRule W)
+    and not GeneralizationBound m eps (neuralRule W)
+\end{verbatim}
+\end{quote}
+
+The premise list of \texttt{finale} is the complete inventory of what the machine-checked composition assumes: Criterion P3 as a hypothesis on the system, the three measure-theoretic premises of Lemma 3, and the nondegeneracy \texttt{W != 0} of the carrier's parameter. Nothing else enters, and in particular no premise is smuggled in as a definitional unfolding. This is the concrete sense in which the artifact is inspectable: the reader can check each of these premise lists against the prose of Section~\ref{ch:falsify} and see exactly where the two agree and where, in the single case of P4, the verified form is explicitly weaker.
+
+\subsection{Maintaining the Correspondence}
+
+The index of Table~\ref{tab:artifact} and the statements of the previous subsection are kept in correspondence with the sources by the repository's own layout: \texttt{README.md} carries the same index in Markdown, \texttt{package-lean-proof.sh} packages the sources together with the two version-lock files while excluding the build cache, and the single-file submission version of this paper is regenerated from \texttt{sections/} rather than edited by hand. A reader who finds a discrepancy between a statement above and the source should treat the source in \texttt{lean-proof/FormalProof.lean} as authoritative and report it; the index is a map, not a second copy of the development.

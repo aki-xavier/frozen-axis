@@ -1,0 +1,38 @@
+\section{The Decision Axis: Context Rules and Two Modes}
+\label{ch:axis}
+
+\subsection{Context Rules}
+
+Section~\ref{ch:formalize} showed that ill-posed tasks cannot do without context, but ``using context'' needs an analyzable handle. The handle of this paper is:
+
+\begin{defn}
+A \emph{context rule} is the stipulation of where and how strongly context is needed, and its content is a set of numbers. Formally, a context rule is a mapping $R : (I \to \mathbb{R}) \to \mathbb{R}$ from structure fields to real numbers: given the current evidence and a candidate structure, it yields the context strength to be used there.
+\end{defn}
+
+Describing a rule as a set of numbers is not a simplification but a revelation, and it carries no extra assumption: structural representations of rules, such as symbolic constraints or program fragments, must still be instantiated into numbers wherever they participate in numerical inference; representation changes the carrier of the rule, not the classification of the source of its values. Whatever face a rule wears, be it a regularization coefficient, the strength of a smoothing prior, the weight of belief propagation, or the implicit preference of a network, it manifests in inference as a set of numbers entering the computation. Once the content of a rule is numbers, the correctness problem of the rule turns into the source problem of the numbers: where do these numbers come from.
+
+\subsection{Mode A and Mode B}
+
+There are only two possible sources of numbers; this is the core of the decision axis:
+
+\begin{defn}
+A rule belongs to \emph{Mode A} if all its values are instantiated by current evidence or taken from cross-scenario invariants given by analysis and calibration, such as camera intrinsics; it belongs to \emph{Mode B} if its computation involves parameters that are fixed at inference time and whose values are given by training-corpus statistics or manual setting. The two are mutually exclusive and exhaustive. Only parameters that carry the content of the rule, namely those whose variation changes the rule's values, participate in the classification: an implementation of per-instance optimization contains solver values fixed at inference time, such as a learning rate and an iteration count, which affect the speed of approaching the limit but not the limit itself; classification follows the limit, the limit is instantiated by evidence, and such implementations remain Mode A. What is classified is the source of the function rather than its carrier: a component implementing an analytic or calibration function with fixed parameters still has its rule in Mode A, because the substantive source of the values is an analytic invariant; a component implementing a corpus-statistical function with fixed parameters remains Mode B even if the function it computes depends only on evidence.
+\end{defn}
+
+The difference from the functional-dependence view deserves to be stated plainly. The functional-dependence view bases its inference on the function computed, while this paper's axis is based on the source of the values; the two agree in most cases, and the differences appear in two boundary situations: frozen parameters that happen to implement an analytic function, which the implementer clause classifies as Mode A, and a corpus-learned function that happens to depend only on evidence, which remains Mode B by source. The axis answers who carries the correctness guarantee, while the functional-dependence view answers what the behavior is; the two questions are not mutually exclusive. Behavioral out-of-distribution robustness is often achieved in practice and is a weak claim, compatible with the negation of this paper. The classification of adaptive implementations such as hypernetworks and test-time adaptation is given in the reach section of Section~\ref{ch:falsify}.
+
+Mutual exclusivity and exhaustiveness deserve one more word. A number either comes into existence at inference time, computed from the current input or given directly by geometric calibration, or it already exists before inference begins, lying in some parameter slot. There is no third state. Training-corpus statistics and manual setting both belong to the latter, because the two differ only in the production process of the value, not in the time of its existence: a 0.37 distilled from corpus statistics and a 0.37 written down by an engineer's decision are both pre-existing fixed numbers at inference time. Cross-scenario invariants belong to Mode A because values given by analysis and calibration carry no statistical memory of any particular corpus: camera intrinsics are determined by projective geometry and hold for this frame and for any frame alike.
+
+Formally, for a Mode A rule there exists a mapping $\Phi$ depending only on evidence such that for every structure field $d$,
+\begin{equation}
+R(d) = \Phi\bigl(d|_{\ev}\bigr),
+\label{eq:modeA}
+\end{equation}
+where $d|_{\ev}$ denotes the restriction of the structure field to evidence positions. A Mode B rule instead involves a parameter object $W$ fixed at inference time such that
+\begin{equation}
+R(d) = F(W, d),
+\label{eq:modeB}
+\end{equation}
+where $F$ is some computational process. The difference between the two equations is plain at a glance: the output of Mode A is uniquely pinned by evidence, whereas the output of Mode B is jointly determined by fixed parameters and the input. When two inputs share the same evidence but differ in context, Mode A must give the same strength, and this is the source of its generalization ability; Mode B is under no such constraint, and it can, and usually will, give answers that depend on frozen values. It should be noted that \eqref{eq:modeA} is the projection of the source criterion onto the function level: on the decidable toy carrier, ``values instantiated by evidence'' manifests as the rule value depending only on evidence; the source clause of Definition~3 is finer than functional dependence, and an evidence function implemented by frozen weights can formally be written as $\Phi$ in the sense of \eqref{eq:modeA}, yet the source of its values remains the corpus, and classification follows the source.
+
+Why this axis has decisive power will fully unfold only in Section~\ref{ch:falsify}, but the intuition can be stated now: the open set requires rules to remain correct on inputs the training corpus has never seen, and the only sources of values trustworthy on unseen inputs are the current evidence itself and cross-scenario analytic invariants. The values of any rule carried by frozen parameters ultimately record the statistics of a corpus or the experience of a setter; the corpus cannot cover the open set, and neither can experience. One honest qualification: the source is a necessary condition for correctness, not a sufficient one. A Mode A rule is not automatically correct; it is merely the only class that can carry a uniform bound, while frozen rules are excluded by Criterion P4. The source is therefore a correlate of the guarantee, not the guarantee itself.

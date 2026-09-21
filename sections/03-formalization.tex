@@ -1,0 +1,43 @@
+\section{Formalization of the Problem}
+\label{ch:formalize}
+
+\subsection{Observations, Structure Fields, and Ill-Posedness}
+
+First translate the intuition into symbols. Let the position set be $I$: in image tasks it is the pixel set, and in state estimation it is the product of time indices and state components. The object being sought is a structure field $d : I \to \mathbb{R}$, which assigns a structure value, such as depth, intensity, or a state component, to every position. An observation consists of two parts: a mask $m : I \to \{0, 1\}$ marking which positions are observed, and the observed values at the positions inside the mask. The relation between observation and structure is this: structure values inside the mask are pinned by the observation, while structure values outside the mask are under no direct constraint.
+
+\begin{defn}
+An observation is called \emph{ill-posed} if there exist two different structure fields $d \neq e$ that agree with the observed values at every position inside the mask. In other words, the same observation is compatible with at least two different structure fields.
+\end{defn}
+
+This definition puts ``local observations cannot fix the answer'' into a decidable form, and it has a clean two-way criterion:
+
+\begin{uprop}[Mask Criterion]
+An observation with a hole is ill-posed: as long as some position $j$ is not covered by the mask, one can take two different values at $j$ to construct two structure fields compatible with the same observation. Conversely, when the mask covers all positions, the structure field is uniquely determined by the observation and the observation is not ill-posed.
+\end{uprop}
+
+Neither direction of the criterion depends on any numerical detail. The hole direction is constructive: positions outside the mask are degrees of freedom, and picking any two values on a degree of freedom yields a bifurcation. The full-mask direction is trivial: the value at every position is pinned, and no degree of freedom is available for bifurcation. Real observations almost always have holes: depth behind occluding surfaces, frequency bands drowned in noise, and null spaces of measurement equations are all positions outside the mask.
+
+\subsection{Four Criteria}
+
+Ill-posedness is only the first item. Writing the four observations of Section~\ref{ch:intro} as criteria gives the premises of all subsequent arguments:
+
+\begin{itemize}
+\item Criterion P1 (ill-posedness): The observation is ill-posed; that is, there exist different structure fields compatible with the same observation.
+\item Criterion P2 (heterogeneity): The context strength required by the task is not constant. There exist boundary positions and interior positions, the two require different consistency strengths, and which positions are boundary and which are interior is determined by the content of the current evidence.
+\item Criterion P3 (open set): Inputs at inference time are not constrained by the training distribution. Formally, while the evidence part is pinned by the observation, the context part retains free positions not covered by the observation, so that the same evidence is compatible with free bifurcation of the context values.
+\item Criterion P4 (non-freezability of the demand): The values of the demand rule cannot be given within any pre-given tolerance on the open set by any object that already exists before inference begins. The formal statement is given in Section~\ref{ch:falsify}: for every tolerance $\epsilon > 0$, every offline-frozen rule has a risk gap $g(R) > \epsilon$ relative to the optimal risk attainable by evidence-instantiated rules.
+\end{itemize}
+
+Among the four criteria there is a direct implication: P3 implies P1. The mask form of the open set is itself a hole, and a hole means ill-posedness. The difficulty of open inversion tasks is therefore not a simple sum of the four items but a progression layer upon layer: ill-posedness forces inference to use context, heterogeneity requires context to vary by position, openness requires rules to remain correct on inputs never seen before, and non-freezability requires that the demand cannot be pinned down offline. The argument of Section~\ref{ch:falsify} will consume the four criteria in turn.
+
+One distinction must be made: the mask form of P3 is not a model of distribution shift but the decidable content of ``inference inputs are not constrained by the training distribution''. The concrete measure of the test distribution is left unspecified in this paper, and the derivation of Lemma 3 in Section~\ref{ch:falsify} holds for any probability measure.
+
+P4 is the only criterion that cannot be read off the syntax of the task directly. Like the other three, it involves no truth value as a definitional clause of the task class; as a description of real tasks, whether it is satisfied depends on the structure of those tasks. The linear-demand example of Section~\ref{ch:intro} marks its boundary: where the demand can be pinned down, a fixed-memory component can be complete, and the task leaves the class. The positive claims of this paper need one further feasibility assumption, separate from the criteria, which enters only when Mode A is discussed.
+
+\begin{itemize}
+\item Assumption A0 (evidence-computability of the demand): The demand rule is computable from current evidence; that is, there exists a mapping from evidence to the values of the demand rule such that on every input the demanded values can be given at inference time by evidence and analytic means.
+\end{itemize}
+
+A0 plays no role in the negation of Mode B: Theorems 5 and 7 consume only Criteria P1 to P4. What A0 supports is the positive reading in Section~\ref{ch:discussion}. The grounds for A0 on typical tasks are that the boundaries where context must be cut are themselves visible in the evidence; what is occluded is the structure, not the rule. Tasks whose demand depends on unobserved structure and leaves no trace in the evidence do not satisfy A0; they remain within the reach of the falsification but not of the positive claims.
+
+It should be emphasized that this paper places no restriction on the representation of the structure field. Depth can be represented as a scalar field, as disparity, as a signed distance field, or even as multivectors of geometric algebra \citep{hestenes1984,dorst2007}, and the mask form and the four criteria hold under all these representations alike. Ill-posedness and heterogeneity are properties at the level of observations and tasks and do not change with the choice of representation. All subsequent arguments cite only the mask form of the observation and the source of the values of the context rule; they are representation-independent.

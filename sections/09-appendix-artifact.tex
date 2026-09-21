@@ -9,7 +9,7 @@ The artifact is a self-contained Lean~4 project distributed in the \texttt{lean-
 \begin{center}
 \texttt{https://github.com/aki-xavier/frozen-axis}
 \end{center}
-under the \texttt{lean-proof} path. It consists of four files: \texttt{FormalProof.lean}, the single development file of 699 lines containing every definition, lemma, proposition, theorem, the final theorem, and the generalization upgrades; \texttt{lakefile.lean}, which pins Mathlib to the matching release; \texttt{lake-manifest.json}, which locks every transitive dependency to an exact revision; and \texttt{lean-toolchain}, which pins the toolchain to \texttt{leanprover/lean4:v4.34.0}. No component outside this directory is required.
+under the \texttt{lean-proof} path. It consists of four files: \texttt{FormalProof.lean}, the single development file of 759 lines containing every definition, lemma, proposition, theorem, the final theorem, the example variants, and the generalization upgrades; \texttt{lakefile.lean}, which pins Mathlib to the matching release; \texttt{lake-manifest.json}, which locks every transitive dependency to an exact revision; and \texttt{lean-toolchain}, which pins the toolchain to \texttt{leanprover/lean4:v4.34.0}. No component outside this directory is required.
 
 Reproduction is a single command from inside the directory:
 \begin{center}
@@ -32,7 +32,7 @@ Table~\ref{tab:artifact} lists the correspondence. The tier column repeats the a
 \label{tab:artifact}
 \centering
 \small
-\renewcommand{\arraystretch}{0.92}
+\renewcommand{\arraystretch}{0.88}
 \begin{tabular}{@{}>{\raggedright\arraybackslash}p{0.26\textwidth}>{\raggedright\arraybackslash}p{0.56\textwidth}>{\centering\arraybackslash}p{0.09\textwidth}@{}}
 \hline
 \textbf{Paper item} & \textbf{Lean declaration} & \textbf{Tier}\\
@@ -53,7 +53,7 @@ Criterion P2 (heterogeneity) & \texttt{P2}, \texttt{p2\_gives\_nonconst}, \textt
 \hline
 Criterion P3 (distributional openness; mask form) & \texttt{P3}, \texttt{p3\_implies\_p1} & A\\
 \hline
-Criterion P4 & premise parameter \texttt{hGapPositive}; not formalized as a criterion & C\\
+Criterion P4, component form (Section~\ref{sec:p4}) & premise parameter \texttt{hGapPositive}; the barrier, bounded-description, and realization conditions and the barrier-to-gap inequality are prose only & C\\
 \hline
 Lemma 1 & \texttt{lemma1\_sharp}, \texttt{lemma1\_final}, \texttt{foc\_proportionality} & A\\
 \hline
@@ -65,7 +65,9 @@ Lemma 3, toy form & \texttt{lemma3\_final2} & B\\
 \hline
 Lemma 3, general measure form & \texttt{lemma3\_general}, \texttt{tail\_realization} & B\\
 \hline
-Lemma 3, gap mechanism & \texttt{modeB\_positive\_gap}, \texttt{modeA\_loss\_lower\_bound}, \texttt{modeA\_loss\_attained}, \texttt{toy\_positive\_gap} & A\\
+Lemma 3, gap mechanism, context-dependent demand & \texttt{modeB\_positive\_gap}, \texttt{modeA\_loss\_lower\_bound}, \texttt{modeA\_loss\_attained}, \texttt{toy\_positive\_gap} & A\\
+\hline
+Lemma 3, gap mechanism, evidence-computable demand (Assumption~A0) & \texttt{evidenceTarget}, \texttt{modeB\_evidence\_gap}, \texttt{modeA\_evidence\_attained}, \texttt{evidence\_gap\_is\_full} & A\\
 \hline
 Propositions 4 and 6 (NN / BN are Mode B) & \texttt{neural\_isModeB}, \texttt{neural\_not\_modeA}, \texttt{spn\_isModeB}, \texttt{spn\_not\_modeA} & A\\
 \hline
@@ -84,7 +86,7 @@ Network nondegeneracy & checkable property; not formalized & C\\
 \end{tabular}
 \end{table}
 
-Two entries in Table~\ref{tab:artifact} deserve emphasis because they are the ones a reader is most likely to look for. First, Criterion P4 is listed as Tier C and as a premise parameter rather than as a formalized definition: the verified form of Lemma 3 consumes \texttt{hGapPositive}, the hypothesis that the risk gap exceeds the bound, and does not attempt to formalize the quantified criterion itself. This is the same dislocation already stated in Section~\ref{ch:verify}, recorded here in the index so that it cannot be missed. Second, the collision construction and the classification and closure declarations are Tier A: their proofs quantify over arbitrary index types, so the toy carrier plays no role in them and the toy end and the continuous end are both instantiations of one proof.
+Two entries in Table~\ref{tab:artifact} deserve emphasis because they are the ones a reader is most likely to look for. First, Criterion P4 is listed as Tier C and as a premise parameter rather than as a formalized definition: the verified form of Lemma 3 consumes \texttt{hGapPositive}, the hypothesis that the risk gap exceeds the bound, and does not attempt to formalize either the criterion or its component form of Section~\ref{sec:p4}, in which the barrier, bounded-description, and realization conditions are combined into the risk-gap floor by the barrier-to-gap inequality. This is the same dislocation already stated in Section~\ref{ch:verify}, recorded here in the index so that it cannot be missed. Second, the collision construction and the classification and closure declarations are Tier A: their proofs quantify over arbitrary index types, so the toy carrier plays no role in them and the toy end and the continuous end are both instantiations of one proof.
 
 \subsection{Machine-Checked Statements of the Load-Bearing Declarations}
 
@@ -162,7 +164,7 @@ theorem finale (sys : System) (hP3 : P3 sys)
 \end{verbatim}
 \end{quote}
 
-The premise list of \texttt{finale} is the complete inventory of what the machine-checked composition assumes: Criterion P3 as a hypothesis on the system, the three measure-theoretic premises of Lemma 3, and the nondegeneracy \texttt{W != 0} of the carrier's parameter. Nothing else enters, and in particular no premise is smuggled in as a definitional unfolding. This is the concrete sense in which the artifact is inspectable: the reader can check each of these premise lists against the prose of Section~\ref{ch:falsify} and see exactly where the two agree and where, in the single case of P4, the verified form is explicitly weaker.
+The premise list of \texttt{finale} is the complete inventory of what the machine-checked composition assumes: Criterion P3 as a hypothesis on the system, the three measure-theoretic premises of Lemma 3, and the nondegeneracy \texttt{W != 0} of the carrier's parameter. Nothing else enters, and in particular no premise is smuggled in as a definitional unfolding; the gap premise is assumed here directly, and its derivation from the barrier, bounded-description, and realization conditions of Section~\ref{sec:p4} is prose. This is the concrete sense in which the artifact is inspectable: the reader can check each of these premise lists against the prose of Section~\ref{ch:falsify} and see exactly where the two agree and where, in the single case of P4, the verified form is explicitly weaker.
 
 \subsection{Maintaining the Correspondence}
 

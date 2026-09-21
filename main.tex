@@ -15,6 +15,9 @@
 %   proposition (shared)           Proposition 4, 6
 %   theorem     (shared)           Theorem 5, 7
 %   defn        (separate)         Definition 1..4
+%   example     (separate)         Example 1 (the gap-mechanism example of
+%                                  Section 5.3; its own counter, so it does not
+%                                  disturb the Lemma/Proposition/Theorem chain)
 % The lemma/proposition/theorem counter is shared, so the sequence reads
 % Lemma 1, Lemma 2, Lemma 3, Proposition 4, Theorem 5, Proposition 6,
 % Theorem 7 -- exactly as referenced throughout the text.
@@ -56,6 +59,11 @@
 \newcommand{\argument}{\par\medskip\noindent\textbf{Argument.}\ }
 \newcommand{\qedbox}{\hfill$\square$}
 \newcommand{\ev}{\mathrm{ev}}
+% Lean declaration names cited in running text are set in \texttt, which does
+% not hyphenate, and some of them are a third of the measure long. \ttu is the
+% underscore of such a name with a line break allowed after it, so that a
+% paragraph citing several names stays free of overfull lines.
+\newcommand{\ttu}{\textunderscore\allowbreak}
 
 % --- headline -------------------------------------------------------
 % {volume}{year}{pages}{submitted}{published}{paper id}{authors}

@@ -15,6 +15,11 @@ implicitly; "positive risk gap" is additionally substantiated by the
 two-sided toy: `modeB_positive_gap` bounds every frozen rule's total loss below
 by 1, while `modeA_loss_lower_bound` and `modeA_loss_attained` show the best
 evidence-only rule attains exactly 1/2, so the class gap is a positive 1/2.
+A second, evidence-computable variant (`evidenceTarget`, `modeB_evidence_gap`,
+`modeA_evidence_attained`, `evidence_gap_is_full`) replaces the demand by one
+computable from evidence alone, the case Assumption A0 asks for: a constructive
+evidence-instantiated rule then attains the optimal risk 0, so the whole frozen
+loss of 3/2 on the same sample is gap.
 
 Core components:
   Definition 1 (ill-posedness: the observation mask has holes, with the
@@ -409,6 +414,57 @@ theorem toy_positive_gap {W : ℝ} {RB : Depth → ℝ} (hB : IsModeB W RB) :
   have hB1 := modeB_positive_gap hB
   exact ⟨RA, hA, by linarith⟩
 
+/-! ### Evidence-computable variant of the toy (Assumption A0)
+
+The toy above reads its demand from the context coordinate, so no
+evidence-instantiated rule can be exact on it and its benchmark risk is the
+positive constant 1/2. The variant below uses a demand computable from evidence
+alone, which is the case Assumption A0 is about. On the same three-point sample
+a constructive evidence-instantiated rule then attains the optimal risk 0, so
+the whole frozen loss of 3/2 is gap: the benchmark risk vanishes, and this is the
+A0 instance of the barrier-to-gap floor of the paper's Section 5.4. -/
+
+/-- Evidence-computable demand of the variant: the demanded value is an analytic
+function of the evidence pixel, hence giveable at inference time by evidence and
+analytic means (Assumption A0). -/
+def evidenceTarget (d : Depth) : ℝ := (d 0)^2
+
+/-- Variant, frozen side: every Mode B rule has total loss at least 3/2 on the
+three-point sample. Writing u = W, the total is (u − 1)² + u² + 1, whose minimum
+over u is 3/2 at u = 1/2. -/
+theorem modeB_evidence_gap {W : ℝ} {R : Depth → ℝ} (hB : IsModeB W R) :
+    3 / 2 ≤ (R ![1, 0, 0, 0] - evidenceTarget ![1, 0, 0, 0]) ^ 2
+      + (R ![0, 1, 0, 0] - evidenceTarget ![0, 1, 0, 0]) ^ 2
+      + (R ![1, 1, 0, 0] - evidenceTarget ![1, 1, 0, 0]) ^ 2 := by
+  rw [hB ![1, 0, 0, 0], hB ![0, 1, 0, 0], hB ![1, 1, 0, 0]]
+  simp [evidenceTarget]
+  nlinarith [sq_nonneg (W - 1 / 2)]
+
+/-- Variant, Mode A side: the constructive rule R(d) = (d 0)² is Mode A and
+attains total loss 0 on the same sample, hence the optimal risk. The demand is a
+function of the evidence alone, so this rule recovers it exactly. -/
+theorem modeA_evidence_attained :
+    ∃ R : Depth → ℝ, IsModeA R ∧
+      (R ![1, 0, 0, 0] - evidenceTarget ![1, 0, 0, 0]) ^ 2
+        + (R ![0, 1, 0, 0] - evidenceTarget ![0, 1, 0, 0]) ^ 2
+        + (R ![1, 1, 0, 0] - evidenceTarget ![1, 1, 0, 0]) ^ 2 = 0 := by
+  refine ⟨fun d => (d 0)^2, ⟨fun x => x^2, fun _ => rfl⟩, ?_⟩
+  simp [evidenceTarget]
+
+/-- Variant, two-sided: on the same sample an evidence-instantiated (Mode A) rule
+attains the optimal risk 0 while every frozen (Mode B) rule's loss is at least
+3/2, so the benchmark risk vanishes and the whole frozen loss is gap. -/
+theorem evidence_gap_is_full {W : ℝ} {RB : Depth → ℝ} (hB : IsModeB W RB) :
+    ∃ RA : Depth → ℝ, IsModeA RA ∧
+      ((RA ![1, 0, 0, 0] - evidenceTarget ![1, 0, 0, 0]) ^ 2
+        + (RA ![0, 1, 0, 0] - evidenceTarget ![0, 1, 0, 0]) ^ 2
+        + (RA ![1, 1, 0, 0] - evidenceTarget ![1, 1, 0, 0]) ^ 2 = 0)
+      ∧ 3 / 2 ≤ (RB ![1, 0, 0, 0] - evidenceTarget ![1, 0, 0, 0]) ^ 2
+        + (RB ![0, 1, 0, 0] - evidenceTarget ![0, 1, 0, 0]) ^ 2
+        + (RB ![1, 1, 0, 0] - evidenceTarget ![1, 1, 0, 0]) ^ 2 := by
+  obtain ⟨RA, hA, hRA⟩ := modeA_evidence_attained
+  exact ⟨RA, hA, hRA, modeB_evidence_gap hB⟩
+
 /-! ## 8. Criteria and Theorem 5 -/
 
 structure System where
@@ -680,6 +736,10 @@ theorem lemma3_general {Ω : Type*} [MeasurableSpace Ω]
 #check modeA_loss_lower_bound
 #check modeA_loss_attained
 #check toy_positive_gap
+#check evidenceTarget
+#check modeB_evidence_gap
+#check modeA_evidence_attained
+#check evidence_gap_is_full
 #check theorem5
 #check finale
 #check spn_isModeB

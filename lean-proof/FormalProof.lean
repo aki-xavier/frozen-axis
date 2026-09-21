@@ -24,16 +24,14 @@ loss of 3/2 on the same sample is gap.
 Core components:
   Definition 1 (ill-posedness: the observation mask has holes, with the
   bidirectional criteria `illPosed_of_hole` and `not_illPosed_of_full`),
-  Definition 2 (Modes A/B), Definition 3 (Paradigms E/I),
-  Definition 4 (inference-time frozen parameters of a pure SPN).
+  Definition 2 (Modes A/B), Definition 3 (Paradigms E/I).
   Lemma 1 (a single λ at an arbitrary fitting point forces data residuals and
   consistency terms to be proportional across locations).
   Lemma 2 (Paradigm E has no nonzero stationary point under heterogeneity;
   the Paradigm I objective always has a unique minimizer).
   Lemma 3 (measure premises made explicit, plus toy instantiation).
-  Proposition 4 (the network rule is Mode B and not Mode A),
-  Proposition 6 (same for a pure SPN).
-  Theorems 5 and 7 (collision sample pair from criterion P3 ⇒ not Mode A).
+  Proposition 4 (the network rule is Mode B and not Mode A).
+  Theorem 5 (collision sample pair from criterion P3 ⇒ not Mode A).
   `finale`: the conjunctive composition of Lemma 3 and Theorem 5, joining the
   generalization side and the carrier side.
   Section 8.8: the generalization layer from the toy carrier to the continuous
@@ -556,65 +554,12 @@ theorem finale
   ⟨theorem5 sys hP3 W hW,
    lemma3_final2 m ε hε (neuralRule W) hTail hGapPositive hNonnegMin⟩
 
-/-! ## 8.7 Pure SPN: Definition 4, Proposition 6, and Theorem 7 -/
-
-/-- Definition 4: inference-time frozen parameters of a pure SPN. The
-algebraic form of the dependency graph, sum weights, and leaf parameters is
-simplified to a single nonzero scalar, representing non-degenerate structure
-and weights. -/
-structure SpnParams where
-  w : ℝ
-
-/-- The rule of a pure SPN: computed from inference-time frozen parameters and
-current evidence; the shape of exact sum-product posteriors matches the
-weight-evidence coupling of the neural network. -/
-def spnRule (p : SpnParams) (d : Depth) : ℝ := p.w * (d 0 - d 1)
-
-/-- Proposition 6: a pure SPN is Mode B. -/
-theorem spn_isModeB (p : SpnParams) : IsModeB p.w (spnRule p) := by
-  intro d
-  rfl
-
-/-- Corollary of Proposition 6: by the same proof as `neural_not_modeA`, a
-pure SPN cannot be Mode A on a sample pair with equal evidence values and
-different structure values. -/
-theorem spn_not_modeA
-  (p : SpnParams) (hW : p.w ≠ 0)
-  (d e : Depth) (hd0 : d 0 = e 0) (hd1 : d 1 ≠ e 1) :
-  ¬ IsModeA (spnRule p) := by
-  intro hA
-  rcases hA with ⟨Φ, hΦ⟩
-  have hRd : spnRule p d = Φ (d 0) := hΦ d
-  have hRe : spnRule p e = Φ (e 0) := hΦ e
-  unfold spnRule at hRd hRe
-  have hval : p.w * (d 0 - d 1) = p.w * (e 0 - e 1) := by
-    calc
-      p.w * (d 0 - d 1) = Φ (d 0) := hRd
-      _ = Φ (e 0) := by rw [hd0]
-      _ = p.w * (e 0 - e 1) := by rw [← hRe]
-  have hcore : (d 0 - d 1) = (e 0 - e 1) := by
-    exact (mul_left_cancel₀ hW) hval
-  have hfeq : d 1 = e 1 := by
-    nlinarith [hcore, hd0]
-  exact hd1 hfeq
-
-/-- Theorem 7 (pure SPN infeasible): isomorphic to Theorem 5.
-Under the collision sample pair from criterion P3, the pure SPN rule is not
-Mode A. -/
-theorem theorem7_spn
-  (sys : System)
-  (hP3 : P3 sys)
-  (p : SpnParams) (hw : p.w ≠ 0) :
-  ¬ IsModeA (spnRule p) := by
-  obtain ⟨d, e, hd0, hd1, -, -⟩ := collision_of_masked hP3.1 hP3.2
-  exact spn_not_modeA p hw d e hd0 hd1
-
 /-! ## 8.8 The generalization layer from the toy carrier to the continuous
 setting
 
 Layer A (domain-free algebraic cores) and Layer B (structured
 generalizations). All toy-carrier theorems are retained; this section supplies
-their general forms; the consumption pattern of Theorems 5/7 is unchanged.
+their general forms; the consumption pattern of Theorem 5 is unchanged.
 The bump-based collision construction on the continuous side cites Mathlib's
 `ContDiffBump` (Mathlib/Analysis/Calculus/BumpFunction/Basic.lean); this
 artifact covers its pointwise form (`collision_general`). -/
@@ -1234,9 +1179,6 @@ theorem FirstOrder_of_quadratic_local_min (x d : Depth) (lambda : ℝ) (i : Pixe
 #check evidence_gap_is_full
 #check theorem5
 #check finale
-#check spn_isModeB
-#check spn_not_modeA
-#check theorem7_spn
 #check foc_proportionality
 #check illPosed_iff_nontrivial_ker
 #check collision_general
@@ -1245,7 +1187,6 @@ theorem FirstOrder_of_quadratic_local_min (x d : Depth) (lambda : ℝ) (i : Pixe
 #check paradigmI_L2_ae
 #check tail_realization
 #check lemma3_general
-#check SpnParams
 #check IsParadigmI
 #check IndexedContextRule
 #check constantFamily

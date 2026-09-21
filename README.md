@@ -6,23 +6,25 @@
 
 The project name frozen-axis comes from the paper's core concept: one side of the decision axis holds values frozen into the training corpus and fixed at inference time (Mode B), while the other side holds values given on the spot by current evidence or by analytic invariants (Mode A); on the open set only the latter can satisfy generalization, and the falsification closes there.
 
-📄 **Paper: [paper.pdf](paper.pdf) (60 pages, released); LaTeX source in the official JMLR jmlr2e style, rebuild with `./build.sh`**
+📄 **Paper: [paper.pdf](paper.pdf) (49 pages, released); online appendix: [online-appendix.pdf](online-appendix.pdf) (4 pages). LaTeX source in the official JMLR jmlr2e style, rebuild with `./build.sh`**
 
-This repository contains a theoretical paper (English, LaTeX source) together with its Lean 4 machine-verification artifact. The paper proves that once the values of context rules are frozen into a corpus and fixed at inference time, no fixed-memory component (neural network, Bayesian network, and so on) is complete on its own for open inversion tasks. Open inversion tasks are delimited by four criteria: observations are ill-posed, the required context strength is heterogeneous and content-addressed by the evidence, inference inputs are not constrained by the training distribution, and the demand rule cannot be given within any pre-given tolerance on the open set by any values frozen before inference begins. The last criterion is stated in two components, a barrier condition saying that the demand separates nearby instances by a fixed amount at every scale and a realization condition saying that the separated instances carry probability bounded away from zero, and the two are shown to imply a positive floor on the risk gap of every rule whose values pre-exist inference, so the criterion is a sufficient condition implying a bound rather than a restatement of the negation. The argument unfolds along a decision axis: the content of a context rule is a set of numbers; values given on the spot by current evidence or by analytic invariants belong to Mode A, while values given offline from training-corpus statistics or manual setting and frozen at inference time belong to Mode B; generalization on the open set requires Mode A, fixed-memory components belong to Mode B, and the two are mutually exclusive, so the falsification closes. The algebraic skeleton of the argument chain is machine-verified with Lean 4 + Mathlib, with zero `sorry` and zero warnings.
+This repository contains a theoretical paper (English, LaTeX source) together with its Lean 4 machine-verification artifact. The paper proves that once the values of context rules are frozen into a corpus and fixed at inference time, no fixed-memory component (a neural network, for instance) is complete on its own for open inversion tasks. Open inversion tasks are delimited by four criteria: observations are ill-posed, the required context strength is heterogeneous and content-addressed by the evidence, inference inputs are not constrained by the training distribution, and the demand rule cannot be given within any pre-given tolerance on the open set by any values frozen before inference begins. The last criterion is stated in two components, a barrier condition saying that the demand separates nearby instances by a fixed amount at every scale and a realization condition saying that the separated instances carry probability bounded away from zero, and the two are shown to imply a positive floor on the risk gap of every rule whose values pre-exist inference, so the criterion is a sufficient condition implying a bound rather than a restatement of the negation. The argument unfolds along a decision axis: the content of a context rule is a set of numbers; values given on the spot by current evidence or by analytic invariants belong to Mode A, while values given offline from training-corpus statistics or manual setting and frozen at inference time belong to Mode B; generalization on the open set requires Mode A, fixed-memory components belong to Mode B, and the two are mutually exclusive, so the falsification closes. The algebraic skeleton of the argument chain is machine-verified with Lean 4 + Mathlib, with zero `sorry` and zero warnings.
 
 ## Repository layout
 
 | Path | Contents |
 |---|---|
 | `main.tex` | Paper LaTeX main file (official JMLR jmlr2e style; `\input`s each chapter) |
-| `sections/*.tex` | Per-chapter LaTeX sources (01 Introduction … 08 Conclusion, 09 Artifact appendix) |
+| `sections/*.tex` | Per-chapter LaTeX sources (01 Introduction … 08 Conclusion) |
+| `online-appendix/main.tex`, `online-appendix/body.tex` | Online appendix (artifact index, reproduction, axiom budget, premise lists of the load-bearing declarations). Kept out of the paper deliberately: appendix pages count toward the JMLR page limit, so the paper points to it from Section 6 instead |
 | `paper.tex` | Single-file submission version (flattened from `main.tex` by `flatten.py`; do not edit by hand) |
-| `paper.pdf` | Released PDF (60 pages) built from `paper.tex`, committed at the repository root |
+| `paper.pdf` | Released PDF (49 pages) built from `paper.tex`, committed at the repository root |
+| `online-appendix.pdf` | Released online appendix (4 pages), committed at the repository root |
 | `jmlr2e.sty` | Official JMLR style file (do not modify; third-party, not covered by the licenses below) |
 | `reference.bib` | References (78 entries, all verified against Crossref/DBLP/arXiv or publisher sites; 30+ carry a DOI) |
-| `build.sh` | Build script: pdflatex + bibtex, output to `build-main/` or `build-paper/` |
+| `build.sh` | Build script: pdflatex + bibtex, output to `build-main/`, `build-paper/` or `build-appendix/` |
 | `flatten.py` | Flattening script: expands `main.tex` + `sections/*.tex` into the single-file `paper.tex` |
-| `lean-proof/FormalProof.lean` | Lean 4 formal proof (1,278 lines, comments in English) |
+| `lean-proof/FormalProof.lean` | Lean 4 formal proof (1,219 lines, comments in English) |
 | `lean-proof.zip` | Packaged Lean artifact (generated by the script) |
 | `package-lean-proof.sh` | Packaging script: includes source and version-lock files, excludes the build cache |
 | `experiments/probe.py` | Minimal empirical probe reported in Section 7.2 (NumPy only; prints a table, writes `experiments/probe_results.json`) |
@@ -39,15 +41,16 @@ Paper (a local TeX distribution is required; JMLR production also compiles with 
 ```bash
 ./build.sh          # build main.tex (modular source, output to build-main/)
 ./build.sh paper    # build paper.tex (single-file submission version, output to build-paper/)
+./build.sh appendix # build online-appendix/main.tex (output to build-appendix/)
 ```
 
-Publish the released PDF. This refreshes `paper.tex` from `main.tex` + `sections/*.tex` first, builds it, and copies the result over the committed `paper.pdf` at the repository root, so the published PDF cannot drift from the sources; it refuses to overwrite `paper.pdf` if the build reports LaTeX errors:
+Publish the released PDFs. This refreshes `paper.tex` from `main.tex` + `sections/*.tex` first, builds it, copies the result over the committed `paper.pdf` at the repository root, then builds the online appendix and copies it over `online-appendix.pdf`, so neither published PDF can drift from the sources; it refuses to overwrite `paper.pdf` if the build reports LaTeX errors, and refuses to publish the appendix unless that build is clean too:
 
 ```bash
 ./build.sh release
 ```
 
-Builds are byte-reproducible. pdfTeX would otherwise stamp the wall-clock time into the PDF and derive the trailer `/ID` from it, so two builds of identical sources would differ byte-wise; `build.sh` pins `SOURCE_DATE_EPOCH` for the embedded dates and `main.tex` seeds the trailer id through `\pdftrailerid`. Rebuilding unchanged sources therefore reproduces `paper.pdf` exactly, and `git status` is a reliable signal that the committed PDF matches the sources. Export `SOURCE_DATE_EPOCH` to override the pinned date.
+Builds are byte-reproducible. pdfTeX would otherwise stamp the wall-clock time into the PDF and derive the trailer `/ID` from it, so two builds of identical sources would differ byte-wise; `build.sh` pins `SOURCE_DATE_EPOCH` for the embedded dates and `main.tex` seeds the trailer id through `\pdftrailerid`. Rebuilding unchanged sources therefore reproduces `paper.pdf` and `online-appendix.pdf` exactly, and `git status` is a reliable signal that the committed PDFs match the sources. Export `SOURCE_DATE_EPOCH` to override the pinned date.
 
 Refresh the single-file submission version after editing `sections/*.tex`:
 
@@ -93,8 +96,8 @@ Chapter 6 of the paper reports the three levels of verification strength, and Se
 | Lemma 2 (frozen extrinsic coefficients cannot realize a heterogeneous profile; the endogenous minimizer is unique) | `lemma2_full`, `paradigmI_unique_minimizer`, `paradigmI_inner_unique`, `paradigmI_L2_ae` |
 | Lemma 3 (the open set demands Mode A) | `lemma3_final2`, `lemma3_general`, `tail_realization` |
 | Lemma 3, gap mechanism on the worked example, both demands of Example 1 | `toy_positive_gap`, `modeB_positive_gap`, `modeA_loss_attained`; `evidence_gap_is_full`, `modeB_evidence_gap`, `modeA_evidence_attained` |
-| Propositions 4 / 6 (NN / BN belong to Mode B) | `neural_isModeB`, `spn_isModeB`, `neural_not_modeA`, `spn_not_modeA`, `nondeg_not_dependsOn` |
-| Theorems 5 / 7 (closure via the collision pair) | `theorem5`, `theorem7_spn`, `collision_of_masked`, `collision_general` |
+| Proposition 4 (the network rule belongs to Mode B) | `neural_isModeB`, `neural_not_modeA`, `nondeg_not_dependsOn` |
+| Theorem 5 (closure via the collision pair) | `theorem5`, `collision_of_masked`, `collision_general` |
 | Final theorem (generalization side ⨉ carrier side) | `finale` |
 
 Appendix A of the paper carries this index together with the guarantee tier of each item and the machine-checked statements with their premises written out in full, so the verification can be inspected without access to the repository.
@@ -106,6 +109,6 @@ This repository is dual-licensed by material:
 | Material | License |
 |---|---|
 | Code and artifact — `build.sh`, `flatten.py`, `package-lean-proof.sh`, and everything under `lean-proof/` and `experiments/` | MIT, see [`LICENSE`](LICENSE) |
-| Paper — `main.tex`, `paper.tex`, `sections/*.tex`, `reference.bib`, and `paper.pdf` | CC BY 4.0, see [`LICENSE-PAPER`](LICENSE-PAPER) |
+| Paper — `main.tex`, `paper.tex`, `sections/*.tex`, `online-appendix/*.tex`, `reference.bib`, `paper.pdf`, and `online-appendix.pdf` | CC BY 4.0, see [`LICENSE-PAPER`](LICENSE-PAPER) |
 
 `jmlr2e.sty` is the official JMLR style file, redistributed here unmodified so that the paper compiles as submitted. It is third-party material and is not covered by either license above; see the upstream project at <https://github.com/JmlrOrg/jmlr-style-file>.

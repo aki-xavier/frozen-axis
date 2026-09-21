@@ -1,0 +1,47 @@
+\documentclass[11pt]{article}
+% ---------------------------------------------------------------------------
+% Online appendix to
+%   "Formal Falsification of the Completeness of a Single Fixed-Memory
+%    Component for Open Inversion Tasks"
+%
+% This document is NOT part of the submitted paper: it is the separately
+% hosted online appendix that the paper points to from its verification
+% section. It is built by  ./build.sh appendix  (and by ./build.sh release).
+%
+% Cross-references into the paper cannot use \ref here, because the paper's
+% labels are not in this document's scope. The paper's numbers are therefore
+% hard-coded in the block below; update that block if the paper is ever
+% renumbered. Anchors are given for the reader.
+% ---------------------------------------------------------------------------
+\usepackage{amsmath}
+\usepackage{array}
+\usepackage[margin=1in]{geometry}
+\usepackage[hidelinks]{hyperref}
+
+\newcommand{\pSecFalsify}{5}     % Section 5, Formal Falsification
+\newcommand{\pSecVerify}{6}      % Section 6, Formal Verification
+\newcommand{\pSecPfour}{5.4}     % Section 5.4, The Two Components of Criterion P4
+\newcommand{\pSecLayers}{6.4}    % Section 6.4, Correspondence from the Toy Carrier
+\newcommand{\pTabLayers}{3}      % Table 3, guarantee tiers
+\newcommand{\pExGap}{1}          % Example 1, the gap mechanism
+\newcommand{\pEqFoc}{7}          % Equation (7), the general first-order condition
+
+% Macros the appendix shares with the paper's preamble (main.tex), copied here
+% because this document must build standalone.
+\newcommand{\ttu}{\textunderscore\allowbreak}
+
+\title{Online Appendix:\\ Artifact Index of the Lean~4 Verification}
+\author{Shuo Zhang\\ Shenzhen Technology University}
+\date{}
+
+\begin{document}
+\maketitle
+
+\noindent This online appendix accompanies the paper and is not part of it. It records where the Lean~4 artifact lives,
+how it is reproduced, what its axiom budget is, which paper item each machine-checked declaration discharges, and under
+exactly which premises the load-bearing declarations hold. The paper's verification section (Section~\pSecVerify) states
+the claims; this appendix makes them inspectable without access to the artifact.
+
+\input{online-appendix/body}
+
+\end{document}

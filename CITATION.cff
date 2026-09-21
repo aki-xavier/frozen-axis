@@ -10,10 +10,10 @@ abstract: >-
   decision axis: the content of a context rule is a set of numbers; values instantiated by current
   evidence or by analytic invariants are Mode A, and values frozen at inference time from training-corpus
   statistics or manual setting are Mode B. Generalization on the open set requires Mode A, while neural
-  networks and Bayesian networks are Mode B carriers, so the falsification closes. The algebraic skeleton
+  networks are Mode B carriers, so the falsification closes. The algebraic skeleton
   of the argument chain is machine verified with Lean 4 and Mathlib, with zero sorry and zero warnings,
   and the axiom budget of the load-bearing declarations is Lean's own standard set. This repository holds
-  the JMLR LaTeX sources, the compiled paper, and the Lean 4 artifact.
+  the JMLR LaTeX sources, the compiled paper, the online appendix carrying the artifact index, and the Lean 4 artifact.
 authors:
   - family-names: Zhang
     given-names: Shuo

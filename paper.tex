@@ -26,8 +26,8 @@
 %                                  Section 5.3; its own counter, so it does not
 %                                  disturb the Lemma/Proposition/Theorem chain)
 % The lemma/proposition/theorem counter is shared, so the sequence reads
-% Lemma 1, Lemma 2, Lemma 3, Proposition 4, Theorem 5, Proposition 6,
-% Theorem 7 -- exactly as referenced throughout the text.
+% Lemma 1, Lemma 2, Lemma 3, Proposition 4, Theorem 5 -- exactly as
+% referenced throughout the text.
 %
 % The \acks block required by JMLR (funding and competing-interest
 % disclosure) is present below, ahead of the bibliography.
@@ -48,8 +48,7 @@
 % definition, ... all sharing one counter. The paper numbers definitions
 % separately (Definition 1..4), so `defn` gets its own counter; the
 % lemma/proposition/theorem counter stays shared, which reproduces the
-% numbering Lemma 1, Lemma 2, Lemma 3, Proposition 4, Theorem 5,
-% Proposition 6, Theorem 7 used in the text.
+% numbering Lemma 1, Lemma 2, Lemma 3, Proposition 4, Theorem 5 used in the text.
 \newtheorem{defn}{Definition}
 
 % Two unnumbered, named environments (Claim R; Proposition [Mask
@@ -116,7 +115,7 @@
 \maketitle
 
 \begin{abstract}%
-Many inference tasks share a common difficulty: local observations do not suffice to determine the structure being sought, context must be brought in, and how strongly context should be used varies with position and time. Real-time 3D reconstruction, image restoration, and online state estimation all belong to this class, which this paper calls open inversion tasks. The class is delimited by four criteria: observations are ill-posed, the required context strength is heterogeneous and content-addressed by the evidence, inference inputs are not constrained by the training distribution, and the demand rule cannot be given within any pre-given tolerance on the open set by any values frozen before inference begins. This paper proves that no single fixed-memory component can complete such tasks on its own. A fixed-memory component is one whose context rules are frozen into parameters that do not change at inference time and whose values come from a training corpus or from manual setting; neural networks (NN) and Bayesian networks (BN) are its two canonical instances. The argument unfolds along a decision axis: the content of a context rule is a set of numbers, and numbers have only two possible sources. Values given on the spot by current evidence or by analytic invariants are called Mode A; values given offline from training-corpus statistics or manual setting and frozen at inference time are called Mode B. The two are mutually exclusive and exhaustive, because a number either comes into existence at inference time or already exists before inference begins, and there is no third state. Generalization on the open set requires rules of Mode A, while the rules of a fixed-memory component belong to Mode B, and the falsification closes at this point. The exclusion does not rest on the quadratic smoothing form of the classical variational problem: it holds for any separable data term with any even differentiable pairwise potential, and the minimal obstruction to a frozen coefficient family is one single position whose required strength ratio changes between two admissible configurations, whatever number of entries such a family has. Bayesian networks have two further walls of different status beyond the negation: the absence of a perceptual proposal layer, which is the negation read at the input interface rather than an independent theorem, and treewidth blow-up when the source of structure is missing, an external hardness result orthogonal to the negation. What is falsified is solo use rather than the components themselves: high accuracy on closed benchmarks is a weak claim and is fully compatible with our conclusion. All derivations are formal and rely on no experimental data. The algebraic skeleton of the argument chain has been machine-verified with Lean 4 and Mathlib, with zero \texttt{sorry} and zero warnings; the carrier-independent algebraic core and the structured general forms are machine-proved at general types, the theorems on the toy carrier are special cases of them, and the remaining modeling components on the continuous side are listed explicitly in Section~\ref{ch:verify}.
+Many inference tasks share a common difficulty: local observations do not suffice to determine the structure being sought, context must be brought in, and how strongly context should be used varies with position and time. Real-time 3D reconstruction, image restoration, and online state estimation all belong to this class, which this paper calls open inversion tasks. The class is delimited by four criteria: observations are ill-posed, the required context strength is heterogeneous and content-addressed by the evidence, inference inputs are not constrained by the training distribution, and the demand rule cannot be given within any pre-given tolerance on the open set by any values frozen before inference begins. This paper proves that no single fixed-memory component can complete such tasks on its own. A fixed-memory component is one whose context rules are frozen into parameters that do not change at inference time and whose values come from a training corpus or from manual setting; neural networks (NN) are its canonical instance, carrying the context rule in weights obtained from training or calibration. The argument unfolds along a decision axis: the content of a context rule is a set of numbers, and numbers have only two possible sources. Values given on the spot by current evidence or by analytic invariants are called Mode A; values given offline from training-corpus statistics or manual setting and frozen at inference time are called Mode B. The two are mutually exclusive and exhaustive, because a number either comes into existence at inference time or already exists before inference begins, and there is no third state. Generalization on the open set requires rules of Mode A, while the rules of a fixed-memory component belong to Mode B, and the falsification closes at this point. The exclusion does not rest on the quadratic smoothing form of the classical variational problem: it holds for any separable data term with any even differentiable pairwise potential, and the minimal obstruction to a frozen coefficient family is one single position whose required strength ratio changes between two admissible configurations, whatever number of entries such a family has. What is falsified is solo use rather than the components themselves: high accuracy on closed benchmarks is a weak claim and is fully compatible with our conclusion. All derivations are formal and rely on no experimental data. The algebraic skeleton of the argument chain has been machine-verified with Lean 4 and Mathlib, with zero \texttt{sorry} and zero warnings; the carrier-independent algebraic core and the structured general forms are machine-proved at general types, the theorems on the toy carrier are special cases of them, and the remaining modeling components on the continuous side are listed explicitly in Section~\ref{ch:verify}.
 \end{abstract}
 
 \begin{keywords}
@@ -153,15 +152,15 @@ Since context rules are the core of this class of tasks, a natural question aris
 There exists a fixed-memory component that, using only that component and without any external proposal or arbitration stage, is complete for open inversion tasks; that is, it completes the task independently in the sense of the open set, of no distribution agreement, and of cross-scenario reuse.
 \end{claim}
 
-A fixed-memory component is one whose context rules are frozen into parameters that do not change at inference time and whose parameter values come from training-corpus statistics or manual setting. Its counterpart in the existing literature is the carrier of parametric amortized inference: inference is performed by a forward process with fixed parameters whose values are determined by the corpus. It should be noted that the Mode A side of this paper does not exclude parameters; analytic invariants are parameters too, and the difference lies in the source being calibration and geometry rather than corpus statistics. Completeness in this paper means independent completion in the sense of task capability and has nothing to do with the completeness of formal systems in mathematical logic. Neural networks and Bayesian networks are two canonical instances of fixed-memory components: the former carry context rules in weights obtained from training or calibration, the latter in an offline-given dependency graph and conditional-probability parameters. The two canonical instances of Claim $\mathcal{R}$ are therefore the neural-network-only claim $\mathcal{P}$ and the Bayesian-network-only claim $\mathcal{Q}$. Falsifying $\mathcal{R}$ falsifies both at once, and Theorems 5 and 7 of this paper are exactly the instantiation of the same negation on the two carriers.
+A fixed-memory component is one whose context rules are frozen into parameters that do not change at inference time and whose parameter values come from training-corpus statistics or manual setting. Its counterpart in the existing literature is the carrier of parametric amortized inference: inference is performed by a forward process with fixed parameters whose values are determined by the corpus. It should be noted that the Mode A side of this paper does not exclude parameters; analytic invariants are parameters too, and the difference lies in the source being calibration and geometry rather than corpus statistics. Completeness in this paper means independent completion in the sense of task capability and has nothing to do with the completeness of formal systems in mathematical logic. Neural networks are the canonical instance of fixed-memory components: they carry the context rule in weights obtained from training or calibration. The instantiation of Claim $\mathcal{R}$ on this carrier is the neural-network-only claim $\mathcal{P}$, and Theorem 5 of this paper is exactly this instantiation.
 
-The qualifier ``only'' is crucial. What is falsified is solo use, not the usefulness of these components within combinations. Neural networks as feature extractors and Bayesian networks as posterior computers can both play roles in larger systems, and this paper denies none of that. One misreading must also be ruled out: achieving high accuracy on a fixed benchmark close to the training distribution is within reach of both kinds of networks, but that is a \emph{weak claim} and is not the object of this paper. The question asked here is whether the component alone, as a general-purpose inference mechanism, can complete the task independently, that is, whether it possesses completeness in the task sense. The truth of the weak claim and the falsity of the strong claim are compatible, just as an instrument of extreme accuracy under standard operating conditions may still fail to work independently under arbitrary operating conditions.
+The qualifier ``only'' is crucial. What is falsified is solo use, not the usefulness of these components within combinations. Neural networks as feature extractors can play roles in larger systems, and this paper denies none of that. One misreading must also be ruled out: achieving high accuracy on a fixed benchmark close to the training distribution is within reach of both kinds of networks, but that is a \emph{weak claim} and is not the object of this paper. The question asked here is whether the component alone, as a general-purpose inference mechanism, can complete the task independently, that is, whether it possesses completeness in the task sense. The truth of the weak claim and the falsity of the strong claim are compatible, just as an instrument of extreme accuracy under standard operating conditions may still fail to work independently under arbitrary operating conditions.
 
 \subsection{Method of Falsification and Structure of the Paper}
 
 The methodology of this paper is a deductive impossibility argument under explicit criteria. Claim $\mathcal{R}$ is an existential claim, and its negation is a universal statement about an entire task class, so the Popperian shortcut of refuting a universal claim by a single counterexample \citep{popper1959} is not available here: negating an existential claim does not require running through all tasks, but it does require a deductive chain from the defining criteria of the task class to the capability boundary of the component, and the criteria must pin down the task class first. All derivations in this paper are formal and rely on no experimental data: experiments can exhibit symptoms, but what this paper proves is the crux. One point about the shape of the argument deserves mention here, because it decides how far the negative result reaches. The algebraic core does not depend on the quadratic smoothing form of the classical variational problem: Lemma 1 is proved for a separable data term with an arbitrary even differentiable pairwise potential, and no convexity is used, so the exclusion covers the stationary points of nonconvex objectives as well. What it excludes is the frozen coefficient family in general, with the global scalar as its shallowest case, and the minimal obstruction is stated as an equivalence rather than as a sufficient condition: one single position whose required strength ratio changes between two admissible configurations excludes every frozen family, whatever number of entries it has. Whether the criteria capture real tasks is an empirical question, and this paper discusses the conditions under which each criterion holds; what lies outside the criteria is not a counterexample but a boundary of the class.
 
-The rest of the paper is organized as follows. Section~\ref{ch:related} clarifies the relation between this paper and the existing literature. Section~\ref{ch:formalize} formalizes open inversion tasks and gives the mask criterion of ill-posedness together with four defining criteria. Section~\ref{ch:axis} establishes the decision axis, defining context rules and the dichotomy of Mode A and Mode B. Section~\ref{ch:falsify} gives the complete mathematical argument of the negation, closing in five steps, covering both the neural-network and the Bayesian-network instances, and discussing reach and boundaries. Section~\ref{ch:verify} reports the machine verification of the argument chain in Lean 4 and Mathlib. Section~\ref{ch:discussion} discusses the relation of our conclusion to empirical evidence, uncertainty quantification, and clues to endogenous mechanisms, and draws engineering implications. Section~\ref{ch:conclusion} concludes.
+The rest of the paper is organized as follows. Section~\ref{ch:related} clarifies the relation between this paper and the existing literature. Section~\ref{ch:formalize} formalizes open inversion tasks and gives the mask criterion of ill-posedness together with four defining criteria. Section~\ref{ch:axis} establishes the decision axis, defining context rules and the dichotomy of Mode A and Mode B. Section~\ref{ch:falsify} gives the complete mathematical argument of the negation, closing in five steps, and discussing reach and boundaries. Section~\ref{ch:verify} reports the machine verification of the argument chain in Lean 4 and Mathlib. Section~\ref{ch:discussion} discusses the relation of our conclusion to empirical evidence, uncertainty quantification, and clues to endogenous mechanisms, and draws engineering implications. Section~\ref{ch:conclusion} concludes.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% --- inlined from sections/02-related-work.tex
@@ -171,7 +170,7 @@ The rest of the paper is organized as follows. Section~\ref{ch:related} clarifie
 
 The decision axis of this paper has several close relatives in the literature, and the incremental contribution of this paper can only be stated clearly by sorting out the relations branch by branch.
 
-The first branch is amortized inference. Amortized schemes in variational inference replace per-instance optimization with a recognition network whose parameters are fixed at inference time and whose values are determined by the corpus; this is exactly the inference-theoretic form of Mode B, and recent developments in simulation-based inference and amortized Bayesian workflows continue this form \citep{cranmer2020,radev2023}. The amortization gap, namely the gap between the amortized posterior family and the per-instance optimal posterior, has been identified by theoretical and empirical studies as an attributable component of inference suboptimality in VAE-type models \citep{cremer2018}. This gap is isomorphic to the risk gap of Lemma 3 in this paper: the fixed function family of Mode B corresponds to the amortized family, and the instantiated rules of Mode A correspond to the per-instance optimum. The amortization-gap literature therefore provides evidence, independent of the toy instance, for this paper's premise that the risk gap is positive. The approximate-inference operators that keep this gap open in practice, namely loopy belief propagation, structured variational inference, and learned proposals, are classified in Section~\ref{ch:falsify}: they change the cost and the accuracy of inference, not the provenance of the rule.
+The first branch is amortized inference. Amortized schemes in variational inference replace per-instance optimization with a recognition network whose parameters are fixed at inference time and whose values are determined by the corpus; this is exactly the inference-theoretic form of Mode B, and recent developments in simulation-based inference and amortized inference workflows continue this form \citep{cranmer2020,radev2023}. The amortization gap, namely the gap between the amortized posterior family and the per-instance optimal posterior, has been identified by theoretical and empirical studies as an attributable component of inference suboptimality in VAE-type models \citep{cremer2018}. This gap is isomorphic to the risk gap of Lemma 3 in this paper: the fixed function family of Mode B corresponds to the amortized family, and the instantiated rules of Mode A correspond to the per-instance optimum. The amortization-gap literature therefore provides evidence, independent of the toy instance, for this paper's premise that the risk gap is positive. The approximate-inference operators that keep this gap open in practice, namely loopy belief propagation, structured variational inference, and learned proposals, are classified in Section~\ref{ch:falsify}: they change the cost and the accuracy of inference, not the provenance of the rule.
 
 The second branch is optimization-based per-instance inference and transductive learning. Per-instance optimization solves each input separately, with rule values instantiated by current evidence, and belongs to Mode A. Transductive learning exploits the test points themselves at inference time \citep{vapnik1995} and likewise lies on the Mode A side, but classical transduction still assumes that test points and training points share a distribution, whereas the open-set case is stronger. Transduction is the precedent of Mode A under near-distribution conditions; the novelty of this paper is to establish Mode A as a necessary condition for open inversion tasks rather than an optional strategy.
 
@@ -268,7 +267,7 @@ P4 is the only criterion that cannot be read off the syntax of the task directly
 \item Assumption A0 (evidence-computability of the demand): The demand rule is computable from current evidence; that is, there exists a mapping from evidence to the values of the demand rule such that on every input the demanded values can be given at inference time by evidence and analytic means.
 \end{itemize}
 
-A0 plays no role in the negation of Mode B: Theorems 5 and 7 consume only Criteria P1 to P4. What A0 supports is the positive reading in Section~\ref{ch:discussion}. The grounds for A0 on typical tasks are that the boundaries where context must be cut are themselves visible in the evidence; what is occluded is the structure, not the rule. Tasks whose demand depends on unobserved structure and leaves no trace in the evidence do not satisfy A0; they remain within the reach of the falsification but not of the positive claims.
+A0 plays no role in the negation of Mode B: Theorem 5 consumes only Criteria P1 to P4. What A0 supports is the positive reading in Section~\ref{ch:discussion}. The grounds for A0 on typical tasks are that the boundaries where context must be cut are themselves visible in the evidence; what is occluded is the structure, not the rule. Tasks whose demand depends on unobserved structure and leaves no trace in the evidence do not satisfy A0; they remain within the reach of the falsification but not of the positive claims.
 
 It should be emphasized that this paper places no restriction on the representation of the structure field. Depth can be represented as a scalar field, as disparity, as a signed distance field, or even as multivectors of geometric algebra \citep{hestenes1984,dorst2007}, and the mask form and the four criteria hold under all these representations alike. Ill-posedness and heterogeneity are properties at the level of observations and tasks and do not change with the choice of representation. All subsequent arguments cite only the mask form of the observation and the source of the values of the context rule; they are representation-independent.
 
@@ -377,9 +376,9 @@ Network implementing only an analytic invariant & A, no credit & implementer cla
 
 The falsification proceeds in five steps. Ill-posedness decides that inference cannot do without context; this was already accomplished in Section~\ref{ch:formalize}. The remaining four steps answer four questions in turn: whether context strength can be governed uniformly by one global scalar, whether it can be appended outside the generative objective, what the open set demands of the source of the rule's values, and on which side of the decision axis the two canonical components fall.
 
-A word on the nontriviality of this chain. Three steps of the chain are not contained in the definitions: Lemma 1's exclusion of the global-scalar form is an algebraic fact about optimality conditions, Lemma 2's exclusion of the frozen extrinsic paradigm is likewise, and the complexity wall of Bayesian networks is an external theorem. The transmission from distributional openness to Mode A is indeed close to the definition level, and making this transmission explicit is exactly the content of the decision axis; but the two ends of the transmission, namely the form exclusion and the classification closure, are independent mathematical content, and the force of the falsification is carried by them.
+A word on the nontriviality of this chain. Two steps of the chain are not contained in the definitions: Lemma 1's exclusion of the global-scalar form is an algebraic fact about optimality conditions, and Lemma 2's exclusion of the frozen extrinsic paradigm is likewise. The transmission from distributional openness to Mode A is indeed close to the definition level, and making this transmission explicit is exactly the content of the decision axis; but the two ends of the transmission, namely the form exclusion and the classification closure, are independent mathematical content, and the force of the falsification is carried by them.
 
-The logical anatomy of the negation should be stated first. Criteria P1 to P3 are structural clauses at the task level, characterized item by item by the mask form and the inverse-problem setting; Criterion P4 is the sole premise of an empirical kind, and Section~\ref{sec:p4} states it in two components, a barrier condition asserting that the demand separates at every scale without a pre-given modulus, and a realization condition asserting that the separated instances carry positive probability under the test distribution. Of the three premises of Lemma 3, upper-tail realization is a theorem rather than a premise, and nonnegativity of the minimum risk is trivial under squared loss; neither carries empirical content. The force of Theorems 5 and 7 therefore equals exactly the force of P4: no weaker and no stronger. This equality is the paper's declaration of its own conditionality rather than a retreat: a universal negation over a task class must have its load-bearing premise either in the task structure, here P1 to P3, or in an empirical assertion about the task, here P4; No-Free-Lunch carries its universal law on the premise of uniform averaging, and this paper correspondingly carries its negation on a checkable criterion. What the decomposition adds is that P4 is not a restatement of the conclusion: the barrier condition mentions no rule at all, and it fails on a task that satisfies P1 to P3; the derivation from the two components, together with the bounded-description condition that a fixed parameter object satisfies, to the risk-gap floor of \eqref{eq:floor} is a proved inequality rather than a definitional unfolding. The quantified object of P4 is the class of all functions computable by parameters fixed at inference time, that is, every rule whose values pre-exist inference; the only regularity asked of that class is the bounded-description condition of Section~\ref{sec:p4}, which says that a finite description responds to the instance at a finite rate, and which by the implementer clause of Definition~3 sets aside only objects whose values are analytic invariants and therefore belong to Mode A in the first place.
+The logical anatomy of the negation should be stated first. Criteria P1 to P3 are structural clauses at the task level, characterized item by item by the mask form and the inverse-problem setting; Criterion P4 is the sole premise of an empirical kind, and Section~\ref{sec:p4} states it in two components, a barrier condition asserting that the demand separates at every scale without a pre-given modulus, and a realization condition asserting that the separated instances carry positive probability under the test distribution. Of the three premises of Lemma 3, upper-tail realization is a theorem rather than a premise, and nonnegativity of the minimum risk is trivial under squared loss; neither carries empirical content. The force of Theorem 5 therefore equals exactly the force of P4: no weaker and no stronger. This equality is the paper's declaration of its own conditionality rather than a retreat: a universal negation over a task class must have its load-bearing premise either in the task structure, here P1 to P3, or in an empirical assertion about the task, here P4; No-Free-Lunch carries its universal law on the premise of uniform averaging, and this paper correspondingly carries its negation on a checkable criterion. What the decomposition adds is that P4 is not a restatement of the conclusion: the barrier condition mentions no rule at all, and it fails on a task that satisfies P1 to P3; the derivation from the two components, together with the bounded-description condition that a fixed parameter object satisfies, to the risk-gap floor of \eqref{eq:floor} is a proved inequality rather than a definitional unfolding. The quantified object of P4 is the class of all functions computable by parameters fixed at inference time, that is, every rule whose values pre-exist inference; the only regularity asked of that class is the bounded-description condition of Section~\ref{sec:p4}, which says that a finite description responds to the instance at a finite rate, and which by the implementer clause of Definition~3 sets aside only objects whose values are analytic invariants and therefore belong to Mode A in the first place.
 
 \subsection{Lemma 1: A Single Global Scalar Cannot Realize a Heterogeneous Strength Profile}
 
@@ -556,7 +555,7 @@ Second, the decomposition is not in conflict with universal approximation theore
 
 Third, what the decomposition yields is a positive floor rather than an unbounded gap, and the criterion has to be read in its component form rather than as a single quantified assertion. A risk gap exceeding \emph{every} pre-given tolerance is stronger than the barrier supports and, for a bounded loss, stronger than is satisfiable; what \eqref{eq:floor} gives is the constant $\kappa$ determined by the task's separation $\delta$, its realization level $p$, and the benchmark $\rho$. No force is lost in the argument, because the generalization claim that Lemma 3 negates is made at a fixed tolerance: what is falsified is a uniform bound at every tolerance below $\kappa$. Under Assumption A0 the benchmark risk vanishes in the limit of exact evidence instantiation, and $\kappa$ then reduces to $p \delta^2 / 16$; the context-dependent demand of the first part of Example~\ref{ex:gap} is deliberately not of that kind, which is why its benchmark is a positive constant rather than zero, while the evidence-computable demand of the second part is.
 
-Fourth, the honest sentence that the force of the theorems equals the force of the premise is retained in a sharper form. The force of Theorems 5 and 7 equals exactly the force of Criterion P4; what has changed is that P4 is now a sufficient condition implying a bound, with its three components named separately and each addressable by a different means: the barrier by comparing the demand across scales, the realization level by measuring the frequency of the reversals, and the benchmark by measuring the risk of the best evidence-instantiated rule available. The floor is also the precise quantitative content of the word ``completes'' in the claim that is falsified: since the demand separates by $\delta$ at every scale, a rule whose risk gap is at least $\kappa$ misses the task by at least the separation the task imposes on itself, so a bound at a tolerance at or above $\kappa$ is not a completion of the task but a statement weaker than the task's own structure requires.
+Fourth, the honest sentence that the force of the theorems equals the force of the premise is retained in a sharper form. The force of Theorem 5 equals exactly the force of Criterion P4; what has changed is that P4 is now a sufficient condition implying a bound, with its three components named separately and each addressable by a different means: the barrier by comparing the demand across scales, the realization level by measuring the frequency of the reversals, and the benchmark by measuring the risk of the best evidence-instantiated rule available. The floor is also the precise quantitative content of the word ``completes'' in the claim that is falsified: since the demand separates by $\delta$ at every scale, a rule whose risk gap is at least $\kappa$ misses the task by at least the separation the task imposes on itself, so a bound at a tolerance at or above $\kappa$ is not a completion of the task but a statement weaker than the task's own structure requires.
 
 \subsection{Classification and Closure: Neural Networks}
 
@@ -580,59 +579,11 @@ Neural networks alone cannot independently complete open inversion tasks; Claim 
 
 The whole verdict uses only two properties of the parameters, their constancy at inference time and the source of their values, and is independent of network architecture, training algorithm, and corpus scale. Deepening the network, switching to attention, or enlarging the corpus changes the shape of $F$ and the number of entries of $W$, but does not change the fact that $W$ pre-exists and is fixed at inference time, which is the basis of classification.
 
-\subsection{Classification and Closure: Bayesian Networks}
-
-The same kernel applies to Bayesian networks. Inference in a Bayesian network is driven by two things: the dependency graph $G_{\mathrm{bn}}$ stipulates the conditional-independence structure among variables, and the conditional-probability parameters $\theta_{\mathrm{bn}}$ stipulate the values on every dependency edge. The context rule, namely where coupling should be strong and where it should be cut, is encoded exactly in these two: the graph structure determines the topology of the coupling, and the conditional probability tables determine the strength of the coupling. Write
-\begin{equation}
-W_{\mathrm{bn}} = (G_{\mathrm{bn}}, \theta_{\mathrm{bn}}),
-\label{eq:wbn}
-\end{equation}
-which is likewise given offline and invariant at inference time. The structure may come from expert knowledge or structure learning, and the parameters may come from corpus statistics or manual setting; the difference of sources again does not affect the classification:
-
-\begin{proposition}
-The context rule of a Bayesian network is carried by the dependency graph and conditional-probability parameters solidified offline and belongs to Mode B.
-\end{proposition}
-
-The same conflict closes at once:
-
-\begin{theorem}
-Bayesian networks alone cannot independently complete open inversion tasks; Claim $\mathcal{Q}$ is false.
-\end{theorem}
-
-\argument Isomorphic to Theorem 5: Criterion P3 gives collision pairs, Proposition 6 gives that the rule belongs to Mode B and not to Mode A, if Claim $\mathcal{Q}$ were true there would be a bound $\epsilon$ under which the uniform bound holds, the component form of Criterion P4 in Section~\ref{sec:p4} gives a risk gap bounded below by the floor $\kappa$ of \eqref{eq:floor} for every rule whose values pre-exist inference, so at every tolerance $\epsilon < \kappa$ the necessary condition of Lemma 3 is violated, and no uniform bound holds at any tolerance below that floor.\qedbox
-
-For Bayesian networks one more covert defense must be called out: ``the inference is exact''. The defender says that Bayesian inference, given the model, yields the exact posterior and involves no fitting error. This defense confuses two things. The exact posterior holds only after structure and parameters are given, and it is exactly the structure and parameters that keep the rule frozen on their person at inference time: exactness guarantees ``faithfully computing the rule stored in memory'', not ``generating the right rule from current evidence''. A Bayesian network carries its memory exactly, and what Theorem 7 negates is exactly the completeness of this memory on the open set. Tractable subclasses, such as sum-product networks \citep{poon2011} and tractable probabilistic circuits \citep{darwiche2002}, change only the computational cost of exact inference, compressing exponential time into polynomial time; the source of the parameters does not change at all, and they earn no exemption.
-
-\subsection{Component Completeness in Graphical-Model Terms}
-
-The word ``completeness'' does precise work in this paper, and on the graphical-model interface it must be fixed before it can be denied. A \emph{graphical-model component} is a triple $M = (G, \theta, \mathfrak{A})$: a dependency graph $G$ stipulating the conditional-independence structure among the variables, a conditional-parameter object $\theta$ stipulating the distribution on every edge of $G$, and an inference operator $\mathfrak{A}$ mapping evidence to beliefs. Write $\mathrm{tr}(M)$ for the \emph{trace} of $M$, the mapping from the evidence $d|_{\ev}$ to the value reported at each position; the trace is a family in the sense of Definition~2, and it is the object to which the decision axis applies. Two levels must be kept apart, because the defence that inference is exact lives on the difference between them. The \emph{rule level} is the map from evidence to the coupling structure and coupling strengths the component applies, and its values are carried by $G$ and $\theta$. The \emph{computation level} is the faithfulness with which $\mathfrak{A}$ evaluates that map. Completeness is a property of the first level alone.
-
-\paragraph{Component completeness on the graphical-model interface.} A graphical-model component $M$ is \emph{complete} on the open inversion task class if its trace satisfies the uniform bound of Lemma~3 at some fixed tolerance: there exists $\epsilon > 0$ such that
-\begin{equation}
-\bigl\| \mathrm{tr}(M)(d) - t(d) \bigr\|^2 \le \epsilon \qquad \text{for every instance } d \text{ of the open set},
-\label{eq:pgmcomplete}
-\end{equation}
-and \emph{incomplete} if no such $\epsilon$ exists. The bound is read on the trace and not on $\mathfrak{A}$: exactness of inference is a property of the computation level, and it enters \eqref{eq:pgmcomplete} only through the trace that it produces.
-
-Two consequences follow immediately, and they are the ones the closure of this section consumes. First, by Proposition~6 the trace of every component whose graph and parameters are given offline, whether by expert knowledge, by manual setting, or by structure or parameter learning on a corpus, is carried by values that pre-exist inference and hence belongs to Mode B; the barrier-to-gap proposition of Section~\ref{sec:p4} gives a risk gap of at least $\kappa$ for it, so \eqref{eq:pgmcomplete} fails at every tolerance below $\kappa$ and no such component is complete. Second, the graph belongs to the rule and not to the operator: a dependency structure instantiated from current evidence, for instance a structure whose edges are read off the current observation by an analytic criterion, is a Mode A rule and lies outside the negation, exactly as the position-wise strengths of the reach section do. What the definition rules out is a misreading rather than a case: completeness cannot be established by making $\mathfrak{A}$ exact, because exactness constrains only how faithfully a frozen rule is evaluated.
-
-\subsection{The Three Bayesian-Network Claims and Their Status}
-
-Beyond the closure, this paper carries three claims about Bayesian networks, and they are best stated together because they differ in what they assert and in what carries them. Only the first is an in-criterion consequence of the negation; the second is the negation read at the interface; the third is an external hardness result that does not need the negation at all. Running the three together would overstate the argument, since two of them stand without Theorem~7, and would understate it, since the first is the one the falsification consumes.
-
-\begin{itemize}
-\item \emph{Parameter provenance: the in-criterion claim (Theorem~7).} The rule of a Bayesian network is carried by $W_{\mathrm{bn}} = (G_{\mathrm{bn}}, \theta_{\mathrm{bn}})$ of \eqref{eq:wbn}, both of which are given offline, so by Proposition~6 the rule belongs to Mode B and not to Mode A; the component form of Criterion P4 in Section~\ref{sec:p4} then supplies the positive floor $\kappa$ of \eqref{eq:floor}, and by \eqref{eq:pgmcomplete} the component is incomplete at every tolerance below it. The claim quantifies over graph structure and parameter table alike, because classification follows the source of the values and not the size or the shape of the carrier: a learned structure, a structure written down by an expert, and a conditional-probability table with a million entries are one case. \emph{Status: a theorem of this paper, derived from Criteria P1 to P4 together with Proposition~6; the only one of the three consumed by the falsification.}
-\item \emph{The absence of a perceptual proposal layer: an interface-level corollary.} The input interface of a Bayesian network is a candidate set together with observation likelihoods: it requires someone to first tell it which candidate values the variables may take and what the likelihood of each candidate under the observation is, and then it performs exact combinatorial inference. The mapping from raw observations to ``which region looks like which structure'' depends on appearance statistics and requires a perceptual ability from pixels to hypotheses, which the network itself does not provide, so a component that can only adjudicate over a candidate set but cannot propose candidates from evidence cannot work independently on open inversion tasks that require perceptual participation. This is not a new failure source but the manifestation of Theorem~7 at the interface, and it is formalized as such: the proposal map from evidence to the candidate set is itself a context rule, so if its values pre-exist inference it is Mode B and Theorem~7 applies to it verbatim, while if its values are generated from current evidence then a Mode A mechanism has already appeared in the system and the ``only'' qualifier is broken. \emph{Status: not an independent theorem, and this paper does not claim it as one; it is the closure read together with the definition of the input interface.}
-\item \emph{Treewidth blow-up: an external theorem, explicitly orthogonal.} On general belief networks, exact inference is NP-hard \citep{cooper1990}, approximate inference is \#P-hard \citep{roth1996}, and even computing treewidth itself is NP-hard \citep{arnborg1987}. Exactness holds only on near-tree subgraphs, namely the class whose dependency graph is almost a tree with few cycles. When the source of structure is missing and the dependency graph must be learned from the corpus or given arbitrarily by the task, there is no a priori reason guaranteeing that the graph falls in the near-tree subclass. This item is genuinely independent of Theorem~7, and in both directions: even if the rule-source problem were exempted, even if someone handed over a Mode A rule for free, the complexity wall would still stand where it is and the exact posterior on general graphs remains uncomputable; and even if exact inference were tractable, Theorem~7 would still close the provenance question. The in-criterion negation says ``the rule is wrong''; complexity says ``it cannot be computed''; neither can exempt the other. \emph{Status: an external hardness result, cited rather than proved, and explicitly orthogonal to the negation.}
-\end{itemize}
-
-The three statuses are therefore theorem, corollary, and external theorem, and the latter two delimit the negation rather than extend it. The first records where the component loses its guarantee, the second where it loses its competence, and the third where the computation rather than the rule fails; a pipeline can repair the third without touching either of the first two.
-
 \subsection{Approximate Inference: Cost and Accuracy, Not Provenance}
 
-Approximate inference is the natural reply to the complexity item and to the provenance item at once, and it deserves a direct answer, because every modern graphical-model pipeline performs it. Loopy belief propagation replaces the exact marginal with a message-passing fixed point on the graph \citep{pearl1988,murphy1999,yedidia2005}. Structured variational inference replaces it with an optimum over a tractable family of distributions on a substructure \citep{saul1996,wainwright2008}. A learned proposal replaces the hand-designed message or family with a function fitted to a corpus \citep{mnih2014}. The three differ in cost and in accuracy; none of them touches the source of the rule's values.
+Approximate inference is the natural reply to the provenance question and it deserves a direct answer, because every modern inference pipeline performs it. Loopy belief propagation replaces the exact marginal with a message-passing fixed point on the graph \citep{pearl1988,murphy1999,yedidia2005}. Structured variational inference replaces it with an optimum over a tractable family of distributions on a substructure \citep{saul1996,wainwright2008}. A learned proposal replaces the hand-designed message or family with a function fitted to a corpus \citep{mnih2014}. The three differ in cost and in accuracy, and the next paragraph shows that none of them touches the source of the rule's values.
 
-The point is formal rather than diagrammatic. Replace the exact operator $\mathfrak{A}$ by an approximate one $\mathfrak{A}'$, so that the component becomes $M' = (G, \theta, \mathfrak{A}')$. Its trace is again a family in the sense of Definition~2, and its values are still carried by $G$ and $\theta$: the operator's own quantities, such as a message schedule, a damping factor, and an iteration budget, are bookkeeping in the sense of Definition~3, because they affect the faithfulness with which the map is evaluated and not the map itself, and where the operator carries fitted values of its own, as a learned proposal does, those values are corpus statistics and the rule that carries them is Mode B for the same reason as the graph and the conditional parameters. Three consequences follow. First, \eqref{eq:modeB} continues to hold for the trace with the same graph and parameter object, so Proposition~6 places it in Mode B exactly as before and \eqref{eq:floor} applies to the approximate trace with its own bounded-description rate; approximation therefore cannot restore \eqref{eq:pgmcomplete}, because whatever accuracy it buys, the trace remains a frozen rule and the floor is a property of the source rather than of the operator. Second, the accuracy of the approximate trace enters the risk in addition to the source-side error, and its sign is not controlled: loopy belief propagation is not guaranteed to converge on graphs with cycles and can possess multiple fixed points, and a variational family fixes its own gap to the per-instance optimum, which is the amortization gap of Section~\ref{ch:related} \citep{cremer2018} and is an instance of the Mode B gap rather than a way around it. Approximation thus relocates the failure from the complexity axis to the accuracy axis; it does not move the trace across the decision axis. Third, if the proposal or the family is instead instantiated from current evidence, whether as an analytic proposal, a message computed from the current measurement, or a family parameter read off the evidence, then a Mode A mechanism has entered and the completeness is credited to it rather than to the component, which is the interface-level corollary above in another guise. As with the fresh randomness of diffusion sampling in the reach section below, the operator's internal quantities carry no information about the demand and do not constitute a third source of values.
+The point is formal rather than diagrammatic. Replace the exact evaluation of the rule by an approximate one. The rule is still a family in the sense of Definition~2, and its values are still given offline: the operator's own quantities, such as a message schedule, a damping factor, and an iteration budget, are bookkeeping in the sense of Definition~3, because they affect the faithfulness with which the rule is evaluated and not the rule itself, and where the operator carries fitted values of its own, as a learned proposal does, those values are corpus statistics and the rule that carries them is Mode B for the same reason. Hence \eqref{eq:modeB} continues to hold for the approximate rule, the source criterion places it in Mode B exactly as before, and \eqref{eq:floor} applies to it with its own bounded-description rate: approximation cannot restore the uniform bound of Lemma~3, because whatever accuracy it buys, the values remain frozen before inference and the floor is a property of the source rather than of the operator. The accuracy of the approximation enters the risk in addition to the source-side error and its sign is not controlled: loopy belief propagation is not guaranteed to converge on graphs with cycles and can possess multiple fixed points, and a variational family fixes its own gap to the per-instance optimum, which is the amortization gap of Section~\ref{ch:related} \citep{cremer2018} and is an instance of the Mode B gap rather than a way around it. Approximation thus relocates the failure from the cost of evaluating the rule to the accuracy of the evaluation; it does not move the rule across the decision axis. If the proposal or the family is instead instantiated from current evidence, whether as an analytic proposal, a message computed from the current measurement, or a family parameter read off the evidence, then a Mode A mechanism has entered and the credit belongs to it rather than to the component. As with the fresh randomness of diffusion sampling in the reach section below, the operator's internal quantities carry no information about the demand and do not constitute a third source of values.
 
 \subsection{Reach}
 
@@ -660,7 +611,7 @@ What this paper falsifies has never been a network of some shape, but the carrie
 
 \subsection{Object and Method of Verification}
 
-The algebraic skeleton of the argument chain has been machine-verified with Lean 4 and Mathlib, fully implemented with zero \texttt{sorry} and zero warnings; Lean 4 has become an active platform at the intersection of machine-assisted proof and machine learning \citep{yang2023}. Let the wording first be delimited: ``formal falsification'' in the title refers to the deductive method itself, namely that all conclusions are derived formally from definitions and lemmas; what machine verification guarantees is the algebraic form of this deductive chain on the toy carrier, while the universal claim is still borne by the prose deduction. The verification covers, on the Lean side, Definitions 1 to 4, Lemmas 1 to 3, Propositions 4 and 6, and Theorems 5 and 7, and the final theorem \texttt{finale} composes the generalization side and the carrier side into a single conjunction. Definition~2 is formalized in both of its readings rather than only in the scalar one: the toy carrier carries the indexed family itself, together with the constant family that Lemma 1 excludes, the frozen family with one entry per position, and the first-order algebra of Lemma 1's general form, so that the two claims this paper makes about the index are machine-checked statements rather than prose. The first is that a frozen family is not a loophole for the algebra: on a single configuration it satisfies every stationarity condition by construction, while no scalar family does. The second is the sharper one, and it is the form in which the index is closed: one position whose demand ratio changes between two admissible configurations excludes every frozen family, whatever the number of entries, which is also the machine-checked form of the sentence that one scalar is a parameter table and a million parameters are a parameter table as well. The general form's premise is derived rather than assumed on the toy carrier: differentiating the objective along the coordinate line of one position gives the per-position coefficient \eqref{eq:focgeneral} of an arbitrary even differentiable potential, and a local minimum along that line satisfies the resulting first-order condition, which is the paper's equation~\eqref{eq:foc} with the normalization of constant factors made explicit. What remains outside the machine guarantee is the continuous-side correspondence that turns the variational objective into pointwise form, and the operator-valued couplings that the general form explicitly does not claim; Section~\ref{sec:layers} records these as Tier~C items. The formalization adopts a toy carrier: the position set has four positions, structure fields are functions from positions to reals, pixel 0 plays the evidence position, and pixel 1 plays the context position. The role of the toy carrier is not to simulate a real task but to make every algebraic step of the argument chain machine-checkable.
+The algebraic skeleton of the argument chain has been machine-verified with Lean 4 and Mathlib, fully implemented with zero \texttt{sorry} and zero warnings; Lean 4 has become an active platform at the intersection of machine-assisted proof and machine learning \citep{yang2023}. Let the wording first be delimited: ``formal falsification'' in the title refers to the deductive method itself, namely that all conclusions are derived formally from definitions and lemmas; what machine verification guarantees is the algebraic form of this deductive chain on the toy carrier, while the universal claim is still borne by the prose deduction. The verification covers, on the Lean side, Definitions 1 to 4, Lemmas 1 to 3, Proposition 4 and Theorem 5, and the final theorem \texttt{finale} composes the generalization side and the carrier side into a single conjunction. Definition~2 is formalized in both of its readings rather than only in the scalar one: the toy carrier carries the indexed family itself, together with the constant family that Lemma 1 excludes, the frozen family with one entry per position, and the first-order algebra of Lemma 1's general form, so that the two claims this paper makes about the index are machine-checked statements rather than prose. The first is that a frozen family is not a loophole for the algebra: on a single configuration it satisfies every stationarity condition by construction, while no scalar family does. The second is the sharper one, and it is the form in which the index is closed: one position whose demand ratio changes between two admissible configurations excludes every frozen family, whatever the number of entries, which is also the machine-checked form of the sentence that one scalar is a parameter table and a million parameters are a parameter table as well. The general form's premise is derived rather than assumed on the toy carrier: differentiating the objective along the coordinate line of one position gives the per-position coefficient \eqref{eq:focgeneral} of an arbitrary even differentiable potential, and a local minimum along that line satisfies the resulting first-order condition, which is the paper's equation~\eqref{eq:foc} with the normalization of constant factors made explicit. What remains outside the machine guarantee is the continuous-side correspondence that turns the variational objective into pointwise form, and the operator-valued couplings that the general form explicitly does not claim; Section~\ref{sec:layers} records these as Tier~C items. The formalization adopts a toy carrier: the position set has four positions, structure fields are functions from positions to reals, pixel 0 plays the evidence position, and pixel 1 plays the context position. The role of the toy carrier is not to simulate a real task but to make every algebraic step of the argument chain machine-checkable.
 
 The verification follows a completeness principle: every premise not explicitly given in the paper is explicitly included as a premise parameter of the theorem, and nothing is implicitly assumed. This principle directly shapes the verified form of Lemma 3, detailed below. The guaranteed scope of the artifact is exactly the guarantee-tier table of Section~\ref{sec:layers}. Universal claims beyond that scope, for example the satisfaction of Criterion P4 on real tasks, are not covered by the machine verification. The sites where the verified premises differ from the prose are stated explicitly in the next section: Criterion P4 enters the development as the parameterized premise $g(R) > \epsilon$ of Lemma 3 rather than as a formalized criterion; the component form of Section~\ref{sec:p4}, from which the risk-gap floor is derived, is prose that the artifact does not formalize; and the per-position coefficient \eqref{eq:focgeneral} of a general pairwise potential is derived on the toy carrier, while its continuous-side counterpart, the passage from the variational objective to pointwise form, is a correspondence of calculus of variations rather than a machine-checked step.
 
@@ -668,9 +619,9 @@ The verification follows a completeness principle: every premise not explicitly 
 
 The verified content divides into three levels of strength.
 
-The strongest level is complete deduction, with conclusions and proofs free of extra premises. This level includes: the strengthened form of Lemma 1, where a single global scalar at an arbitrary fitting point forces residuals and consistency terms to be proportional across positions, namely \eqref{eq:proportion}, and failure of the proportionality is contradiction, the proof being merely two substitutions and one commutativity; the two-sided form of Lemma 2, where Paradigm E with a frozen scalar coefficient has no nonzero stationary point at a fitting point under heterogeneity, while the objective of Paradigm I always has a unique minimizer, minimality coming from nonnegativity of the sum of squares and uniqueness from the fact that the sum of squares vanishes only termwise; the classification of Propositions 4 and 6, with the proof that fixed-parameter rules do not belong to Mode A unfolding line by line along the collision argument of Proposition 4; the derivation of the general first-order condition from the objective, for an arbitrary even differentiable potential, whose proof is the coordinate differentiation of the pairwise term together with one application of the one-dimensional Fermat theorem, the demand-ratio algebra of Lemma 1's general form on the indexed family, and the closure of Theorems 5 and 7.
+The strongest level is complete deduction, with conclusions and proofs free of extra premises. This level includes: the strengthened form of Lemma 1, where a single global scalar at an arbitrary fitting point forces residuals and consistency terms to be proportional across positions, namely \eqref{eq:proportion}, and failure of the proportionality is contradiction, the proof being merely two substitutions and one commutativity; the two-sided form of Lemma 2, where Paradigm E with a frozen scalar coefficient has no nonzero stationary point at a fitting point under heterogeneity, while the objective of Paradigm I always has a unique minimizer, minimality coming from nonnegativity of the sum of squares and uniqueness from the fact that the sum of squares vanishes only termwise; the classification of Proposition 4, with the proof that fixed-parameter rules do not belong to Mode A unfolding line by line along the collision argument of Proposition 4; the derivation of the general first-order condition from the objective, for an arbitrary even differentiable potential, whose proof is the coordinate differentiation of the pairwise term together with one application of the one-dimensional Fermat theorem, the demand-ratio algebra of Lemma 1's general form on the indexed family, and the closure of Theorem 5.
 
-The next level is the landing of the criteria. Ill-posedness is formalized as the observation mask having a hole, and both directions of the mask criterion are machine-provable: a hole implies ill-posedness by constructive bifurcation, and a full mask implies unique determination by position-wise pinning. The mask form of Criterion P3 constructs the collision sample pair with evidence pinned and context freely bifurcating: take two structure fields that take the observed value at evidence positions and two different numbers at context positions; both fields agree with the observation on the mask. That P3 implies P1 is thereby also provable. The collision pair feeds Theorems 5 and 7, and the heterogeneity Criterion P2 is consumed at Lemmas 1 and 2.
+The next level is the landing of the criteria. Ill-posedness is formalized as the observation mask having a hole, and both directions of the mask criterion are machine-provable: a hole implies ill-posedness by constructive bifurcation, and a full mask implies unique determination by position-wise pinning. The mask form of Criterion P3 constructs the collision sample pair with evidence pinned and context freely bifurcating: take two structure fields that take the observed value at evidence positions and two different numbers at context positions; both fields agree with the observation on the mask. That P3 implies P1 is thereby also provable. The collision pair feeds Theorem 5, and the heterogeneity Criterion P2 is consumed at Lemmas 1 and 2.
 
 The weakest level is premise parameterization, which falls on Lemma 3. The toy form lists upper-tail realization, a risk gap exceeding the bound, and nonnegativity of the minimum risk all explicitly as theorem premises; in the general measure form, upper-tail realization is given by Mathlib's first-moment-method theorem and is no longer a premise, leaving only a risk gap exceeding the bound and nonnegativity of the minimum risk as explicit premises. The verification side parameterizes the risk-gap premise as $g(R) > \epsilon$, which is the fixed-tolerance instance of the risk-gap floor derived in Section~\ref{sec:p4}: the machine consumes the positivity of the gap at the tolerance under discussion, while the derivation of that positivity from the barrier, bounded-description, and realization conditions is the prose component recorded as Tier~C in Section~\ref{sec:layers}. The conclusion is that the generalization bound cannot hold, and the proof is exactly the four-line derivation of Lemma 3. Among these, the risk gap exceeding the bound is demonstrated in mechanism by the toy instance: the total squared loss of a Mode B rule fitting the target $t(d) = d_0 \cdot d_1$ on the three-point open-set samples $(1, 0)$, $(0, 1)$, $(1, 1)$ has the positive lower bound $1$, the total squared loss of an evidence-only rule $R(d) = \Phi(d_0)$ has the lower bound $1/2$ attained by $R(d) = d_0/2$, and the class gap $1/2$ is positive, both sides decidable directly by nonlinear arithmetic. The context-dependent half of the example reads the context coordinate and is not computable from evidence, so it demonstrates the gap mechanism rather than the completeness of Mode A; its evidence-computable half, machine-checked alongside it with a constructive evidence-instantiated rule that attains the optimal risk, is worked out in Example~\ref{ex:gap} of Section~\ref{ch:falsify}.
 
@@ -723,11 +674,11 @@ The scope statement is thereby precise to the component. Machine verification gu
 
 \subsection{Artifact Availability}
 
-The Lean artifact is published together with the paper in the \texttt{lean-proof} directory of the project repository at \texttt{https://github.com/aki-xavier/frozen-axis}: a self-contained Lake project containing the development file \texttt{FormalProof.lean}, the \texttt{lakefile.lean} and \texttt{lake-manifest.json} that pin Mathlib and every transitive dependency to an exact revision, and the \texttt{lean-toolchain} file that pins the toolchain to \texttt{leanprover/lean4:v4.34.0}. The reproduction command is \texttt{lake build}, run from inside that directory. The development file is 1278 lines and contains all definitions, lemmas, propositions, theorems, the final theorem, the example variants, and the generalization upgrades; its content is identified by the blob hash \texttt{f072a020}, so the verified object can be fixed independently of any later revision of the repository.
+The Lean artifact is published together with the paper in the \texttt{lean-proof} directory of the project repository at \texttt{https://github.com/aki-xavier/frozen-axis}: a self-contained Lake project containing the development file \texttt{FormalProof.lean}, the \texttt{lakefile.lean} and \texttt{lake-manifest.json} that pin Mathlib and every transitive dependency to an exact revision, and the \texttt{lean-toolchain} file that pins the toolchain to \texttt{leanprover/lean4:v4.34.0}. The reproduction command is \texttt{lake build}, run from inside that directory. The development file is 1219 lines and contains all definitions, lemmas, propositions, theorems, the final theorem, the example variants, and the generalization upgrades; its content is identified by the blob hash \texttt{5c6cc73a}, so the verified object can be fixed independently of any later revision of the repository.
 
 Three properties of the build are worth stating in the paper itself rather than leaving to inspection. First, the build completes with zero errors and zero warnings. Second, the development contains no \texttt{sorry} and no \texttt{axiom} declaration of its own. Third, and strongest, the axiom budget of the load-bearing declarations is Lean's own standard set: \texttt{\#print axioms} applied to \texttt{finale}, \texttt{lemma1\_sharp}, and \texttt{tail\_realization} returns \texttt{[propext, Classical.choice, Quot.sound]} in each case, a list containing no \texttt{sorryAx}, so no step of the chain rests on an unproved assertion. The artifact is therefore auditable at the level of the proof term rather than only at the level of a reported build outcome.
 
-Appendix~\ref{app:artifact} makes the verification inspectable without access to the artifact. It records the layout and the reproduction command, and it gives two things a reader needs in order to judge the claim rather than take it on trust: an index from every paper item (Definitions 1 to 4, the mask criterion, Criteria P1 to P4, Lemmas 1 to 3, Propositions 4 and 6, Theorems 5 and 7, and the final theorem) to the Lean declaration that discharges it, carrying the guarantee tier of Table~\ref{tab:layers}; and the machine-checked statements of the load-bearing declarations with their premises written out in full, so that the premise list of \texttt{finale} can be compared line by line against the prose of Section~\ref{ch:falsify}. The comparison exposes the single point at which the verified form is deliberately weaker than the prose: Criterion P4 enters the development as the premise parameter \texttt{hGapPositive}, not as a formalized criterion, and not as the component form from which Section~\ref{sec:p4} derives the risk-gap floor, exactly as announced above. Every other premise of the chain is either proved outright or listed explicitly in the statement of the theorem that consumes it.
+The artifact index is published as an online appendix accompanying this paper, and makes the verification inspectable without access to the artifact. It records the layout and the reproduction command, and it gives two things a reader needs in order to judge the claim rather than take it on trust: an index from every paper item (Definitions 1 to 4, the mask criterion, Criteria P1 to P4, Lemmas 1 to 3, Proposition 4 and Theorem 5, and the final theorem) to the Lean declaration that discharges it, carrying the guarantee tier of Table~\ref{tab:layers}; and the machine-checked statements of the load-bearing declarations with their premises written out in full, so that the premise list of \texttt{finale} can be compared line by line against the prose of Section~\ref{ch:falsify}. The comparison exposes the single point at which the verified form is deliberately weaker than the prose: Criterion P4 enters the development as the premise parameter \texttt{hGapPositive}, not as a formalized criterion, and not as the component form from which Section~\ref{sec:p4} derives the risk-gap floor, exactly as announced above. Every other premise of the chain is either proved outright or listed explicitly in the statement of the theorem that consumes it.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% --- inlined from sections/07-discussion.tex
@@ -759,7 +710,7 @@ The negation of this paper is a claim about the source of a rule's values, and i
 
 \subsection{Relation to Uncertainty Quantification}
 
-Bayesian deep learning distinguishes two kinds of uncertainty: data uncertainty comes from observation noise, and epistemic uncertainty comes from ignorance of model parameters, the latter decreasing as training data grows \citep{kendall2017}. This distinction happens to illuminate the decision axis brightly. Epistemic uncertainty is the statistical representation of Mode B's source of values: parameters are uncertain because their values are determined by a finite corpus, and a different sampling of the corpus gives different values. Mode A rules have no such degree of freedom; camera intrinsics do not change because a thousand more images are captured. Epistemic uncertainty can be calibrated well on closed benchmarks, but the calibrated benchmark itself remains in-distribution, and on the open set there is no distribution to calibrate against.
+The modern treatment of predictive uncertainty distinguishes two kinds of uncertainty: data uncertainty comes from observation noise, and epistemic uncertainty comes from ignorance of model parameters, the latter decreasing as training data grows \citep{kendall2017}. This distinction happens to illuminate the decision axis brightly. Epistemic uncertainty is the statistical representation of Mode B's source of values: parameters are uncertain because their values are determined by a finite corpus, and a different sampling of the corpus gives different values. Mode A rules have no such degree of freedom; camera intrinsics do not change because a thousand more images are captured. Epistemic uncertainty can be calibrated well on closed benchmarks, but the calibrated benchmark itself remains in-distribution, and on the open set there is no distribution to calibrate against.
 
 \subsection{Clues to Endogenous Mechanisms}
 
@@ -796,9 +747,9 @@ This paper has four limitations. First, the satisfiability of Criterion P4 is a 
 \section{Conclusion}
 \label{ch:conclusion}
 
-To sum up, what this paper proves is: once the values of context rules are solidified by a corpus and frozen at inference time, no fixed-memory component, whether in the form of a neural network or a Bayesian network, possesses the completeness to independently complete open inversion tasks, and the two theorems share one and the same kernel. The argument unfolds along a decision axis: ill-posedness forces inference to use context, Lemma 1 excludes the global scalar from realizing a heterogeneous profile, Lemma 2 excludes frozen extrinsic coefficients from realizing a heterogeneous profile and converges the criterion onto the source, Criterion P4 and Lemma 3 require values to be instantiated by current evidence, Propositions 4 and 6 complete the classification, and Theorems 5 and 7 close the case. An equivalent, more prudent phrasing holds as well: no frozen rule family can be uniformly optimal on the open set; a frozen family offers at most in-distribution guarantees or guarantees vetted by analytic data consistency, while worst-case guarantees in the pointwise or expected sense require evidence instantiation. The relation to the existing literature has been clarified: the amortization gap records the empirical form of the Mode B gap, No-Free-Lunch gives the algorithm-level universal negation, and this paper fills in the component-level completeness negation between the two and gives a unified decision axis; in relation to No-Free-Lunch, this paper is an instantiation of its converse on the class of open inversion tasks.
+To sum up, what this paper proves is: once the values of context rules are solidified by a corpus and frozen at inference time, no fixed-memory component possesses the completeness to independently complete open inversion tasks. The argument unfolds along a decision axis: ill-posedness forces inference to use context, Lemma 1 excludes the global scalar from realizing a heterogeneous profile, Lemma 2 excludes frozen extrinsic coefficients from realizing a heterogeneous profile and converges the criterion onto the source, Criterion P4 and Lemma 3 require values to be instantiated by current evidence, Proposition 4 completes the classification, and Theorem 5 closes the case. An equivalent, more prudent phrasing holds as well: no frozen rule family can be uniformly optimal on the open set; a frozen family offers at most in-distribution guarantees or guarantees vetted by analytic data consistency, while worst-case guarantees in the pointwise or expected sense require evidence instantiation. The relation to the existing literature has been clarified: the amortization gap records the empirical form of the Mode B gap, No-Free-Lunch gives the algorithm-level universal negation, and this paper fills in the component-level completeness negation between the two and gives a unified decision axis; in relation to No-Free-Lunch, this paper is an instantiation of its converse on the class of open inversion tasks.
 
-This reach is not limited to the two kinds of networks: Markov random fields, conditional random fields, Gaussian mixture models, dictionary learning, kernel methods, and other components, as long as their context rules are carried by parameters trained offline or set by hand, all belong to Mode B and fall within the same falsification; random-field implementations whose coupling strengths are computed online from current evidence belong to Mode A and are outside the negation. The boundary of the conclusion is equally sharp: tasks whose demand can be exactly identified from a fixed corpus are outside the class, and there a fixed-memory component can be complete; the falsification stops exactly where the demand becomes freezable. The exclusion itself is not tied to the quadratic smoothing form of that classical problem: Lemma 1 is proved for a separable data term with an arbitrary even differentiable pairwise potential and without convexity, and its minimal obstruction is an equivalence rather than a sufficient condition, namely one single position whose required strength ratio changes between two admissible configurations. That condition excludes every frozen coefficient family, however many entries the table has; the global scalar is the case in which the ratio must also be common to all positions, which is why the scalar is the shallowest member of the excluded class rather than a special case to be defended separately. For Bayesian networks, beyond the negation there are two further walls of different status: the absence of a perceptual proposal layer, which is the negation read at the input interface rather than an independent theorem, and treewidth blow-up when the source of structure is missing, which is an external hardness result orthogonal to the negation.
+This reach is not limited to neural networks: Markov random fields, conditional random fields, Gaussian mixture models, dictionary learning, kernel methods, and other components, as long as their context rules are carried by parameters trained offline or set by hand, all belong to Mode B and fall within the same falsification; random-field implementations whose coupling strengths are computed online from current evidence belong to Mode A and are outside the negation. The boundary of the conclusion is equally sharp: tasks whose demand can be exactly identified from a fixed corpus are outside the class, and there a fixed-memory component can be complete; the falsification stops exactly where the demand becomes freezable. The exclusion itself is not tied to the quadratic smoothing form of that classical problem: Lemma 1 is proved for a separable data term with an arbitrary even differentiable pairwise potential and without convexity, and its minimal obstruction is an equivalence rather than a sufficient condition, namely one single position whose required strength ratio changes between two admissible configurations. That condition excludes every frozen coefficient family, however many entries the table has; the global scalar is the case in which the ratio must also be common to all positions, which is why the scalar is the shallowest member of the excluded class rather than a special case to be defended separately.
 
 Negation is not disparagement: the achievements of these components on closed benchmarks are genuine, and what this paper negates is only the universal claim ``solo use is complete'', not the usefulness of these components in combinations. The algebraic skeleton of the argument chain has been machine-verified with Lean 4 and Mathlib, with zero \texttt{sorry} and zero warnings. The other side of the decision axis, namely the engineering implementation of Mode A, is left to future work.
 
@@ -819,288 +770,11 @@ Competing interests: the author declares no competing interests.}
 \vskip 0.2in
 \bibliography{reference}
 
-\appendix
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% --- inlined from sections/09-appendix-artifact.tex
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{Artifact Index of the Lean 4 Verification}
-\label{app:artifact}
-
-Section~\ref{ch:verify} reports the machine verification of the algebraic skeleton. This appendix makes that claim inspectable without access to the artifact: it records where the artifact lives, how it is reproduced, what its axiom budget is, which paper item each machine-checked declaration discharges, and under exactly which premises the load-bearing declarations hold.
-
-\subsection{Layout, Reproduction, and Axiom Budget}
-
-The artifact is a self-contained Lean~4 project distributed in the \texttt{lean-proof} directory of the project repository at
-\begin{center}
-\texttt{https://github.com/aki-xavier/frozen-axis}
-\end{center}
-under the \texttt{lean-proof} path. It consists of four files: \texttt{FormalProof.lean}, the single development file of 1278 lines containing every definition, lemma, proposition, theorem, the final theorem, the example variants, and the generalization upgrades; \texttt{lakefile.lean}, which pins Mathlib to the matching release; \texttt{lake-manifest.json}, which locks every transitive dependency to an exact revision; and \texttt{lean-toolchain}, which pins the toolchain to \texttt{leanprover/lean4:v4.34.0}. No component outside this directory is required.
-
-Reproduction is a single command from inside the directory:
-\begin{center}
-\texttt{cd lean-proof \&\& lake build}
-\end{center}
-The build was executed on the developer's machine at the blob hash recorded in Section~\ref{ch:verify} and terminates with zero errors, zero warnings, and zero occurrences of \texttt{sorry}; the development also contains no \texttt{axiom} declaration of its own. The reproducible form of this claim, stronger than the \texttt{sorry}-count, is the axiom budget: the command \texttt{\#print axioms} applied to the load-bearing declarations returns
-\begin{center}
-\texttt{[propext, Classical.choice, Quot.sound]}
-\end{center}
-for each of \texttt{finale}, \texttt{lemma1\_sharp}, and \texttt{tail\_realization}, and, by the same command, for the remaining declarations of the development. These three are Lean's own standard axioms, the ones every Mathlib development inherits; in particular the list contains no \texttt{sorryAx}, so no step of the chain is discharged by an unproved assertion. The artifact is therefore auditable at the level of the proof term, not merely at the level of a reported build outcome.
-
-One scope remark belongs here, because it delimits what the artifact does and does not certify. The verified content is the deductive chain: definitions, the mask criterion, Lemmas 1 to 3, Propositions 4 and 6, Theorems 5 and 7, and their composition in \texttt{finale}. The premises of that chain which concern the modeling side rather than the algebra are not certified, because they are not theorems: the satisfaction of Criterion P4 on real tasks appears as an explicit premise parameter, the continuous-side Euler--Lagrange derivation is not formalized, in the sense of the correspondence that turns the variational objective into pointwise form, while its discrete counterpart, the per-position coefficient \eqref{eq:focgeneral} of an arbitrary even differentiable potential together with the first-order condition it yields, is machine-checked; and network nondegeneracy is a checkable property. Section~\ref{sec:layers} assigns each component its tier, and Table~\ref{tab:layers} is the authoritative statement of that boundary.
-
-\subsection{Index from Paper Items to Machine-Checked Declarations}
-
-Table~\ref{tab:artifact} lists the correspondence. The tier column repeats the assignment of Table~\ref{tab:layers} so that the reader can see, for each paper item, whether its machine-checked form is carrier-independent (Tier A), anchored on a Mathlib structure theorem (Tier B), or outside the machine guarantee (Tier C).
-
-\begin{table}[htbp]
-\caption{Index from paper items to Lean 4 declarations. Declaration names are those of \texttt{FormalProof.lean}. Tier A: carrier-independent algebraic core; Tier B: structured general forms anchored on Mathlib; Tier C: modeling components not covered by the machine guarantee.}
-\label{tab:artifact}
-\centering
-\small
-\renewcommand{\arraystretch}{0.88}
-\begin{tabular}{@{}>{\raggedright\arraybackslash}p{0.26\textwidth}>{\raggedright\arraybackslash}p{0.56\textwidth}>{\centering\arraybackslash}p{0.09\textwidth}@{}}
-\hline
-\textbf{Paper item} & \textbf{Lean declaration} & \textbf{Tier}\\
-\hline
-Definition 1 (ill-posedness), Criterion P1 & \texttt{IllPosed}, \texttt{P1} & B\\
-\hline
-Mask criterion, both directions & \texttt{illPosed\_of\_hole}, \texttt{not\_illPosed\_of\_full} & B\\
-\hline
-Mask criterion in kernel form & \texttt{illPosed\_iff\_nontrivial\_ker} & B\\
-\hline
-Definition 2 (context rule) & \texttt{IndexedContextRule}, \texttt{IsScalarFamily}, \texttt{IsFrozenFamily} & A\\
-\hline
-Definition 3 (Mode A / Mode B) & \texttt{IsModeA}, \texttt{DependsOnlyOn}, \texttt{IsModeB} & A\\
-\hline
-Definition 4 (Paradigm E / I) & \texttt{ParadigmE}, \texttt{ParadigmI}, \texttt{IsParadigmI} & A\\
-\hline
-Criterion P2 (heterogeneity) & \texttt{P2}, \texttt{p2\_gives\_nonconst}, \texttt{hetero\_gives\_nonconst} & B\\
-\hline
-Criterion P3 (distributional openness; mask form) & \texttt{P3}, \texttt{p3\_implies\_p1} & A\\
-\hline
-Criterion P4, component form (Section~\ref{sec:p4}) & premise parameter \texttt{hGapPositive}; the barrier, bounded-description, and realization conditions and the barrier-to-gap inequality are prose only & C\\
-\hline
-Lemma 1 & \texttt{lemma1\_sharp}, \texttt{lemma1\_final}, \texttt{foc\_proportionality} & A\\
-\hline
-Lemma 1, general form, \eqref{eq:focgeneral} onward & \texttt{general\ttu proportionality}, \texttt{scalar\ttu family\ttu iff\ttu ratio\ttu agrees}, \texttt{frozen\ttu family\ttu two\ttu configs\ttu iff}, \texttt{position\ttu wise\ttu escape\ttu witness}, \texttt{KappaPhi\ttu quadratic}, \texttt{general\ttu first\ttu order\ttu of\ttu local\ttu min} & A\\
-\hline
-Lemma 2, extrinsic side & \texttt{lemma2\_full}, \texttt{lemma2\_E\_stationary\_infeasible} & A\\
-\hline
-Lemma 2, endogenous side & \texttt{paradigmI\_unique\_minimizer}, \texttt{paradigmI\_inner\_unique}, \texttt{paradigmI\_L2\_ae} & A and B\\
-\hline
-Lemma 3, toy form & \texttt{lemma3\_final2} & B\\
-\hline
-Lemma 3, general measure form & \texttt{lemma3\_general}, \texttt{tail\_realization} & B\\
-\hline
-Lemma 3, gap mechanism, both demands of Example~\ref{ex:gap} & \texttt{toy\_positive\_gap}, \texttt{modeB\_positive\_gap}, \texttt{modeA\_loss\_attained}; \texttt{evidence\_gap\_is\_full}, \texttt{modeB\_evidence\_gap}, \texttt{modeA\_evidence\_attained} & A\\
-\hline
-Propositions 4 and 6 (NN / BN are Mode B) & \texttt{neural\_isModeB}, \texttt{neural\_not\_modeA}, \texttt{spn\_isModeB}, \texttt{spn\_not\_modeA} & A\\
-\hline
-Nondegeneracy lemma & \texttt{nondeg\_not\_dependsOn} & A\\
-\hline
-Collision construction & \texttt{collision\_of\_masked}, \texttt{collision\_general} & A and B\\
-\hline
-Theorems 5 and 7 (closures) & \texttt{theorem5}, \texttt{theorem7\_spn} & A\\
-\hline
-Final theorem & \texttt{finale} & A and B\\
-\hline
-Continuous-side optimality & Euler--Lagrange derivation; not formalized & C\\
-\hline
-Network nondegeneracy & checkable property; not formalized & C\\
-\hline
-\end{tabular}
-\end{table}
-
-Three entries in Table~\ref{tab:artifact} deserve emphasis because they are the ones a reader is most likely to look for. First, Criterion P4 is listed as Tier C and as a premise parameter rather than as a formalized definition: the verified form of Lemma 3 consumes \texttt{hGapPositive}, the hypothesis that the risk gap exceeds the bound, and does not attempt to formalize either the criterion or its component form of Section~\ref{sec:p4}, in which the barrier, bounded-description, and realization conditions are combined into the risk-gap floor by the barrier-to-gap inequality. This is the same dislocation already stated in Section~\ref{ch:verify}, recorded here in the index so that it cannot be missed. Second, the collision construction and the classification and closure declarations are Tier A: their proofs quantify over arbitrary index types, so the toy carrier plays no role in them and the toy end and the continuous end are both instantiations of one proof. Fourth, the general form's premise is a derived statement rather than an assumption: the artifact differentiates the objective along a coordinate line, obtains the per-position coefficient of an arbitrary even differentiable potential, and reaches the first-order condition at a local minimum through the one-dimensional Fermat theorem, with the paper's normalization of constant factors recovered as an explicit scalar. The same derivation is carried out for the quadratic objective, which is where the paper's own stationarity condition of Lemma~1 comes from. Third, Definition~2's indexed family is listed as Tier~A rather than as Tier~C: the family, its constant and frozen specializations, and the algebra of the demand ratio are machine-checked, so what a reader cannot verify from the artifact is not the indexed reading but the step in which a general pairwise potential becomes the coefficient \eqref{eq:focgeneral}, together with the operator-valued couplings that the general form does not claim.
-
-\subsection{Machine-Checked Statements of the Load-Bearing Declarations}
-
-The index names the declarations; the premises are what a reader must inspect to judge the strength of the claim. The listing below gives the statements of the load-bearing declarations verbatim in their logical content, transliterated to ASCII for typesetting (\texttt{R} for the reals, \texttt{not}, \texttt{forall}, \texttt{exists}, \texttt{and}, \texttt{->}, \texttt{!=}, \texttt{>=}, \texttt{<=} for the corresponding symbols). The Unicode source is in the artifact.
-
-The two declarations that carry the shape exclusion of Lemmas 1 and 2:
-
-\begin{quote}
-\small
-\begin{verbatim}
-theorem lemma1_sharp {x d : Depth} {lambda : R} {i j : Pixel}
-    (h1 : FirstOrder x d lambda i) (h2 : FirstOrder x d lambda j)
-    (hHetero : (x i - d i) * kappa d j != (x j - d j) * kappa d i) :
-    False
-
-theorem lemma2_full {d : Depth} {i j : Pixel}
-    (hHetero : kappa d i != kappa d j) :
-    (not exists lambda, lambda != 0 and
-      ParadigmEFirstOrder d lambda i and ParadigmEFirstOrder d lambda j)
-    and forall pred, IsParadigmI pred ->
-        exists p, (forall y, pred p <= pred y) and
-                  (forall y, pred y = pred p -> y = p)
-\end{verbatim}
-\end{quote}
-
-The general form of Lemma 1, in which \texttt{delta} is the derivative of the separable data term at each position and the demand ratio takes the place of the residual. No convexity appears in any of these statements, because each is an implication between stationarity conditions:
-\begin{quote}
-\small
-\begin{verbatim}
-theorem general_proportionality {delta : Pixel -> R} {d : Depth} {lambda : R}
-    {i j : Pixel}
-    (h1 : delta i + lambda * kappa d i = 0)
-    (h2 : delta j + lambda * kappa d j = 0) :
-    delta i * kappa d j = delta j * kappa d i
-
-theorem scalar_family_iff_ratio_agrees (delta : Pixel -> R) (d : Depth)
-    {k : Pixel} (hk : kappa d k != 0) :
-    (exists R : IndexedContextRule, IsScalarFamily R and
-        forall i, GeneralFirstOrder delta d R i) <->
-      forall i, delta i * kappa d k = delta k * kappa d i
-
-theorem frozen_family_two_configs_iff (delta delta' : Pixel -> R)
-    (d d' : Depth) (hkappa : forall i, kappa d i != 0) :
-    (exists R : IndexedContextRule, IsFrozenFamily R and
-        (forall i, GeneralFirstOrder delta d R i) and
-        (forall i, GeneralFirstOrder delta' d' R i)) <->
-      forall i, delta i * kappa d' i = delta' i * kappa d i
-
-theorem frozen_family_infeasible_of_ratio_differs
-    {delta delta' : Pixel -> R} {d d' : Depth} {i : Pixel}
-    (hdiff : delta i * kappa d' i != delta' i * kappa d i) :
-    not exists R : IndexedContextRule, IsFrozenFamily R and
-        (forall j, GeneralFirstOrder delta d R j) and
-        (forall j, GeneralFirstOrder delta' d' R j)
-
-theorem position_wise_escape_witness {delta : Pixel -> R} {d : Depth}
-    {i j : Pixel} (hkappa : forall k, kappa d k != 0)
-    (hne : delta i * kappa d j != delta j * kappa d i) :
-    (exists R : IndexedContextRule, IsFrozenFamily R and
-        IsPositionWise R and forall k, GeneralFirstOrder delta d R k) and
-      not exists R : IndexedContextRule, IsScalarFamily R and
-        forall k, GeneralFirstOrder delta d R k
-\end{verbatim}
-\end{quote}
-
-Two things about this group are worth noting, because they are where the index becomes a formal object rather than a remark. The scalar family is the special case of the frozen family with one common entry, and \texttt{scalar\ttu family\ttu iff\ttu ratio\ttu agrees} and \texttt{frozen\ttu family\ttu two\ttu configs\ttu iff} are the two halves of the corresponding obstruction: at one configuration a scalar exists exactly when the demand ratio is the same at every position, and across two configurations a frozen family exists exactly when the demand ratio at each position is the same in both. The escape witness separates the two by construction, exhibiting a family that satisfies every condition at one configuration while no scalar family does. And the classification of such a table is per position, by the same collision argument as the scalar carrier:
-\begin{quote}
-\small
-\begin{verbatim}
-theorem frozen_table_not_modeA (W : Pixel -> R) (i : Pixel) (hW : W i != 0)
-    (d e : Depth) (hd0 : d 0 = e 0) (hd1 : d 1 != e 1) :
-    not IsModeA (tableRule W i)
-\end{verbatim}
-\end{quote}
-\noindent This has the shape of \texttt{neural\ttu not\ttu modeA} with the scalar entry \texttt{W} replaced by the table entry \texttt{W i}, so the number of entries does not enter: it is the machine-checked form of the sentence that one scalar is a parameter table and a million parameters are a parameter table as well.
-
-The derivation of the general first-order condition from the objective, which is what makes the general form's premise a consequence rather than an assumption. The statements are given in full because this is the one place where analysis, rather than algebra, enters the verification:
-\begin{quote}
-\small
-\begin{verbatim}
-theorem deriv_odd_of_even {phi phi' : R -> R}
-    (heven : forall x, phi (-x) = phi x)
-    (hphi : forall x, HasDerivAt phi (phi' x) x) (x : R) :
-    phi' (-x) = -phi' x
-
-theorem PairwiseTerm_hasDerivAt {phi phi' : R -> R}
-    (heven : forall x, phi (-x) = phi x)
-    (hphi : forall x, HasDerivAt phi (phi' x) x)
-    (d : Depth) (i : Pixel) :
-    HasDerivAt (fun t => PairwiseTerm phi (Function.update d i t))
-      (KappaPhi phi' d i) (d i)
-
-theorem dataTerm_hasDerivAt {f f' : Pixel -> R -> R}
-    (hf : forall k x, HasDerivAt (f k) (f' k x) x)
-    (d : Depth) (i : Pixel) :
-    HasDerivAt (fun t => sum k, f k (Function.update d i t k))
-      (f' i (d i)) (d i)
-
-theorem GeneralObjective_hasDerivAt {phi phi' : R -> R}
-    {f f' : Pixel -> R -> R}
-    (heven : forall x, phi (-x) = phi x)
-    (hphi : forall x, HasDerivAt phi (phi' x) x)
-    (hf : forall k x, HasDerivAt (f k) (f' k x) x)
-    (lambda : R) (d : Depth) (i : Pixel) :
-    HasDerivAt (fun t => GeneralObjective phi f lambda
-      (Function.update d i t))
-      (f' i (d i) + lambda * KappaPhi phi' d i) (d i)
-
-theorem general_first_order_of_local_min {phi phi' : R -> R}
-    {f f' : Pixel -> R -> R}
-    (heven : forall x, phi (-x) = phi x)
-    (hphi : forall x, HasDerivAt phi (phi' x) x)
-    (hf : forall k x, HasDerivAt (f k) (f' k x) x)
-    (lambda : R) (d : Depth) (i : Pixel)
-    (hmin : IsLocalMin (fun t => GeneralObjective phi f lambda
-      (Function.update d i t)) (d i)) :
-    f' i (d i) + lambda * KappaPhi phi' d i = 0
-
-theorem KappaPhi_quadratic (d : Depth) (i : Pixel) :
-    KappaPhi (fun x => 2 * x) d i = 4 * kappa d i
-
-theorem FirstOrder_of_quadratic_local_min (x d : Depth)
-    (lambda : R) (i : Pixel)
-    (hmin : IsLocalMin (fun t => GeneralObjective (fun y => y ^ 2)
-      (fun k t => (x k - t) ^ 2) lambda
-      (Function.update d i t)) (d i)) :
-    FirstOrder x d (2 * lambda) i
-\end{verbatim}
-\end{quote}
-
-Note what the last statement says. The paper's stationarity condition of Lemma~1 assumes the first-order form and normalizes the constant factors by hand; here the condition is obtained from the quadratic objective as it stands, and the normalization is an explicit scalar: stationarity at a local minimum along a coordinate line holds exactly with the scalar \texttt{2 * lambda}, because the data term contributes \texttt{2 (d\ttu i - x\ttu i)} and the squared potential contributes \texttt{4 * lambda * kappa\ttu i}. The premise is thereby derived rather than assumed, and the derivation uses no property of the carrier beyond the differentiability of the potential and of the data term.
-
-The measure-theoretic core of Lemma 3, in its general form and with upper-tail realization demoted from premise to theorem:
-
-\begin{quote}
-\small
-\begin{verbatim}
-theorem tail_realization {Omega : Type} [MeasurableSpace Omega]
-    {mu : Measure Omega} [IsProbabilityMeasure mu] {f : Omega -> R}
-    (hf : Integrable f mu) :
-    exists omega, integral f dmu <= f omega
-
-theorem lemma3_general {Omega : Type} [MeasurableSpace Omega]
-    {mu : Measure Omega} [IsProbabilityMeasure mu]
-    {loss : Omega -> R} (hloss : Integrable loss mu)
-    {rmin eps : R} (hmin : 0 <= rmin) (hgap : integral loss dmu - rmin > eps)
-    (hbound : forall omega, loss omega <= eps) :
-    False
-\end{verbatim}
-\end{quote}
-
-Note what is and is not a premise here. In \texttt{lemma3\_general} the upper-tail realization premise no longer appears: it is discharged by \texttt{tail\_realization}, which holds for an arbitrary probability measure and an arbitrary integrable function. The premises that remain are the two the paper declares: a risk gap exceeding the bound, and nonnegativity of the minimum risk. The carrier side, the collision argument, and the two closures:
-
-\begin{quote}
-\small
-\begin{verbatim}
-theorem neural_not_modeA (W : R) (hW : W != 0)
-    (d e : Depth) (hd0 : d 0 = e 0) (hd1 : d 1 != e 1) :
-    not IsModeA (neuralRule W)
-
-theorem theorem5 (sys : System) (hP3 : P3 sys) (W : R) (hW : W != 0) :
-    not IsModeA (neuralRule W)
-
-theorem theorem7_spn (sys : System) (hP3 : P3 sys)
-    (p : SpnParams) (hw : p.w != 0) :
-    not IsModeA (spnRule p)
-\end{verbatim}
-\end{quote}
-
-Finally the composition itself, which is the existential negation's algebraic form in one conjunction:
-
-\begin{quote}
-\small
-\begin{verbatim}
-theorem finale (sys : System) (hP3 : P3 sys)
-    (m : MeasureSetup) (eps : R) (heps : eps > 0) (W : R) (hW : W != 0)
-    (hTail : exists d, m.lossR (neuralRule W) d >= m.riskP (neuralRule W))
-    (hGapPositive : m.gapP (neuralRule W) > eps)
-    (hNonnegMin : m.riskMin (neuralRule W) >= 0) :
-    not IsModeA (neuralRule W)
-    and not GeneralizationBound m eps (neuralRule W)
-\end{verbatim}
-\end{quote}
-
-The premise list of \texttt{finale} is the complete inventory of what the machine-checked composition assumes: Criterion P3 as a hypothesis on the system, the three measure-theoretic premises of Lemma 3, and the nondegeneracy \texttt{W != 0} of the carrier's parameter. Nothing else enters, and in particular no premise is smuggled in as a definitional unfolding; the gap premise is assumed here directly, and its derivation from the barrier, bounded-description, and realization conditions of Section~\ref{sec:p4} is prose. This is the concrete sense in which the artifact is inspectable: the reader can check each of these premise lists against the prose of Section~\ref{ch:falsify} and see exactly where the two agree and where, in the case of P4 and in the differentiation of the general pairwise potential, the verified form is explicitly weaker.
-
-\subsection{Maintaining the Correspondence}
-
-The index of Table~\ref{tab:artifact} and the statements of the previous subsection are kept in correspondence with the sources by the repository's own layout: \texttt{README.md} carries the same index in Markdown, \texttt{package-lean-proof.sh} packages the sources together with the two version-lock files while excluding the build cache, and the single-file submission version of this paper is regenerated from \texttt{sections/} rather than edited by hand. A reader who finds a discrepancy between a statement above and the source should treat the source in \texttt{lean-proof/FormalProof.lean} as authoritative and report it; the index is a map, not a second copy of the development.
-
+% The artifact index (layout, reproduction, axiom budget, the map from paper
+% items to Lean declarations, and the premise lists of the load-bearing
+% declarations) is published as the separately hosted online appendix, built
+% from online-appendix/ by  ./build.sh appendix . It is deliberately kept out
+% of this file: appendix pages count toward the JMLR page limit, and the paper
+% points to the online appendix from its verification section instead.
 
 \end{document}

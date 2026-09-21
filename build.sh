@@ -6,8 +6,11 @@
 #
 #   ./build.sh            # build main.tex   (modular source, out: build-main/)
 #   ./build.sh paper      # build paper.tex  (single file,    out: build-paper/)
-#   ./build.sh release    # refresh paper.tex from sections/, build it, and
-#                         # copy the result to ./paper.pdf (the committed PDF)
+#   ./build.sh appendix   # build the online appendix (online-appendix/main.tex,
+#                         #                    out: build-appendix/main.pdf)
+#   ./build.sh release    # refresh paper.tex from sections/, build it, copy the
+#                         # result to ./paper.pdf (the committed PDF), and build
+#                         # the online appendix into ./online-appendix.pdf
 #   ./build.sh --help
 #
 # Run `python3 flatten.py` first if you edited sections/*.tex and want the
@@ -26,13 +29,17 @@ cd -- "$SCRIPT_DIR"
 
 usage() {
   cat <<'EOF'
-Usage: ./build.sh [main|paper|release]
+Usage: ./build.sh [main|paper|appendix|release]
 
-  main     build main.tex  (modular source)       -> build-main/main.pdf
-  paper    build paper.tex (single-file version)  -> build-paper/paper.pdf
-  release  refresh paper.tex from main.tex + sections/*.tex via flatten.py,
-           build it, and copy the result to ./paper.pdf at the repository
-           root. Refuses to overwrite ./paper.pdf if the build reports errors.
+  main      build main.tex  (modular source)       -> build-main/main.pdf
+  paper     build paper.tex (single-file version)  -> build-paper/paper.pdf
+  appendix  build the online appendix              -> build-appendix/main.pdf
+            (online-appendix/main.tex; no bibtex pass, no \bibliography)
+  release   refresh paper.tex from main.tex + sections/*.tex via flatten.py,
+            build it, and copy the result to ./paper.pdf at the repository
+            root; then build the online appendix and copy it to
+            ./online-appendix.pdf. Refuses to overwrite ./paper.pdf if the
+            build reports errors.
   (default: main)
 
 Environment overrides:
@@ -44,12 +51,16 @@ EOF
 
 TARGET="${1:-main}"
 RELEASE=0
+SRC_TEX=""
+WITH_BIBTEX=1
 case "$TARGET" in
   -h|--help) usage; exit 0 ;;
   main|paper) ;;
+  appendix) SRC_TEX="online-appendix/main.tex"; WITH_BIBTEX=0 ;;
   release) RELEASE=1; TARGET=paper ;;
   *) echo "build.sh: unknown target '$TARGET'" >&2; usage >&2; exit 2 ;;
 esac
+[ -n "$SRC_TEX" ] || SRC_TEX="$TARGET.tex"
 
 if [ "$RELEASE" -eq 1 ] && ! command -v python3 >/dev/null 2>&1; then
   cat >&2 <<'EOF'
@@ -142,13 +153,17 @@ run_pass() {
   "$@" >"$log" 2>&1 || true
 }
 
-run_pass "$OUT/pass1.log" "$PDFLATEX_CMD" -interaction=nonstopmode -output-directory="$OUT" "$TARGET.tex"
+run_pass "$OUT/pass1.log" "$PDFLATEX_CMD" -interaction=nonstopmode -output-directory="$OUT" "$SRC_TEX"
 # bibtex must run from this directory so that reference.bib is found
-run_pass "$OUT/bibtex.log" "$BIBTEX_CMD" "$OUT/$TARGET"
-run_pass "$OUT/pass2.log" "$PDFLATEX_CMD" -interaction=nonstopmode -output-directory="$OUT" "$TARGET.tex"
-run_pass "$OUT/pass3.log" "$PDFLATEX_CMD" -interaction=nonstopmode -output-directory="$OUT" "$TARGET.tex"
+if [ "$WITH_BIBTEX" -eq 1 ]; then
+  run_pass "$OUT/bibtex.log" "$BIBTEX_CMD" "$OUT/$TARGET"
+else
+  : > "$OUT/bibtex.log"
+fi
+run_pass "$OUT/pass2.log" "$PDFLATEX_CMD" -interaction=nonstopmode -output-directory="$OUT" "$SRC_TEX"
+run_pass "$OUT/pass3.log" "$PDFLATEX_CMD" -interaction=nonstopmode -output-directory="$OUT" "$SRC_TEX"
 
-echo "--- $TARGET.tex ---"
+echo "--- $SRC_TEX ---"
 echo "errors:      $(count '^! ' "$OUT/pass3.log")"
 echo "undefined:   $(count 'undefined' "$OUT/pass3.log")"
 echo "overfull:    $(count 'Overfull' "$OUT/pass3.log")"
@@ -176,4 +191,16 @@ if [ "$RELEASE" -eq 1 ]; then
   # content did not change rather than that the build merely repeated itself.
   echo "note: the build is byte-reproducible, so after rebuilding unchanged sources"
   echo "      paper.pdf is unchanged too; 'git status' is a reliable signal."
+
+  # The online appendix is a separate published artifact with the same gates.
+  echo "--- online appendix ---"
+  "$SCRIPT_DIR/build.sh" appendix
+  APX_SRC="$SCRIPT_DIR/build-appendix/main.pdf"
+  APX_ERR="$(count '^! ' "$SCRIPT_DIR/build-appendix/pass3.log")"
+  if [ "$APX_ERR" != "0" ] || [ ! -f "$APX_SRC" ]; then
+    echo "release: online appendix build failed ($APX_ERR error(s)); ./online-appendix.pdf NOT updated." >&2
+    exit 1
+  fi
+  cp -f -- "$APX_SRC" "$SCRIPT_DIR/online-appendix.pdf"
+  echo "updated online-appendix.pdf from $APX_SRC ($(wc -c < "$SCRIPT_DIR/online-appendix.pdf" | tr -d ' ') bytes)"
 fi

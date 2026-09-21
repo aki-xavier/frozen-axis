@@ -9,7 +9,7 @@ The artifact is a self-contained Lean~4 project distributed in the \texttt{lean-
 \begin{center}
 \texttt{https://github.com/aki-xavier/frozen-axis}
 \end{center}
-under the \texttt{lean-proof} path. It consists of four files: \texttt{FormalProof.lean}, the single development file of 759 lines containing every definition, lemma, proposition, theorem, the final theorem, the example variants, and the generalization upgrades; \texttt{lakefile.lean}, which pins Mathlib to the matching release; \texttt{lake-manifest.json}, which locks every transitive dependency to an exact revision; and \texttt{lean-toolchain}, which pins the toolchain to \texttt{leanprover/lean4:v4.34.0}. No component outside this directory is required.
+under the \texttt{lean-proof} path. It consists of four files: \texttt{FormalProof.lean}, the single development file of 1004 lines containing every definition, lemma, proposition, theorem, the final theorem, the example variants, and the generalization upgrades; \texttt{lakefile.lean}, which pins Mathlib to the matching release; \texttt{lake-manifest.json}, which locks every transitive dependency to an exact revision; and \texttt{lean-toolchain}, which pins the toolchain to \texttt{leanprover/lean4:v4.34.0}. No component outside this directory is required.
 
 Reproduction is a single command from inside the directory:
 \begin{center}
@@ -21,7 +21,7 @@ The build was executed on the developer's machine at the blob hash recorded in S
 \end{center}
 for each of \texttt{finale}, \texttt{lemma1\_sharp}, and \texttt{tail\_realization}, and, by the same command, for the remaining declarations of the development. These three are Lean's own standard axioms, the ones every Mathlib development inherits; in particular the list contains no \texttt{sorryAx}, so no step of the chain is discharged by an unproved assertion. The artifact is therefore auditable at the level of the proof term, not merely at the level of a reported build outcome.
 
-One scope remark belongs here, because it delimits what the artifact does and does not certify. The verified content is the deductive chain: definitions, the mask criterion, Lemmas 1 to 3, Propositions 4 and 6, Theorems 5 and 7, and their composition in \texttt{finale}. The premises of that chain which concern the modeling side rather than the algebra are not certified, because they are not theorems: the satisfaction of Criterion P4 on real tasks appears as an explicit premise parameter, the continuous-side Euler--Lagrange derivation is not formalized, and network nondegeneracy is a checkable property. Section~\ref{sec:layers} assigns each component its tier, and Table~\ref{tab:layers} is the authoritative statement of that boundary.
+One scope remark belongs here, because it delimits what the artifact does and does not certify. The verified content is the deductive chain: definitions, the mask criterion, Lemmas 1 to 3, Propositions 4 and 6, Theorems 5 and 7, and their composition in \texttt{finale}. The premises of that chain which concern the modeling side rather than the algebra are not certified, because they are not theorems: the satisfaction of Criterion P4 on real tasks appears as an explicit premise parameter, the continuous-side Euler--Lagrange derivation is not formalized, including the differentiation that produces \eqref{eq:focgeneral} from a general pairwise potential, and network nondegeneracy is a checkable property. Section~\ref{sec:layers} assigns each component its tier, and Table~\ref{tab:layers} is the authoritative statement of that boundary.
 
 \subsection{Index from Paper Items to Machine-Checked Declarations}
 
@@ -43,7 +43,7 @@ Mask criterion, both directions & \texttt{illPosed\_of\_hole}, \texttt{not\_illP
 \hline
 Mask criterion in kernel form & \texttt{illPosed\_iff\_nontrivial\_ker} & B\\
 \hline
-Definition 2 (context rule) & \texttt{ContextRule} (scalar specialization; the index family is prose only) & C\\
+Definition 2 (context rule) & \texttt{IndexedContextRule}, \texttt{IsScalarFamily}, \texttt{IsFrozenFamily} & A\\
 \hline
 Definition 3 (Mode A / Mode B) & \texttt{IsModeA}, \texttt{DependsOnlyOn}, \texttt{IsModeB} & A\\
 \hline
@@ -57,6 +57,8 @@ Criterion P4, component form (Section~\ref{sec:p4}) & premise parameter \texttt{
 \hline
 Lemma 1 & \texttt{lemma1\_sharp}, \texttt{lemma1\_final}, \texttt{foc\_proportionality} & A\\
 \hline
+Lemma 1, general form, \eqref{eq:proportiongeneral} and \eqref{eq:tablecondition} & \texttt{general\ttu proportionality}, \texttt{scalar\ttu family\ttu iff\ttu ratio\ttu agrees}, \texttt{frozen\ttu family\ttu two\ttu configs\ttu iff}, \texttt{position\ttu wise\ttu escape\ttu witness} & A\\
+\hline
 Lemma 2, extrinsic side & \texttt{lemma2\_full}, \texttt{lemma2\_E\_stationary\_infeasible} & A\\
 \hline
 Lemma 2, endogenous side & \texttt{paradigmI\_unique\_minimizer}, \texttt{paradigmI\_inner\_unique}, \texttt{paradigmI\_L2\_ae} & A and B\\
@@ -65,9 +67,7 @@ Lemma 3, toy form & \texttt{lemma3\_final2} & B\\
 \hline
 Lemma 3, general measure form & \texttt{lemma3\_general}, \texttt{tail\_realization} & B\\
 \hline
-Lemma 3, gap mechanism, context-dependent demand & \texttt{modeB\_positive\_gap}, \texttt{modeA\_loss\_lower\_bound}, \texttt{modeA\_loss\_attained}, \texttt{toy\_positive\_gap} & A\\
-\hline
-Lemma 3, gap mechanism, evidence-computable demand (Assumption~A0) & \texttt{evidenceTarget}, \texttt{modeB\_evidence\_gap}, \texttt{modeA\_evidence\_attained}, \texttt{evidence\_gap\_is\_full} & A\\
+Lemma 3, gap mechanism, both demands of Example~\ref{ex:gap} & \texttt{toy\_positive\_gap}, \texttt{modeB\_positive\_gap}, \texttt{modeA\_loss\_attained}; \texttt{evidence\_gap\_is\_full}, \texttt{modeB\_evidence\_gap}, \texttt{modeA\_evidence\_attained} & A\\
 \hline
 Propositions 4 and 6 (NN / BN are Mode B) & \texttt{neural\_isModeB}, \texttt{neural\_not\_modeA}, \texttt{spn\_isModeB}, \texttt{spn\_not\_modeA} & A\\
 \hline
@@ -86,7 +86,7 @@ Network nondegeneracy & checkable property; not formalized & C\\
 \end{tabular}
 \end{table}
 
-Two entries in Table~\ref{tab:artifact} deserve emphasis because they are the ones a reader is most likely to look for. First, Criterion P4 is listed as Tier C and as a premise parameter rather than as a formalized definition: the verified form of Lemma 3 consumes \texttt{hGapPositive}, the hypothesis that the risk gap exceeds the bound, and does not attempt to formalize either the criterion or its component form of Section~\ref{sec:p4}, in which the barrier, bounded-description, and realization conditions are combined into the risk-gap floor by the barrier-to-gap inequality. This is the same dislocation already stated in Section~\ref{ch:verify}, recorded here in the index so that it cannot be missed. Second, the collision construction and the classification and closure declarations are Tier A: their proofs quantify over arbitrary index types, so the toy carrier plays no role in them and the toy end and the continuous end are both instantiations of one proof.
+Three entries in Table~\ref{tab:artifact} deserve emphasis because they are the ones a reader is most likely to look for. First, Criterion P4 is listed as Tier C and as a premise parameter rather than as a formalized definition: the verified form of Lemma 3 consumes \texttt{hGapPositive}, the hypothesis that the risk gap exceeds the bound, and does not attempt to formalize either the criterion or its component form of Section~\ref{sec:p4}, in which the barrier, bounded-description, and realization conditions are combined into the risk-gap floor by the barrier-to-gap inequality. This is the same dislocation already stated in Section~\ref{ch:verify}, recorded here in the index so that it cannot be missed. Second, the collision construction and the classification and closure declarations are Tier A: their proofs quantify over arbitrary index types, so the toy carrier plays no role in them and the toy end and the continuous end are both instantiations of one proof. Third, Definition~2's indexed family is listed as Tier~A rather than as Tier~C: the family, its constant and frozen specializations, and the algebra of the demand ratio are machine-checked, so what a reader cannot verify from the artifact is not the indexed reading but the step in which a general pairwise potential becomes the coefficient \eqref{eq:focgeneral}, together with the operator-valued couplings that the general form does not claim.
 
 \subsection{Machine-Checked Statements of the Load-Bearing Declarations}
 
@@ -111,6 +111,57 @@ theorem lemma2_full {d : Depth} {i j : Pixel}
                   (forall y, pred y = pred p -> y = p)
 \end{verbatim}
 \end{quote}
+
+The general form of Lemma 1, in which \texttt{delta} is the derivative of the separable data term at each position and the demand ratio takes the place of the residual. No convexity appears in any of these statements, because each is an implication between stationarity conditions:
+\begin{quote}
+\small
+\begin{verbatim}
+theorem general_proportionality {delta : Pixel -> R} {d : Depth} {lambda : R}
+    {i j : Pixel}
+    (h1 : delta i + lambda * kappa d i = 0)
+    (h2 : delta j + lambda * kappa d j = 0) :
+    delta i * kappa d j = delta j * kappa d i
+
+theorem scalar_family_iff_ratio_agrees (delta : Pixel -> R) (d : Depth)
+    {k : Pixel} (hk : kappa d k != 0) :
+    (exists R : IndexedContextRule, IsScalarFamily R and
+        forall i, GeneralFirstOrder delta d R i) <->
+      forall i, delta i * kappa d k = delta k * kappa d i
+
+theorem frozen_family_two_configs_iff (delta delta' : Pixel -> R)
+    (d d' : Depth) (hkappa : forall i, kappa d i != 0) :
+    (exists R : IndexedContextRule, IsFrozenFamily R and
+        (forall i, GeneralFirstOrder delta d R i) and
+        (forall i, GeneralFirstOrder delta' d' R i)) <->
+      forall i, delta i * kappa d' i = delta' i * kappa d i
+
+theorem frozen_family_infeasible_of_ratio_differs
+    {delta delta' : Pixel -> R} {d d' : Depth} {i : Pixel}
+    (hdiff : delta i * kappa d' i != delta' i * kappa d i) :
+    not exists R : IndexedContextRule, IsFrozenFamily R and
+        (forall j, GeneralFirstOrder delta d R j) and
+        (forall j, GeneralFirstOrder delta' d' R j)
+
+theorem position_wise_escape_witness {delta : Pixel -> R} {d : Depth}
+    {i j : Pixel} (hkappa : forall k, kappa d k != 0)
+    (hne : delta i * kappa d j != delta j * kappa d i) :
+    (exists R : IndexedContextRule, IsFrozenFamily R and
+        IsPositionWise R and forall k, GeneralFirstOrder delta d R k) and
+      not exists R : IndexedContextRule, IsScalarFamily R and
+        forall k, GeneralFirstOrder delta d R k
+\end{verbatim}
+\end{quote}
+
+Two things about this group are worth noting, because they are where the index becomes a formal object rather than a remark. The scalar family is the special case of the frozen family with one common entry, and \texttt{scalar\ttu family\ttu iff\ttu ratio\ttu agrees} and \texttt{frozen\ttu family\ttu two\ttu configs\ttu iff} are the two halves of the corresponding obstruction: at one configuration a scalar exists exactly when the demand ratio is the same at every position, and across two configurations a frozen family exists exactly when the demand ratio at each position is the same in both. The escape witness separates the two by construction, exhibiting a family that satisfies every condition at one configuration while no scalar family does. And the classification of such a table is per position, by the same collision argument as the scalar carrier:
+\begin{quote}
+\small
+\begin{verbatim}
+theorem frozen_table_not_modeA (W : Pixel -> R) (i : Pixel) (hW : W i != 0)
+    (d e : Depth) (hd0 : d 0 = e 0) (hd1 : d 1 != e 1) :
+    not IsModeA (tableRule W i)
+\end{verbatim}
+\end{quote}
+\noindent This has the shape of \texttt{neural\ttu not\ttu modeA} with the scalar entry \texttt{W} replaced by the table entry \texttt{W i}, so the number of entries does not enter: it is the machine-checked form of the sentence that one scalar is a parameter table and a million parameters are a parameter table as well.
 
 The measure-theoretic core of Lemma 3, in its general form and with upper-tail realization demoted from premise to theorem:
 
@@ -164,7 +215,7 @@ theorem finale (sys : System) (hP3 : P3 sys)
 \end{verbatim}
 \end{quote}
 
-The premise list of \texttt{finale} is the complete inventory of what the machine-checked composition assumes: Criterion P3 as a hypothesis on the system, the three measure-theoretic premises of Lemma 3, and the nondegeneracy \texttt{W != 0} of the carrier's parameter. Nothing else enters, and in particular no premise is smuggled in as a definitional unfolding; the gap premise is assumed here directly, and its derivation from the barrier, bounded-description, and realization conditions of Section~\ref{sec:p4} is prose. This is the concrete sense in which the artifact is inspectable: the reader can check each of these premise lists against the prose of Section~\ref{ch:falsify} and see exactly where the two agree and where, in the single case of P4, the verified form is explicitly weaker.
+The premise list of \texttt{finale} is the complete inventory of what the machine-checked composition assumes: Criterion P3 as a hypothesis on the system, the three measure-theoretic premises of Lemma 3, and the nondegeneracy \texttt{W != 0} of the carrier's parameter. Nothing else enters, and in particular no premise is smuggled in as a definitional unfolding; the gap premise is assumed here directly, and its derivation from the barrier, bounded-description, and realization conditions of Section~\ref{sec:p4} is prose. This is the concrete sense in which the artifact is inspectable: the reader can check each of these premise lists against the prose of Section~\ref{ch:falsify} and see exactly where the two agree and where, in the case of P4 and in the differentiation of the general pairwise potential, the verified form is explicitly weaker.
 
 \subsection{Maintaining the Correspondence}
 

@@ -714,6 +714,236 @@ theorem lemma3_general {Ω : Type*} [MeasurableSpace Ω]
   have h1 : ∫ ω, loss ω ∂μ ≤ ε := le_trans hω0 (hbound ω0)
   linarith
 
+/-! ## 8.9 Definition 2 in general (indexed) form, and the general form of
+Lemma 1 for a separable data term with a general pairwise potential
+
+Definition 2 of the paper states the context rule as a family `(R_i)_{i∈I}` and
+names two specializations: the family is *global* when it is constant across
+positions, and *position-wise* otherwise. Sections 3-5 formalize the scalar
+specialization (`ContextRule := Depth → ℝ`); this section supplies the indexed
+object itself, so that Definition 2's general form and the two claims the paper
+makes about it are machine-checked rather than prose.
+
+The point is a separation of the two exclusions. Lemma 1's algebra excludes the
+family that is constant *across positions*: for such a family the stationarity
+conditions demand one ratio `δ_i / κ_i(d)` at every position, so heterogeneity
+of the demand contradicts it. A family with one entry per position solves the
+stationarity conditions position by position and therefore escapes the algebra
+on any single configuration (`position_wise_escape_witness`). What it does not
+escape is the source criterion, because its values are fixed before inference:
+one position whose demanded ratio changes between two admissible configurations
+excludes every frozen family, whatever its number of entries
+(`frozen_family_two_configs_iff`), and the classification is per position and
+does not turn on the size of the table (`frozen_table_not_modeA`).
+
+The general potential enters only through the per-position coefficient of the
+pairwise term. For a separable data term `Σ_i f_i(d_i)` and an even
+differentiable potential `φ`, differentiating the objective in `d_i` gives
+`f_i'(d_i) + 2λ Σ_j φ'(d_i - d_j) = 0`, so the algebra below applies with
+`δ_i = f_i'(d_i)` and `κ_i(d) = 2 Σ_j φ'(d_i - d_j)`; the squared potential of
+Section 5 gives the `kappa` of Section 5 up to the constant factor that Lemma 1
+already normalizes. As with Lemma 1, no convexity is used: the stationarity
+conditions are necessary conditions, and the exclusion is an exclusion of
+stationary points. -/
+
+/-- Definition 2, family form: a context rule is a family indexed by position,
+each member mapping a structure field to the strength used at that position. -/
+abbrev IndexedContextRule := Pixel → Depth → ℝ
+
+/-- The family induced by a single mapping (the "global" reading). -/
+def constantFamily (R : ContextRule) : IndexedContextRule := fun _ d => R d
+
+/-- Definition 2, *global*: the family is constant across positions, so one
+mapping is used at every position. -/
+def IsGlobalFamily (R : IndexedContextRule) : Prop :=
+  ∃ R₀ : ContextRule, ∀ i d, R i d = R₀ d
+
+/-- Definition 2, *position-wise*: the family is not constant. -/
+def IsPositionWise (R : IndexedContextRule) : Prop := ¬ IsGlobalFamily R
+
+/-- The single scalar λ of classical regularization: the global family whose one
+mapping is constant. -/
+def IsScalarFamily (R : IndexedContextRule) : Prop :=
+  ∃ lambda : ℝ, ∀ i d, R i d = lambda
+
+/-- A frozen family: one number per position, fixed before inference and hence
+independent of the instance. The scalar family is the case of one entry. -/
+def IsFrozenFamily (R : IndexedContextRule) : Prop :=
+  ∃ W : Pixel → ℝ, ∀ i d, R i d = W i
+
+/-- The scalar family is exactly the global family whose values are frozen:
+"the single scalar λ of classical regularization is exactly this case". -/
+theorem scalar_iff_global_and_frozen (R : IndexedContextRule) :
+    IsScalarFamily R ↔ IsGlobalFamily R ∧ IsFrozenFamily R := by
+  constructor
+  · intro h
+    rcases h with ⟨lambda, hl⟩
+    exact ⟨⟨fun _ => lambda, fun i d => hl i d⟩, ⟨fun _ => lambda, fun i d => hl i d⟩⟩
+  · rintro ⟨⟨R₀, hR₀⟩, ⟨W, hW⟩⟩
+    refine ⟨W 0, fun i d => ?_⟩
+    calc R i d = W i := hW i d
+      _ = R₀ d := by rw [← hW i d]; exact hR₀ i d
+      _ = W 0 := by rw [← hR₀ 0 d]; exact hW 0 d
+
+/-- The indexed first-order condition at a position, in the general form: `δ_i`
+is the derivative of the separable data term at position `i` (`δ_i = d_i - x_i`
+for the squared data term of Lemma 1), `R i d` is the strength the family
+prescribes at that position, and `kappa d i` is the per-position coefficient of
+the pairwise term. -/
+def GeneralFirstOrder (δ : Pixel → ℝ) (d : Depth) (R : IndexedContextRule)
+    (i : Pixel) : Prop :=
+  δ i + R i d * kappa d i = 0
+
+/-- The algebraic core of Lemma 1 in general form: it uses neither the quadratic
+data term nor the quadratic potential, only the two stationarity equations, which
+is why no convexity enters. -/
+theorem general_proportionality {δ : Pixel → ℝ} {d : Depth} {lambda : ℝ}
+    {i j : Pixel}
+    (h1 : δ i + lambda * kappa d i = 0) (h2 : δ j + lambda * kappa d j = 0) :
+    δ i * kappa d j = δ j * kappa d i := by
+  have e1 : δ i = -(lambda * kappa d i) := by linarith
+  have e2 : δ j = -(lambda * kappa d j) := by linarith
+  rw [e1, e2]; ring
+
+/-- Minimal obstruction to the scalar family at one configuration: a scalar λ
+satisfies the stationarity conditions at every position precisely when the
+demanded ratio δ_i/κ_i(d) is the same at every position. Stated cross-multiplied
+against a reference position with nonzero coefficient, so no division by κ
+appears in the statement. -/
+theorem scalar_family_iff_ratio_agrees (δ : Pixel → ℝ) (d : Depth) {k : Pixel}
+    (hk : kappa d k ≠ 0) :
+    (∃ R : IndexedContextRule, IsScalarFamily R ∧ ∀ i, GeneralFirstOrder δ d R i) ↔
+      ∀ i, δ i * kappa d k = δ k * kappa d i := by
+  constructor
+  · rintro ⟨R, ⟨lambda, hl⟩, hFOC⟩ i
+    have h1 : δ i + lambda * kappa d i = 0 := by
+      have := hFOC i; unfold GeneralFirstOrder at this; rwa [hl i d] at this
+    have h2 : δ k + lambda * kappa d k = 0 := by
+      have := hFOC k; unfold GeneralFirstOrder at this; rwa [hl k d] at this
+    exact general_proportionality h1 h2
+  · intro h
+    refine ⟨fun _ _ => -(δ k) / kappa d k,
+      ⟨-(δ k) / kappa d k, fun i d' => rfl⟩, fun i => ?_⟩
+    unfold GeneralFirstOrder
+    have hcancel : (-(δ k) / kappa d k) * kappa d k = -(δ k) := by
+      rw [div_eq_mul_inv, mul_assoc, inv_mul_cancel₀ hk, mul_one]
+    have hprod : (δ i + (-(δ k) / kappa d k) * kappa d i) * kappa d k = 0 := by
+      calc (δ i + (-(δ k) / kappa d k) * kappa d i) * kappa d k
+          = δ i * kappa d k + ((-(δ k) / kappa d k) * kappa d k) * kappa d i := by ring
+        _ = δ i * kappa d k + (-(δ k)) * kappa d i := by rw [hcancel]
+        _ = 0 := by linarith [h i]
+    exact (mul_eq_zero.mp hprod).resolve_right hk
+
+/-- Minimal impossibility condition for frozen families: a frozen family
+satisfies the stationarity conditions at two configurations precisely when, at
+every position, the demanded ratio agrees between the two. The condition is
+per position, so the number of entries in the table is irrelevant. -/
+theorem frozen_family_two_configs_iff (δ δ' : Pixel → ℝ) (d d' : Depth)
+    (hκ : ∀ i, kappa d i ≠ 0) :
+    (∃ R : IndexedContextRule, IsFrozenFamily R ∧
+        (∀ i, GeneralFirstOrder δ d R i) ∧ (∀ i, GeneralFirstOrder δ' d' R i)) ↔
+      ∀ i, δ i * kappa d' i = δ' i * kappa d i := by
+  constructor
+  · rintro ⟨R, ⟨W, hW⟩, h1, h2⟩ i
+    have e1 : W i * kappa d i = -(δ i) := by
+      have := h1 i; unfold GeneralFirstOrder at this; rw [hW i d] at this; linarith
+    have e2 : W i * kappa d' i = -(δ' i) := by
+      have := h2 i; unfold GeneralFirstOrder at this; rw [hW i d'] at this; linarith
+    have he1 : δ i = -(W i * kappa d i) := by linarith
+    have he2 : δ' i = -(W i * kappa d' i) := by linarith
+    rw [he1, he2]; ring
+  · intro h
+    refine ⟨fun i _ => -(δ i) / kappa d i,
+      ⟨fun i => -(δ i) / kappa d i, fun i d'' => rfl⟩, ?_, ?_⟩
+    · intro i
+      simp only [GeneralFirstOrder]
+      have hcancel : (-(δ i) / kappa d i) * kappa d i = -(δ i) := by
+        rw [div_eq_mul_inv, mul_assoc, inv_mul_cancel₀ (hκ i), mul_one]
+      rw [hcancel]; ring
+    · intro i
+      simp only [GeneralFirstOrder]
+      have hratio : (-(δ i) / kappa d i) * kappa d' i
+          = -(δ i * kappa d' i / kappa d i) := by
+        rw [div_eq_mul_inv, div_eq_mul_inv]
+        ring
+      rw [hratio, h i, mul_div_cancel_right₀ _ (hκ i)]
+      ring
+
+/-- The same obstruction, in the form the paper states it: one single position
+whose demanded ratio changes between two admissible configurations excludes every
+frozen coefficient family, constant or position-wise. -/
+theorem frozen_family_infeasible_of_ratio_differs {δ δ' : Pixel → ℝ} {d d' : Depth}
+    {i : Pixel} (hdiff : δ i * kappa d' i ≠ δ' i * kappa d i) :
+    ¬ ∃ R : IndexedContextRule, IsFrozenFamily R ∧
+        (∀ j, GeneralFirstOrder δ d R j) ∧ (∀ j, GeneralFirstOrder δ' d' R j) := by
+  rintro ⟨R, ⟨W, hW⟩, h1, h2⟩
+  apply hdiff
+  have e1 : W i * kappa d i = -(δ i) := by
+    have := h1 i; unfold GeneralFirstOrder at this; rw [hW i d] at this; linarith
+  have e2 : W i * kappa d' i = -(δ' i) := by
+    have := h2 i; unfold GeneralFirstOrder at this; rw [hW i d'] at this; linarith
+  have he1 : δ i = -(W i * kappa d i) := by linarith
+  have he2 : δ' i = -(W i * kappa d' i) := by linarith
+  rw [he1, he2]; ring
+
+/-- Lemma 1's algebra excludes the constant family only. On one and the same
+configuration a frozen family with one entry per position satisfies every
+stationarity condition while no scalar family does, so the index is a loophole
+for the algebra — and the frozen family is exactly the object the source
+criterion then reaches. -/
+theorem position_wise_escape_witness {δ : Pixel → ℝ} {d : Depth} {i j : Pixel}
+    (hκ : ∀ k, kappa d k ≠ 0)
+    (hne : δ i * kappa d j ≠ δ j * kappa d i) :
+    (∃ R : IndexedContextRule, IsFrozenFamily R ∧
+        IsPositionWise R ∧ ∀ k, GeneralFirstOrder δ d R k) ∧
+      ¬ ∃ R : IndexedContextRule, IsScalarFamily R ∧
+        ∀ k, GeneralFirstOrder δ d R k := by
+  constructor
+  · refine ⟨fun k _ => -(δ k) / kappa d k,
+      ⟨fun k => -(δ k) / kappa d k, fun k d' => rfl⟩, ?_, ?_⟩
+    · rintro ⟨R₀, hR₀⟩
+      have h1 : -(δ i) / kappa d i = R₀ d := hR₀ i d
+      have h2 : -(δ j) / kappa d j = R₀ d := hR₀ j d
+      have hratio : δ i / kappa d i = δ j / kappa d j := by
+        have h := h1.trans h2.symm
+        rw [neg_div, neg_div, neg_inj] at h
+        exact h
+      exact hne ((div_eq_div_iff (hκ i) (hκ j)).mp hratio)
+    · intro k
+      simp only [GeneralFirstOrder]
+      have hcancel : (-(δ k) / kappa d k) * kappa d k = -(δ k) := by
+        rw [div_eq_mul_inv, mul_assoc, inv_mul_cancel₀ (hκ k), mul_one]
+      rw [hcancel]; ring
+  · rintro ⟨R, ⟨lambda, hl⟩, hFOC⟩
+    refine hne (general_proportionality (lambda := lambda) ?_ ?_)
+    · have := hFOC i; unfold GeneralFirstOrder at this; rwa [hl i d] at this
+    · have := hFOC j; unfold GeneralFirstOrder at this; rwa [hl j d] at this
+
+/-- The rule a frozen table induces at a position: its entry times a fixed
+feature of the structure field. -/
+def tableRule (W : Pixel → ℝ) (i : Pixel) : ContextRule := fun d => W i * (d 0 - d 1)
+
+/-- A frozen table does not escape the source criterion. Its rule at a position
+is not evidence-instantiated, whatever the number of entries: the classification
+is per position, so "one scalar is a parameter table and a million entries are a
+parameter table as well". -/
+theorem frozen_table_not_modeA (W : Pixel → ℝ) (i : Pixel) (hW : W i ≠ 0)
+    (d e : Depth) (hd0 : d 0 = e 0) (hd1 : d 1 ≠ e 1) :
+    ¬ IsModeA (tableRule W i) := by
+  intro hA
+  rcases hA with ⟨Φ, hΦ⟩
+  have hRd : tableRule W i d = Φ (d 0) := hΦ d
+  have hRe : tableRule W i e = Φ (e 0) := hΦ e
+  unfold tableRule at hRd hRe
+  have hval : W i * (d 0 - d 1) = W i * (e 0 - e 1) := by
+    calc
+      W i * (d 0 - d 1) = Φ (d 0) := hRd
+      _ = Φ (e 0) := by rw [hd0]
+      _ = W i * (e 0 - e 1) := by rw [← hRe]
+  have hcore : (d 0 - d 1) = (e 0 - e 1) := mul_left_cancel₀ hW hval
+  have hfeq : d 1 = e 1 := by nlinarith [hcore, hd0]
+  exact hd1 hfeq
+
 /-! ## 9. Check summary -/
 
 #check illPosed_of_hole
@@ -755,5 +985,20 @@ theorem lemma3_general {Ω : Type*} [MeasurableSpace Ω]
 #check lemma3_general
 #check SpnParams
 #check IsParadigmI
+#check IndexedContextRule
+#check constantFamily
+#check IsGlobalFamily
+#check IsPositionWise
+#check IsScalarFamily
+#check IsFrozenFamily
+#check scalar_iff_global_and_frozen
+#check GeneralFirstOrder
+#check general_proportionality
+#check scalar_family_iff_ratio_agrees
+#check frozen_family_two_configs_iff
+#check frozen_family_infeasible_of_ratio_differs
+#check position_wise_escape_witness
+#check tableRule
+#check frozen_table_not_modeA
 
 end FormalProof

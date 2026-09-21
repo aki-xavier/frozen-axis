@@ -1,10 +1,14 @@
 #!/usr/bin/env bash
-# Build the paper with pdflatex + bibtex.
+# Build the paper with latexmk (which drives pdflatex + bibtex underneath),
+# falling back to an explicit pdflatex/bibtex sequence when latexmk is absent.
 #
 # JMLR production compiles with latexmk via pdflatex, so pdflatex is the
-# toolchain that matters (not XeTeX/tectonic).
+# toolchain that matters (not XeTeX/tectonic), and latexmk is the driver that
+# re-runs passes until the cross-references and the bibliography settle.
 #
 #   ./build.sh            # build main.tex   (modular source, out: build-main/)
+#                         driver: latexmk when installed, else pdflatex x3 + bibtex
+#                         (USE_LATEXMK=0 forces the fallback; LATEXMK=... overrides)
 #   ./build.sh paper      # build paper.tex  (single file,    out: build-paper/)
 #   ./build.sh appendix   # build the online appendix (online-appendix/main.tex,
 #                         #                    out: build-appendix/main.pdf)
@@ -15,6 +19,16 @@
 #
 # Run `python3 flatten.py` first if you edited sections/*.tex and want the
 # single-file version refreshed. The `release` target does this for you.
+#
+# Portrait of the TeX installation this expects: TinyTeX or TeX Live with
+# latexmk, pdflatex and bibtex. A *minimal* TeX installation ships the EC/TC
+# (T1/TS1) Computer Modern fonts only as METAFONT sources, and the JMLR style
+# needs them -- the `(c)` of the copyright footnote and the itemize bullets are
+# typeset in TS1 -- so pdflatex would have to render a bitmap for every size
+# used, which needs a writable font tree and the mf engine. Install the Type 1
+# releases instead; they have identical metrics, so the output does not change:
+#
+#   tlmgr install cm-super
 #
 # Portability: no hard-coded TeX path. The script uses $PDFLATEX / $BIBTEX when
 # set, otherwise whatever is first on PATH, otherwise it probes the standard
@@ -43,9 +57,11 @@ Usage: ./build.sh [main|paper|appendix|release]
   (default: main)
 
 Environment overrides:
-  PDFLATEX  pdflatex executable to use (default: autodetected)
-  BIBTEX    bibtex executable to use   (default: autodetected)
-  TEXBIN    TeX bin directory to search first
+  PDFLATEX      pdflatex executable to use (default: autodetected)
+  BIBTEX        bibtex executable to use   (default: autodetected)
+  LATEXMK       latexmk executable to use  (default: autodetected)
+  USE_LATEXMK   set to 0 to force the explicit pdflatex x3 + bibtex sequence
+  TEXBIN        TeX bin directory to search first
 EOF
 }
 
@@ -73,6 +89,9 @@ fi
 
 PDFLATEX_CMD="${PDFLATEX:-pdflatex}"
 BIBTEX_CMD="${BIBTEX:-bibtex}"
+LATEXMK_CMD="${LATEXMK:-latexmk}"
+# USE_LATEXMK=0 forces the explicit pdflatex/bibtex sequence.
+USE_LATEXMK="${USE_LATEXMK:-1}"
 
 # Bin directories worth probing when the TeX binaries are not already on PATH.
 # Unmatched globs expand to nothing (nullglob above), so the list is safe on
@@ -94,9 +113,10 @@ tex_bin_candidates() {
     /c/texlive/*/bin/windows
 }
 
-if ! command -v "$PDFLATEX_CMD" >/dev/null 2>&1; then
+if ! command -v "$PDFLATEX_CMD" >/dev/null 2>&1 || ! command -v "$LATEXMK_CMD" >/dev/null 2>&1; then
   while IFS= read -r dir; do
-    [ -n "$dir" ] && [ -x "$dir/$PDFLATEX_CMD" ] || continue
+    [ -n "$dir" ] || continue
+    [ -x "$dir/$PDFLATEX_CMD" ] || [ -x "$dir/$LATEXMK_CMD" ] || continue
     PATH="$dir:$PATH"
     export PATH
     break
@@ -144,44 +164,103 @@ if [ "$RELEASE" -eq 1 ]; then
   python3 "$SCRIPT_DIR/flatten.py"
 fi
 
-# Three pdflatex passes with bibtex in between. Per-pass failures are reported
-# in the summary below rather than aborting the run, so a missing .bbl on the
-# first pass is not fatal.
+# Per-pass failures are reported in the summary below rather than aborting the
+# run, so a missing .bbl on the first pass is not fatal.
 run_pass() {
   local log="$1"
   shift
   "$@" >"$log" 2>&1 || true
 }
 
-run_pass "$OUT/pass1.log" "$PDFLATEX_CMD" -interaction=nonstopmode -output-directory="$OUT" "$SRC_TEX"
-# bibtex must run from this directory so that reference.bib is found
-if [ "$WITH_BIBTEX" -eq 1 ]; then
-  run_pass "$OUT/bibtex.log" "$BIBTEX_CMD" "$OUT/$TARGET"
+STEM="$(basename "${SRC_TEX%.tex}")"
+LOG="$OUT/$STEM.log"
+BLG="$OUT/$STEM.blg"
+
+if [ "$USE_LATEXMK" -eq 1 ] && command -v "$LATEXMK_CMD" >/dev/null 2>&1; then
+  DRIVER="latexmk ($("$LATEXMK_CMD" --version 2>/dev/null | head -1))"
+  # The compile flags live in ./latexmkrc; only the bibliography mode is
+  # per document, because the online appendix has no \bibliography and latexmk
+  # must not go looking for a .bbl it will never find.
+  if [ "$WITH_BIBTEX" -eq 1 ]; then
+    BIBFLAG="-bibtex"
+  else
+    BIBFLAG="-bibtex-"
+  fi
+  # -outdir is repeated here (latexmkrc reads OUTDIR as well) so that the
+  # command line alone says where everything goes.
+  run_pass "$OUT/latexmk.log" env OUTDIR="$OUT" PDFLATEX="$PDFLATEX_CMD" \
+    "$LATEXMK_CMD" -pdf "$BIBFLAG" -outdir="$OUT" "$SRC_TEX"
+  [ -f "$LOG" ] || LOG="$OUT/latexmk.log"
 else
-  : > "$OUT/bibtex.log"
+  DRIVER="$PDFLATEX_CMD (three passes)$([ "$WITH_BIBTEX" -eq 1 ] && printf ' + %s' "$BIBTEX_CMD")"
+  run_pass "$OUT/pass1.log" "$PDFLATEX_CMD" -interaction=nonstopmode -output-directory="$OUT" "$SRC_TEX"
+  # bibtex must run from this directory so that reference.bib is found
+  if [ "$WITH_BIBTEX" -eq 1 ]; then
+    run_pass "$OUT/bibtex.log" "$BIBTEX_CMD" "$OUT/$TARGET"
+  else
+    : > "$OUT/bibtex.log"
+  fi
+  run_pass "$OUT/pass2.log" "$PDFLATEX_CMD" -interaction=nonstopmode -output-directory="$OUT" "$SRC_TEX"
+  run_pass "$OUT/pass3.log" "$PDFLATEX_CMD" -interaction=nonstopmode -output-directory="$OUT" "$SRC_TEX"
+  LOG="$OUT/pass3.log"
+  BLG="$OUT/bibtex.log"
 fi
-run_pass "$OUT/pass2.log" "$PDFLATEX_CMD" -interaction=nonstopmode -output-directory="$OUT" "$SRC_TEX"
-run_pass "$OUT/pass3.log" "$PDFLATEX_CMD" -interaction=nonstopmode -output-directory="$OUT" "$SRC_TEX"
+
+# When pdfTeX cannot find a font it appends the command kpathsea would need to
+# build one to $OUT/missfont.log and stops. In a minimal TeX installation that
+# means the EC/TC (T1/TS1) Computer Modern fonts, which the JMLR style needs
+# for the copyright footnote and the itemize bullets; name the remedy instead
+# of leaving the bare kpathsea error to be decoded.
+font_failure_hint() {
+  local log="$OUT/missfont.log" names
+  [ -f "$log" ] || return 0
+  names="$(awk '{print $NF}' "$log" | sort -u | tr '\n' ' ')"
+  [ -n "$names" ] || return 0
+  cat >&2 <<EOF
+
+build.sh: pdfTeX stopped on font(s) it could not find: $names
+
+  In a minimal TeX installation the EC/TC (T1/TS1) Computer Modern fonts exist
+  only as METAFONT sources, so every size used has to be rendered to a bitmap
+  first, which needs a writable font tree and the mf engine. Install the Type 1
+  releases instead -- identical metrics, so the output does not change:
+
+      tlmgr install cm-super
+
+EOF
+}
 
 echo "--- $SRC_TEX ---"
-echo "errors:      $(count '^! ' "$OUT/pass3.log")"
-echo "undefined:   $(count 'undefined' "$OUT/pass3.log")"
-echo "overfull:    $(count 'Overfull' "$OUT/pass3.log")"
-grep -E "Output written" "$OUT/pass3.log" || echo "NO PDF PRODUCED"
-echo "--- bibtex ---"
-tail -3 "$OUT/bibtex.log"
+echo "driver:      $DRIVER"
+echo "errors:      $(count '^! ' "$LOG")"
+echo "undefined:   $(count 'undefined' "$LOG")"
+echo "overfull:    $(count 'Overfull' "$LOG")"
+grep -E "Output written" "$LOG" || echo "NO PDF PRODUCED"
+echo "--- bibliography ---"
+if [ -f "$BLG" ]; then
+  grep -oE "You've used [0-9]+ entries" "$BLG" || echo "entries:     (not reported)"
+  BIB_WARN="$(count 'Warning--' "$BLG")"
+  echo "warnings:    $BIB_WARN"
+  if [ "$BIB_WARN" != "0" ]; then
+    grep -m5 -- 'Warning--' "$BLG" || true
+  fi
+else
+  echo "(none: this document cites nothing)"
+fi
+
+if [ ! -f "$OUT/$STEM.pdf" ]; then
+  font_failure_hint
+  echo "build.sh: no PDF was produced; see $LOG" >&2
+  exit 1
+fi
 
 # The release target copies the fresh build over the committed paper.pdf, but
 # only when the build is clean: a broken or missing PDF never reaches the root.
 if [ "$RELEASE" -eq 1 ]; then
-  ERRORS="$(count '^! ' "$OUT/pass3.log")"
+  ERRORS="$(count '^! ' "$LOG")"
   SRC="$OUT/$TARGET.pdf"
   if [ "$ERRORS" != "0" ]; then
-    echo "release: $ERRORS LaTeX error(s); see $OUT/pass3.log. paper.pdf NOT updated." >&2
-    exit 1
-  fi
-  if [ ! -f "$SRC" ]; then
-    echo "release: no PDF produced at $SRC. paper.pdf NOT updated." >&2
+    echo "release: $ERRORS LaTeX error(s); see $LOG. paper.pdf NOT updated." >&2
     exit 1
   fi
   cp -f -- "$SRC" "$SCRIPT_DIR/paper.pdf"
@@ -194,13 +273,11 @@ if [ "$RELEASE" -eq 1 ]; then
 
   # The online appendix is a separate published artifact with the same gates.
   echo "--- online appendix ---"
-  "$SCRIPT_DIR/build.sh" appendix
-  APX_SRC="$SCRIPT_DIR/build-appendix/main.pdf"
-  APX_ERR="$(count '^! ' "$SCRIPT_DIR/build-appendix/pass3.log")"
-  if [ "$APX_ERR" != "0" ] || [ ! -f "$APX_SRC" ]; then
-    echo "release: online appendix build failed ($APX_ERR error(s)); ./online-appendix.pdf NOT updated." >&2
+  if ! "$SCRIPT_DIR/build.sh" appendix; then
+    echo "release: online appendix build failed; ./online-appendix.pdf NOT updated." >&2
     exit 1
   fi
+  APX_SRC="$SCRIPT_DIR/build-appendix/main.pdf"
   cp -f -- "$APX_SRC" "$SCRIPT_DIR/online-appendix.pdf"
   echo "updated online-appendix.pdf from $APX_SRC ($(wc -c < "$SCRIPT_DIR/online-appendix.pdf" | tr -d ' ') bytes)"
 fi

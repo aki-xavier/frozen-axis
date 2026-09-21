@@ -282,7 +282,7 @@ There are only two possible sources of numbers; this is the core of the decision
 A rule belongs to \emph{Mode A} if all its values are instantiated by current evidence or taken from cross-scenario invariants given by analysis and calibration, such as camera intrinsics; it belongs to \emph{Mode B} if its computation involves parameters that are fixed at inference time and whose values are given by training-corpus statistics or manual setting. The two are mutually exclusive and exhaustive. Only parameters that carry the content of the rule, namely those whose variation changes the rule's values, participate in the classification: an implementation of per-instance optimization contains solver values fixed at inference time, such as a learning rate and an iteration count, which affect the speed of approaching the limit but not the limit itself; classification follows the limit, the limit is instantiated by evidence, and such implementations remain Mode A. What is classified is the source of the function rather than its carrier: a component implementing an analytic or calibration function with fixed parameters still has its rule in Mode A, because the substantive source of the values is an analytic invariant; a component implementing a corpus-statistical function with fixed parameters remains Mode B even if the function it computes depends only on evidence.
 \end{defn}
 
-The difference from the functional-dependence view deserves to be stated plainly. The functional-dependence view bases its inference on the function computed, while this paper's axis is based on the source of the values; the two agree in most cases, and the differences appear in two boundary situations: frozen parameters that happen to implement an analytic function, which the implementer clause classifies as Mode A, and a corpus-learned function that happens to depend only on evidence, which remains Mode B by source. The axis answers who carries the correctness guarantee, while the functional-dependence view answers what the behavior is; the two questions are not mutually exclusive. Behavioral out-of-distribution robustness is often achieved in practice and is a weak claim, compatible with the negation of this paper. The classification of adaptive implementations such as hypernetworks and test-time adaptation is given in the reach section of Section~\ref{ch:falsify}.
+The difference from the functional-dependence view deserves to be stated plainly. The functional-dependence view bases its inference on the function computed, while this paper's axis is based on the source of the values; the two agree in most cases, and the differences appear in two boundary situations: frozen parameters that happen to implement an analytic function, which the implementer clause classifies as Mode A, and a corpus-learned function that happens to depend only on evidence, which remains Mode B by source. The axis answers who carries the correctness guarantee, while the functional-dependence view answers what the behavior is; the two questions are not mutually exclusive. Behavioral out-of-distribution robustness is often achieved in practice and is a weak claim, compatible with the negation of this paper. The classification of adaptive implementations such as hypernetworks and test-time adaptation is given by the procedure of Section~\ref{sec:procedure} below and in the reach section of Section~\ref{ch:falsify}.
 
 Mutual exclusivity and exhaustiveness deserve one more word. A number either comes into existence at inference time, computed from the current input or given directly by geometric calibration, or it already exists before inference begins, lying in some parameter slot. There is no third state. Training-corpus statistics and manual setting both belong to the latter, because the two differ only in the production process of the value, not in the time of its existence: a 0.37 distilled from corpus statistics and a 0.37 written down by an engineer's decision are both pre-existing fixed numbers at inference time. Cross-scenario invariants belong to Mode A because values given by analysis and calibration carry no statistical memory of any particular corpus: camera intrinsics are determined by projective geometry and hold for this frame and for any frame alike.
 
@@ -299,6 +299,59 @@ R_i(d) = F_i(W, d),
 where the family $(F_i)_{i \in I}$ is fixed together with $W$. The difference between the two equations is plain at a glance: the value a Mode A rule gives at a position is uniquely pinned by evidence, whereas the value a Mode B rule gives there is jointly determined by fixed parameters and the input. When two inputs share the same evidence but differ in context, Mode A must give the same strength at every position, and this is the source of its generalization ability; Mode B is under no such constraint, and it can, and usually will, give answers that depend on frozen values. It should be noted that \eqref{eq:modeA} is the projection of the source criterion onto the function level: on the decidable toy carrier, ``values instantiated by evidence'' manifests as the rule value depending only on evidence; the source clause of Definition~3 is finer than functional dependence, and an evidence function implemented by frozen weights can formally be written as a family $\Phi_i$ in the sense of \eqref{eq:modeA}, yet the source of its values remains the corpus, and classification follows the source.
 
 Why this axis has decisive power will fully unfold only in Section~\ref{ch:falsify}, but the intuition can be stated now: the open set requires rules to remain correct on inputs the training corpus has never seen, and the only sources of values trustworthy on unseen inputs are the current evidence itself and cross-scenario analytic invariants. The values of any rule carried by frozen parameters ultimately record the statistics of a corpus or the experience of a setter; the corpus cannot cover the open set, and neither can experience. One honest qualification: the source is a necessary condition for correctness, not a sufficient one. A Mode A rule is not automatically correct; it is merely the only class that can carry a uniform bound, while frozen rules are excluded by Criterion P4. The source is therefore a correlate of the guarantee, not the guarantee itself.
+
+\subsection{Deciding the Mode of an Implementation}
+\label{sec:procedure}
+
+The source criterion is a definition, but it is decidable on the implementations the literature actually presents, and the boundary cases are exactly where an informal reading goes wrong: a learned function that happens to depend only on evidence, an analytic function that happens to be implemented by frozen weights, and an implementation that updates some parameters at inference time. The following procedure settles them, and the order matters because each step can close the question before the next is reached.
+
+\begin{enumerate}
+\item \emph{Which values carry the rule?} Only the parameters whose variation changes the rule's values participate in the classification. Solver bookkeeping --- a learning rate, an iteration count, a step size, a random seed --- does not participate, because it affects the speed of approaching the limit and not the limit itself.
+\item \emph{Do those values pre-exist inference?} If they already lie in a parameter slot when inference begins, the rule is Mode B, and the question is settled: whether they were produced by gradient descent, by structure learning, or by an engineer's decision is irrelevant, since the three differ in how the value was produced and not in when it exists. If instead the values come into existence at inference time, continue.
+\item \emph{Do they come from an analytic or calibration map?} A value computed from the current input by an analytic closed form, or read from a cross-scenario invariant such as camera intrinsics, is Mode A by its substantive source, even when the computation is carried out inside a component whose remaining parameters are frozen.
+\item \emph{If a generator or an update rule produces the values, ask the same questions of it.} A hypernetwork, a meta-learner, and a test-time update rule are themselves rules, and they are classified by the provenance of their own values. A corpus-fitted generator moves Mode B up one level instead of escaping it; an analytic generator, such as weights computed by projective geometry or a Kalman gain, is Mode A. Recursion lengthens the chain of provenance without creating a source.
+\end{enumerate}
+
+Two consequences deserve to be drawn explicitly, because they answer the boundary cases most often raised. The first is that classification is by source, not by magnitude and not by behaviour. A few-shot meta-learned adaptation and a single per-instance optimization step both update parameters at test time, and they nevertheless land on opposite sides of the axis: the former's update rule was fitted on a corpus and is frozen at inference time, so it is Mode B, while the latter's step is instantiated by the current input, so it is Mode A. Treating ``updates parameters at test time'' as a class of its own would merge the two, and keeping them apart is what the axis is for. The second is that leaving the fixed-memory class is not the same as escaping the negation. An implementation that performs genuine per-instance optimization does leave the class, and to the extent that its values are instantiated by the current evidence it is untouched by the impossibility of Section~\ref{ch:falsify}; but that qualification is carried by the limit of the optimization rather than by the fact that an optimizer ran. An implementation that takes a few steps from a corpus-initialized point, or that learns the initialization itself, has not moved the source of its values and remains inside the negation.
+
+Table~\ref{tab:modes} applies the procedure to the implementations named throughout this paper. The table is a summary rather than an argument: each row follows from the four questions above, and the rows that split one system into two --- plug-and-play priors, diffusion posterior sampling, and data-consistent reconstruction --- are exactly the ones whose credit the reach section of Section~\ref{ch:falsify} apportions.
+
+\begin{table}[t]
+\caption{Classification of representative implementations by the provenance of the values carrying the rule. Rows with two entries name the two components of a composite system, classified separately.}
+\label{tab:modes}
+\centering
+\small
+\renewcommand{\arraystretch}{0.95}
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{0.29\textwidth}>{\centering\arraybackslash}p{0.13\textwidth}>{\raggedright\arraybackslash}p{0.48\textwidth}@{}}
+\hline
+\textbf{Implementation} & \textbf{Mode} & \textbf{Basis}\\
+\hline
+Tikhonov with a fixed $\lambda$, including offline L-curve or GCV selection & B & frozen scalar, namely the constant family Lemma 1 excludes\\
+\hline
+Frozen position-wise weight table & B & escapes Lemma 1's algebra, reached by the source criterion\\
+\hline
+Anisotropic diffusion, guided filter & A & position-wise values computed online from evidence\\
+\hline
+Strength selected by SURE & A & computed from the current noisy observation\\
+\hline
+Plug-and-play prior with likelihood guidance & B, A & frozen prior is B; evidence-driven guidance is A\\
+\hline
+Diffusion posterior sampling & B, A & frozen prior is B; the sampling randomness carries no information about the demand\\
+\hline
+Hypernetwork, meta-learner & B, or A & classified by the provenance of the generator's own values\\
+\hline
+Test-time adaptation with a learned update rule & B & Mode B moved up one level\\
+\hline
+Kalman gain, closed-form analytic update & A & analytic invariant computed from the current input\\
+\hline
+Per-instance optimization run to convergence & A & limit instantiated by evidence; bookkeeping is irrelevant\\
+\hline
+In-context learning with frozen weights & B & a learned function of evidence is still a corpus-borne function\\
+\hline
+Network implementing only an analytic invariant & A, no credit & implementer clause of Definition~3; the completeness is credited to the invariant, not to the component's memory\\
+\hline
+\end{tabular}
+\end{table}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% --- inlined from sections/05-formal-falsification.tex
@@ -573,7 +626,7 @@ The second is composite systems: fixed-memory components propose candidates and 
 
 \subsection{Design Implications}
 
-Rewrite the decision axis as three engineering questions for system design. First, where do the rule's values come from: corpus statistics, manual setting, current evidence, or analytic calibration. Second, are these values frozen at inference time: frozen is Mode B, and online instantiation is Mode A. Third, on the open set, who is responsible for instantiating the rule: if no mechanism is responsible, the system does not possess completeness for open inversion tasks. The minimal legitimate composite form is therefore: Mode B components provide candidates and likelihoods, a Mode A mechanism generates the rules, and the arbitration stage runs on near-tree substructures. The three questions correspond respectively to the operational readings of Definition~3, Proposition 4, and Theorem 5.
+Rewrite the decision axis as three engineering questions for system design. First, where do the rule's values come from: corpus statistics, manual setting, current evidence, or analytic calibration. Second, are these values frozen at inference time: frozen is Mode B, and online instantiation is Mode A. Third, on the open set, who is responsible for instantiating the rule: if no mechanism is responsible, the system does not possess completeness for open inversion tasks. The minimal legitimate composite form is therefore: Mode B components provide candidates and likelihoods, a Mode A mechanism generates the rules, and the arbitration stage runs on near-tree substructures. The three questions correspond respectively to the operational readings of Definition~3, Proposition 4, and Theorem 5; the reverse direction, deciding the mode of an implementation that already exists, is the procedure of Section~\ref{sec:procedure}.
 
 \subsection{Limitations}
 

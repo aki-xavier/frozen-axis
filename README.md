@@ -66,7 +66,7 @@ Package the Lean artifact:
 
 ## Paper-to-Lean correspondence
 
-Chapter 6 of the paper reports the three levels of verification strength, and Section 6.4 gives the per-component guarantee stratification from the toy carrier to the continuous case (Table 2: Tier A, the carrier-independent algebraic core; Tier B, structured general forms; Tier C, the remaining modeling components). The core correspondences:
+Chapter 6 of the paper reports the three levels of verification strength, and Section 6.4 gives the per-component guarantee stratification from the toy carrier to the continuous case (Table 3: Tier A, the carrier-independent algebraic core; Tier B, structured general forms; Tier C, the remaining modeling components). Section 4.3 gives the operational procedure for deciding the mode of an implementation (Table 2). The core correspondences:
 
 | Paper | Lean |
 |---|---|

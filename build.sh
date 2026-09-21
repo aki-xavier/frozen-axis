@@ -113,6 +113,18 @@ mkdir -p "$OUT"
 # grep exits 1 on no match, which is a normal result here (not a failure).
 count() { grep -cE "$1" "$2" 2>/dev/null || true; }
 
+# --- reproducible output -------------------------------------------------
+# pdfTeX takes the embedded CreationDate/ModDate from the clock, so rebuilding
+# unchanged sources would otherwise produce a different file every time. Pin
+# the timestamp here; main.tex pins the trailer /ID for the same reason.
+# Together they make the output byte-reproducible, so a rebuilt paper.pdf
+# differs only when the paper's content changed. Export SOURCE_DATE_EPOCH
+# yourself to override the pinned value.
+if [ -z "${SOURCE_DATE_EPOCH:-}" ]; then
+  SOURCE_DATE_EPOCH=1789948800   # 2026-09-21T00:00:00Z, the release date
+fi
+export SOURCE_DATE_EPOCH
+
 # The release target publishes the single-file version, so refresh it from the
 # modular sources first; otherwise the committed PDF could silently lag behind
 # sections/*.tex.
@@ -160,9 +172,8 @@ if [ "$RELEASE" -eq 1 ]; then
   cp -f -- "$SRC" "$SCRIPT_DIR/paper.pdf"
   echo "--- release ---"
   echo "updated paper.pdf from $SRC ($(wc -c < "$SCRIPT_DIR/paper.pdf" | tr -d ' ') bytes)"
-  # pdflatex stamps CreationDate/ModDate into the PDF, so rebuilding unchanged
-  # sources still yields a different byte stream. Compare rendered text rather
-  # than bytes when asking whether the paper actually changed.
-  echo "note: PDF builds embed a timestamp, so paper.pdf differs byte-wise on every"
-  echo "      build; use 'pdftotext -layout' to compare rendered text instead."
+  # The build is reproducible, so a byte-identical result means the paper's
+  # content did not change rather than that the build merely repeated itself.
+  echo "note: the build is byte-reproducible, so after rebuilding unchanged sources"
+  echo "      paper.pdf is unchanged too; 'git status' is a reliable signal."
 fi

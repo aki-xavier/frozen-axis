@@ -44,6 +44,8 @@ Publish the released PDF. This refreshes `paper.tex` from `main.tex` + `sections
 ./build.sh release
 ```
 
+Builds are byte-reproducible. pdfTeX would otherwise stamp the wall-clock time into the PDF and derive the trailer `/ID` from it, so two builds of identical sources would differ byte-wise; `build.sh` pins `SOURCE_DATE_EPOCH` for the embedded dates and `main.tex` seeds the trailer id through `\pdftrailerid`. Rebuilding unchanged sources therefore reproduces `paper.pdf` exactly, and `git status` is a reliable signal that the committed PDF matches the sources. Export `SOURCE_DATE_EPOCH` to override the pinned date.
+
 Refresh the single-file submission version after editing `sections/*.tex`:
 
 ```bash

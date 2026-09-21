@@ -72,6 +72,18 @@
   pdfsubject={Open inversion tasks; completeness; formal falsification; fixed-memory component; decision axis; distributional openness},
   pdfkeywords={open inversion tasks, completeness, formal falsification, fixed-memory component, decision axis, distributional openness}}
 
+% --- reproducible output -------------------------------------------
+% pdfTeX stamps CreationDate/ModDate from the clock and derives the trailer
+% /ID from it, so two builds of identical sources would otherwise differ
+% byte-wise. build.sh pins SOURCE_DATE_EPOCH for the dates; seeding the
+% trailer id here pins the remaining source of variation. Together they make
+% the PDF byte-reproducible, so that a rebuilt paper.pdf differs only when the
+% paper's content changed. \ifdefined keeps the file compilable by engines
+% without the primitive.
+\ifdefined\pdftrailerid
+  \pdftrailerid{C0FFEE0123456789ABCDEF0123456789}% synthetic constant, not a real identifier
+\fi
+
 \begin{document}
 
 \title{Formal Falsification of the Completeness of a Single Fixed-Memory Component for Open Inversion Tasks}

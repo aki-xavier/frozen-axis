@@ -10,6 +10,9 @@
 #                         driver: latexmk when installed, else pdflatex x3 + bibtex
 #                         (USE_LATEXMK=0 forces the fallback; LATEXMK=... overrides)
 #   ./build.sh paper      # build paper.tex  (single file,    out: build-paper/)
+#   ./build.sh slim       # build paper-slim.tex, the 15-page condensation
+#                         (hand-maintained,  out: build-slim/, copies to
+#                          ./paper-slim.pdf when the build is clean)
 #   ./build.sh appendix   # build the online appendix (online-appendix/main.tex,
 #                         #                    out: build-appendix/main.pdf)
 #   ./build.sh release    # refresh paper.tex from sections/, build it, copy the
@@ -43,10 +46,13 @@ cd -- "$SCRIPT_DIR"
 
 usage() {
   cat <<'EOF'
-Usage: ./build.sh [main|paper|appendix|release]
+Usage: ./build.sh [main|paper|slim|appendix|release]
 
   main      build main.tex  (modular source)       -> build-main/main.pdf
   paper     build paper.tex (single-file version)  -> build-paper/paper.pdf
+  slim      build paper-slim.tex (the 15-page condensation, hand-maintained)
+                                                   -> build-slim/paper-slim.pdf,
+                                                      copied to ./paper-slim.pdf
   appendix  build the online appendix              -> build-appendix/main.pdf
             (online-appendix/main.tex; no bibtex pass, no \bibliography)
   release   refresh paper.tex from main.tex + sections/*.tex via flatten.py,
@@ -67,11 +73,13 @@ EOF
 
 TARGET="${1:-main}"
 RELEASE=0
+SLIM=0
 SRC_TEX=""
 WITH_BIBTEX=1
 case "$TARGET" in
   -h|--help) usage; exit 0 ;;
   main|paper) ;;
+  slim) SRC_TEX="paper-slim.tex"; SLIM=1 ;;
   appendix) SRC_TEX="online-appendix/main.tex"; WITH_BIBTEX=0 ;;
   release) RELEASE=1; TARGET=paper ;;
   *) echo "build.sh: unknown target '$TARGET'" >&2; usage >&2; exit 2 ;;
@@ -252,6 +260,19 @@ if [ ! -f "$OUT/$STEM.pdf" ]; then
   font_failure_hint
   echo "build.sh: no PDF was produced; see $LOG" >&2
   exit 1
+fi
+
+# The slim target publishes its own artifact at the repository root, under the
+# same clean-build rule as the release target.
+if [ "$SLIM" -eq 1 ]; then
+  ERRORS="$(count '^! ' "$LOG")"
+  if [ "$ERRORS" != "0" ]; then
+    echo "slim: $ERRORS LaTeX error(s); see $LOG. paper-slim.pdf NOT updated." >&2
+    exit 1
+  fi
+  cp -f -- "$OUT/$STEM.pdf" "$SCRIPT_DIR/paper-slim.pdf"
+  echo "--- slim ---"
+  echo "updated paper-slim.pdf from $OUT/$STEM.pdf ($(wc -c < "$SCRIPT_DIR/paper-slim.pdf" | tr -d ' ') bytes)"
 fi
 
 # The release target copies the fresh build over the committed paper.pdf, but

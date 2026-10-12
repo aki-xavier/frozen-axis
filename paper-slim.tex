@@ -1,0 +1,395 @@
+% !TeX program = pdflatex
+%=======================================================================
+% paper-slim.tex -- the 15-page condensation of paper.tex.
+%
+% Hand-maintained companion to the full paper. main.tex + sections/*.tex
+% remain the source of paper.tex; this file is a standalone condensation
+% written from it, in the same jmlr2e style and against the same
+% bibliography, and it keeps the full paper's numbering: Claim R,
+% Definitions 1-4, Lemmas 1-3, Proposition 4 and Theorem 5 carry the
+% numbers the full paper gives them.
+%
+% Every claim made here is a claim of the full paper. What the
+% condensation drops is the related-work survey (Section 2 of the full
+% paper), the two worked examples, the three tables, the paragraphs on
+% classification of implementations, uncertainty quantification, adaptive
+% control, abstention and the composite path, and the approximate-
+% inference and reach subsections; each survives here only as a summary
+% sentence or not at all.
+%
+% Build:  latexmk -pdf -bibtex paper-slim.tex      (or  ./build.sh slim)
+%=======================================================================
+
+\documentclass[twoside,11pt]{article}
+
+\usepackage{jmlr2e}
+\usepackage{amsmath}
+% Loaded as in main.tex. This document sets no table, but the tools array
+% package must be loaded here: without it, this toolchain's epstopdf-base
+% takes the branch that requires grfext.sty, which a minimal TinyTeX does
+% not ship, and the build stops with "File `grfext.sty' not found".
+\usepackage{array}
+
+% The paper's definitions have their own counter (Definition 1..4), while
+% lemma/proposition/theorem share one, reproducing Lemma 1, Lemma 2,
+% Lemma 3, Proposition 4, Theorem 5.
+\newtheorem{defn}{Definition}
+
+% Two unnumbered named environments (Claim R; Proposition [Mask
+% Criterion]), defined by hand so that amsthm is not needed and the
+% official .sty stays untouched.
+\makeatletter
+\newenvironment{claim}[1][]{\par\medskip\noindent\textbf{Claim\ifx\relax#1\relax\else\ #1\fi:}\ \itshape}{\par\medskip}
+\newenvironment{uprop}[1][]{\par\medskip\noindent\textbf{Proposition\ifx\relax#1\relax\else\ (#1)\fi:}\ \itshape}{\par\medskip}
+\makeatother
+
+\newcommand{\argument}{\par\medskip\noindent\textbf{Argument.}\ }
+\newcommand{\qedbox}{\hfill$\square$}
+\newcommand{\ev}{\mathrm{ev}}
+% Underscore of a Lean declaration name with a line break allowed after it.
+\newcommand{\ttu}{\textunderscore\allowbreak}
+
+\jmlrheading{}{}{}{9/26}{}{}{Shuo Zhang}
+\ShortHeadings{Formal Falsification of Solo Completeness (condensed)}{Zhang}
+\firstpageno{1}
+
+\hypersetup{hidelinks,
+  pdftitle={Formal Falsification of the Completeness of a Single Fixed-Memory Component for Open Inversion Tasks (condensed)},
+  pdfauthor={Shuo Zhang},
+  pdfsubject={Open inversion tasks; formal falsification; fixed-memory component; decision axis; distributional openness},
+  pdfkeywords={open inversion tasks, formal falsification, fixed-memory component, decision axis, distributional openness}}
+
+% Pins the trailer /ID so that the build is byte-reproducible (build.sh
+% fixes CreationDate/ModDate through SOURCE_DATE_EPOCH).
+\ifdefined\pdftrailerid
+  \pdftrailerid{C0FFEE0123456789ABCDEF0123456789}% synthetic constant, not a real identifier
+\fi
+
+\begin{document}
+
+\title{Formal Falsification of the Completeness of a Single Fixed-Memory Component for Open Inversion Tasks}
+
+\author{\name Shuo Zhang \email 202400103083@stumail.sztu.edu.cn \\
+       \addr Shenzhen Technology University\\
+       3002 Lantian Road, Pingshan District\\
+       Shenzhen, Guangdong, China 518118}
+
+\editor{Action Editor}
+
+\maketitle
+
+\begin{abstract}%
+Many inference tasks are open inversion tasks, delimited by four criteria: observations are ill-posed, required context strength is heterogeneous and content-addressed by the evidence, inference inputs are unconstrained by the training distribution, and the demand rule cannot be given within any pre-given tolerance by values frozen before inference begins. No fixed-memory component completes such tasks alone; neural networks are its canonical instance. A context rule's content is a set of numbers, from two exclusive and exhaustive sources: current evidence or analytic invariants (Mode A), and corpus statistics or manual setting frozen at inference (Mode B). Generalization on the open set requires Mode A; a fixed-memory component's rules are Mode B. The exclusion holds for any even differentiable pairwise potential, not only the quadratic form: one position whose demand ratio changes between two admissible configurations suffices. What is falsified is solo use, not usefulness. The algebraic skeleton is machine-verified in Lean 4 and Mathlib at general types, with zero sorry and no warnings.
+\end{abstract}
+
+\begin{keywords}
+  open inversion tasks; formal falsification; fixed-memory component; decision axis; distributional openness
+\end{keywords}
+
+\section{Introduction}
+\label{ch:intro}
+
+Many inference tasks are ill-posed: pixel brightness admits infinitely many depths, a measurement infinitely many states, and no local observation alone fixes the answer \citep{hadamard1902}. Observation is structure's residue after projection, sampling and noise, so no local inverse operation recovers the lost information; early vision stated this systematically, stereo vision, motion estimation, optical flow and shape reconstruction admitting a unique solution only after additional constraints \citep{poggio1985}. Those constraints are this paper's \emph{context}---neighboring pixels on one surface, frames on one motion.
+
+Context cannot be applied uniformly: strong inside a surface, so that the neighborhood corroborates and noise is smoothed away; cut at boundaries and occlusions, so that the two sides form independently, else depth smears along edges. How strongly context should be used therefore varies with position and time, its correct value depending on where the scene's boundaries lie and where motion breaks: a context rule is not a fixed law but a stipulation varying with the evidence.
+
+\subsection{Open Inversion Tasks}
+
+Four items delimit the class: (P1) observations are ill-posed, (P2) the required context strength is heterogeneous and content-addressed by the evidence, (P3) inference inputs may come from outside the training distribution---the \emph{open set}---and (P4) the required context rule cannot be given within any pre-given tolerance on the open set by values frozen before inference begins. Section~\ref{ch:formalize} states all four as criteria; a task satisfying them is an \emph{open inversion task}, of which real-time 3D reconstruction is the typical representative \citep{kerbl2023}, as are image and video restoration, online state estimation, and medical and scientific inversion.
+
+The four items are premises whose failure delimits the conclusion: a homogeneous interpolation task fails P2; in fixed-grid simulation the boundary positions are set by the task rather than the evidence; under fixed operating conditions the demand is exogenous; and a demand exactly identifiable from a fixed corpus fails P4. Fixed-memory components on such tasks are outside what this paper falsifies, which stops where the demand becomes freezable.
+
+\subsection{The Claim to Be Falsified}
+
+Does there exist a component that, by itself alone, applies context rules correctly on every open inversion task? The question has a real-world form, as the conjunction of two public claims: the engineering corollary of the universal approximation theorems \citep{cybenko1989,hornik1989}, and the scale claim that deficiencies in contextual ability are a matter of corpus and parameter scale rather than of architectural category \citep{bubeck2023}, its critics noting that some so-called emergent abilities may be artifacts of metric choice \citep{schaeffer2023}.
+
+\begin{claim}[$\mathcal{R}$]
+There exists a fixed-memory component that, using only that component and without any external proposal or arbitration stage, is complete for open inversion tasks; that is, it completes the task independently in the sense of the open set, of no distribution agreement, and of cross-scenario reuse.
+\end{claim}
+
+A \emph{fixed-memory component} is one whose context rules are frozen into parameters that do not change at inference time and whose values come from training-corpus statistics or manual setting; neural networks are the canonical instance, and Theorem 5 instantiates Claim $\mathcal{R}$ on this carrier as the neural-network-only claim $\mathcal{P}$. The qualifier ``only'' is crucial: what is falsified is solo use, not the usefulness of these components within combinations. High accuracy on a fixed benchmark close to the training distribution is within reach of both kinds of networks, but that \emph{weak claim} is not the object here.
+
+The method is deduction, not experiment: Claim $\mathcal{R}$ is existential and its negation is a universal statement over a whole task class, so the Popperian shortcut of a single counterexample \citep{popper1959} is unavailable, and what is required is a chain from the defining criteria of the class to the capability boundary of the component. No experimental data is used, and the algebraic core is independent of the quadratic smoothing form: Lemma 1 holds for a separable data term and an arbitrary even differentiable pairwise potential, with no convexity. \emph{Falsification} is used in its deductive sense throughout.
+
+\section{Formalization of the Problem}
+\label{ch:formalize}
+
+Let the position set be $I$---the pixel set in image tasks, the product of time indices and state components in state estimation---and let the structure field $d : I \to \mathbb{R}$ assign a structure value to every position. An observation consists of a mask $m : I \to \{0,1\}$ marking the observed positions together with the observed values there: values inside the mask are pinned by the observation, values outside are under no direct constraint.
+
+\begin{defn}
+An observation is \emph{ill-posed} if there exist two different structure fields $d \neq e$ that agree with the observed values at every position inside the mask.
+\end{defn}
+
+\begin{uprop}[Mask Criterion]
+An observation with a hole is ill-posed: if some position $j$ is not covered by the mask, two different values at $j$ give two structure fields compatible with the same observation. Conversely, a mask covering all positions determines the structure field uniquely, so the observation is not ill-posed.
+\end{uprop}
+
+Neither direction depends on numerical detail: positions outside the mask are degrees of freedom, two values on one giving a bifurcation, while a full mask pins every position; real observations almost always have holes---depth behind occluding surfaces, bands drowned in noise, null spaces of measurement equations.
+
+\subsection{Four Criteria}
+
+Writing the four items of Section~\ref{ch:intro} as criteria gives the premises of every argument below.
+
+\begin{itemize}
+\item Criterion P1 (ill-posedness): different structure fields are compatible with the same observation.
+\item Criterion P2 (heterogeneity): boundary and interior positions require different consistency strengths, and which is which is content-addressed by the current evidence.
+\item Criterion P3 (distributional openness): inputs at inference time are not constrained by the training distribution; its decidable form, \emph{mask openness}, pins the evidence part by the observation while the context part retains uncovered free positions, so the same evidence admits free bifurcation of the context values.
+\item Criterion P4 (non-freezability of the demand): the demand rule's values---the target profile the task requires at each position---cannot be given within any pre-given tolerance on the open set by an object existing before inference begins. Section~\ref{sec:p4} splits it into a \emph{barrier condition}, that the demand separates nearby instances by a fixed amount at every scale, hence has no pre-given modulus, and a \emph{realization condition}, that the separated instances carry probability bounded away from zero under the test distribution; together they imply a positive floor $\kappa$ on the risk gap of every offline-frozen rule versus the optimal evidence-instantiated risk.
+\end{itemize}
+
+P3 implies P1: mask openness is itself a hole. The difficulty of open inversion tasks is thus a progression layer upon layer---ill-posedness forces inference to use context, heterogeneity requires context to vary by position, openness requires rules to remain correct on inputs never seen before, non-freezability requires that the demand cannot be pinned down offline---and Section~\ref{ch:falsify} consumes the four criteria in turn. Mask openness is the only form of openness the derivations consume, and the test distribution's measure is left unspecified: Lemma 3 holds for any probability measure.
+
+\begin{itemize}
+\item Assumption A0 (evidence-computability of the demand): The demand rule is computable from current evidence; that is, there exists a mapping from evidence to the values of the demand rule such that on every input the demanded values can be given at inference time by evidence and analytic means.
+\end{itemize}
+
+A0 plays no role in the negation of Mode B, which consumes only Criteria P1 to P4; it supports the positive reading of Section~\ref{ch:discussion}, its ground being that the boundaries where context must be cut are visible in the evidence. Tasks whose demand depends on unobserved structure with no trace in the evidence fail A0 and remain outside the positive claims, and nothing below restricts the representation of the structure field.
+
+P4 alone cannot be read off the task syntax, and it is no definitional clause: a task can satisfy P1 to P3 and fail P4, the linear-demand task above being one, on which a frozen component is complete. Its barrier condition mentions no rule, average or benchmark and belongs to the family of classical approximation barriers \citep{kolmogorov1936,pinkus1985}; the transmission to the risk gap is a proved inequality rather than an assumption, so the empirical content sits in the realization level $p$ with the benchmark risk of the best evidence-instantiated rule.
+
+\section{The Decision Axis: Context Rules and Two Modes}
+\label{ch:axis}
+
+Ill-posed tasks cannot do without context, but ``using context'' needs an analyzable handle:
+
+\begin{defn}
+A \emph{context rule} is the stipulation of where and how strongly context is needed, and its content is a set of numbers: a family $R = (R_i)_{i \in I}$ of mappings $R_i : (I \to \mathbb{R}) \to \mathbb{R}$, one for each position $i \in I$, where $R_i$, given the current evidence and a candidate structure field, yields the strength with which context is to be used at position $i$. The rule is \emph{global} when the family is constant, $R_i = R_j$ for all positions $i, j$, as in the scalar $\lambda$ of classical regularization, and \emph{position-wise} when the family is not constant.
+\end{defn}
+
+Describing a rule as a set of numbers is not a simplification: structural representations must still be instantiated into numbers wherever they participate in numerical inference, so representation changes the carrier of the rule, not the classification of the source of its values. The index carries content: Criterion P2 requires the strength to differ across positions, the evidence content-addressing which are boundary and which interior, so a rule that cannot vary by position cannot express the demand it is meant to meet---whether a constant family can nonetheless meet it is the question Lemma 1 answers in the negative.
+
+\begin{defn}
+A rule belongs to \emph{Mode A} if all its values are instantiated by current evidence or taken from cross-scenario invariants given by analysis and calibration, such as camera intrinsics; it belongs to \emph{Mode B} if its computation involves parameters that are fixed at inference time and whose values are given by training-corpus statistics or manual setting. The two are mutually exclusive and exhaustive. Only parameters that carry the content of the rule---those whose variation changes the rule's values---participate in the classification: an implementation of per-instance optimization contains solver values fixed at inference time, such as a learning rate and an iteration count, which affect the speed of approaching the limit but not the limit itself. What is classified is the source of the function, not its carrier: a component implementing an analytic or calibration function with fixed parameters is Mode A, whereas one implementing a corpus-statistical function remains Mode B even if what it computes depends only on evidence.
+\end{defn}
+
+A number either comes into existence at inference time, from the current input or geometric calibration, or it already exists before inference begins in some parameter slot; training-corpus statistics and manual setting belong to the latter, differing only in how the value was produced, not in when it exists.
+
+Formally, a Mode A rule is a family for which there exists, for each position $i$, a mapping $\Phi_i$ depending only on evidence such that for every structure field $d$,
+\begin{equation}
+R_i(d) = \Phi_i\bigl(d|_{\ev}\bigr),
+\label{eq:modeA}
+\end{equation}
+where $d|_{\ev}$ restricts the structure field to evidence positions. A Mode B rule instead involves a parameter object $W$ fixed at inference time and, for each position $i$, a computational process $F_i$ such that
+\begin{equation}
+R_i(d) = F_i(W, d),
+\label{eq:modeB}
+\end{equation}
+where the family $(F_i)_{i \in I}$ is fixed together with $W$. When two inputs share the same evidence but differ in context, Mode A must give the same strength at every position---the source of its generalization ability---while Mode B can, and usually will, depend on frozen values. The source is a necessary condition for correctness, not a sufficient one: a Mode A rule is not automatically correct, merely the only class that can carry a uniform bound.
+
+\subsection{Deciding the Mode of an Implementation}
+\label{sec:procedure}
+
+The source criterion is decidable on the implementations the literature presents: only parameters whose variation changes the rule's values participate, so solver bookkeeping---a learning rate, an iteration count, a step size---is excluded; values already lying in a parameter slot when inference begins make the rule Mode B, however they were produced; values computed from the current input by an analytic closed form, or read from a cross-scenario invariant such as camera intrinsics, are Mode A by their substantive source, even inside a component whose remaining parameters are frozen; and a generator or an update rule is itself a rule, classified by the provenance of its own values, so a corpus-fitted generator moves Mode B up one level instead of escaping it. Classification is by source, not by magnitude or behaviour: a few-shot meta-learned adaptation and a single per-instance optimization step both update parameters at test time yet land on opposite sides.
+
+\section{Formal Falsification}
+\label{ch:falsify}
+
+Ill-posedness decides that inference cannot do without context, established in Section~\ref{ch:formalize}; the four steps that follow answer whether context strength can be governed uniformly by one global scalar, whether it can be appended outside the generative objective, what the open set demands of the source of the rule's values, and on which side of the decision axis the two canonical components fall. Each item is proved in the \emph{Argument} paragraph printed with it. Two steps are not contained in the definitions---Lemma 1's exclusion of the global-scalar form and Lemma 2's exclusion of the frozen extrinsic paradigm are algebraic facts about optimality conditions---and since upper-tail realization is a theorem and nonnegativity of the minimum risk is trivial under squared loss, the force of Theorem 5 equals exactly the force of P4.
+
+\subsection{Lemma 1: A Single Global Scalar Cannot Realize a Heterogeneous Strength Profile}
+
+The most economical approach is to govern context strength uniformly by one global scalar $\lambda$---in Definition~2, the constant family $R_i \equiv \lambda$---the form of classical regularization \citep{poggio1985}, whose parameter-selection methods are completed offline and yield a frozen parameter table, hence Mode B. Let the data term be the per-position squared residual $\ell_i(x,d) = (x_i - d_i)^2$, and let
+\begin{equation}
+\kappa_i (d) = \sum_{j \in I} (d_i - d_j)
+\label{eq:kappa}
+\end{equation}
+be the per-position coefficient of the consistency term, measuring position $i$'s tendency to deviate from its neighborhood. The objective with extrinsic smoothing is
+\begin{equation}
+\mathcal{E}(x, d, \lambda) = \sum_{i \in I} (x_i - d_i)^2 + \lambda \sum_{i \in I} \sum_{j \in I} (d_i - d_j)^2 .
+\label{eq:paradigmE}
+\end{equation}
+Differentiating in $d_i$ and normalizing the constant factors gives the first-order condition
+\begin{equation}
+(d_i - x_i) + \lambda \cdot \kappa_i (d) = 0 ,
+\label{eq:foc}
+\end{equation}
+at every position the weighted sum of the data residual and the consistency term must vanish.
+
+\begin{lemma}
+If the context rule is global, so that the family of Definition~2 is constant, $R_i = \lambda$ for every position $i \in I$, while the task demands different coupling strengths at boundary and homogeneous positions, then the scalar cannot satisfy the first-order optimality conditions at both ends: the heterogeneous demand breaks the cross-position proportionality, and no constant family realizes a heterogeneous strength profile.
+\end{lemma}
+
+\argument The strengthened form covers arbitrary fitting points, its premise being that the proportionality \eqref{eq:proportion} fails. If the same $\lambda$ satisfies the first-order conditions of positions $i$ and $j$ at an arbitrary point $d$, then $\lambda \cdot \kappa_i (d) = x_i - d_i$ and $\lambda \cdot \kappa_j (d) = x_j - d_j$ from \eqref{eq:foc}, and cross-multiplying to eliminate $\lambda$ gives
+\begin{equation}
+(x_i - d_i) \cdot \kappa_j (d) = (x_j - d_j) \cdot \kappa_i (d),
+\label{eq:proportion}
+\end{equation}
+that is, the data residuals and the consistency terms must be proportional across positions---the price of a single scalar. Boundaries requiring weak coupling and interiors requiring strong coupling are exactly the situation where this proportionality is broken. At the zero-residual specialization, \eqref{eq:foc} reduces to $\lambda \cdot \kappa_i (d) = \lambda \cdot \kappa_j (d) = 0$: $\lambda \neq 0$ forces $\kappa_i (d) = \kappa_j (d) = 0$, which heterogeneous positions do not satisfy, while $\lambda = 0$ withdraws context and leaves ill-posedness unattended. Classical variational regularization is unaffected in existence and well-posedness, the linear system of a quadratic smoothness objective having a unique minimizer for every $\lambda > 0$; what is excluded is the realizability of a heterogeneous demand profile by a single frozen coefficient, the uniform $\lambda$ still giving a determinate but biased and oversmoothed solution.\qedbox
+
+Only the most economical form is excluded; whether multi-dimensional, layer-wise or position-wise parameter tables dodge the blow is answered by the general form, whose sharpest statement is an equivalence. Let the data term be any additively separable $\sum_{i \in I} f_i(d_i)$, $f_i$ differentiable where evaluated, and the consistency term the pairwise potential $\sum_{i \in I} \sum_{j \in I} \varphi(d_i - d_j)$ with $\varphi$ even and differentiable; differentiating in $d_i$ and normalizing the factor that evenness produces gives
+\begin{equation}
+f_i'(d_i) + \lambda \cdot \kappa_i^{\varphi}(d) = 0, \qquad \kappa_i^{\varphi}(d) = 2 \sum_{j \in I} \varphi'(d_i - d_j),
+\label{eq:focgeneral}
+\end{equation}
+of which \eqref{eq:foc} is the case $f_i(t) = (t - x_i)^2$, $\varphi(t) = t^2$. No convexity is used, \eqref{eq:focgeneral} being a necessary condition at a stationary point.
+
+\begin{uprop}[Lemma 1, general form]
+Call $\rho_i(d) = f_i'(d_i)/\kappa_i^{\varphi}(d)$ the \emph{demand ratio} of position $i$, wherever the coefficient does not vanish. If one and the same scalar $\lambda$ satisfies \eqref{eq:focgeneral} at positions $i$ and $j$, then
+\begin{equation}
+f_i'(d_i) \cdot \kappa_j^{\varphi}(d) = f_j'(d_j) \cdot \kappa_i^{\varphi}(d),
+\label{eq:proportiongeneral}
+\end{equation}
+which reads $\rho_i(d) = \rho_j(d)$; consequently no scalar satisfies \eqref{eq:focgeneral} at two positions with different demand ratios at an admissible configuration. For a family $(R_i)_{i \in I}$ whose values pre-exist inference, each $R_i = W_i$ fixed before inference and independent of the instance, \eqref{eq:focgeneral} holds at every position at two admissible configurations $d$ and $d'$ if and only if
+\begin{equation}
+f_i'(d_i) \cdot \kappa_i^{\varphi}(d') = f_i'(d'_i) \cdot \kappa_i^{\varphi}(d) \qquad \text{for every position } i \in I,
+\label{eq:tablecondition}
+\end{equation}
+that is, $\rho_i(d) = \rho_i(d')$ at every position. The minimal obstruction to a frozen family is therefore one single position at which the demand ratio changes between two admissible configurations, and the obstruction to the scalar family is the additional requirement that this ratio be the same at every position.
+\end{uprop}
+
+\argument Equation \eqref{eq:proportiongeneral} is \eqref{eq:focgeneral} at $i$ and $j$ with $\lambda$ eliminated, using only differentiability, hence stationary points rather than minimizers. For a frozen family, \eqref{eq:focgeneral} at position $i$ reads $W_i = -\rho_i(d)$ and $W_i = -\rho_i(d')$ in the second configuration, so the single entry serves both if and only if $\rho_i(d) = \rho_i(d')$, which is \eqref{eq:tablecondition}; the constant family is the case with one ratio common to all positions, so the scalar family is the shallowest object in the class, while a position-wise table, however many entries, satisfies \eqref{eq:focgeneral} at any single configuration by construction but cannot follow the demand ratio across configurations. The residue is the pair $(\varphi, f)$: the pairwise term must depend on the field through differences alone and the data term must be separable, so operator-valued couplings lie outside \eqref{eq:focgeneral} and are not claimed.\qedbox
+
+The algebra thus excludes the constant family at a single configuration and, through \eqref{eq:tablecondition}, the frozen family across configurations, however many entries it has; the source criterion that follows matches it, since a frozen position-wise family is Mode B, while an online-instantiated one is Mode A.
+
+\subsection{Lemma 2: Frozen Extrinsic Coefficients Cannot Realize a Heterogeneous Profile; the Source Is the Criterion}
+
+Perhaps strength should be appended as an extrinsic term outside the inference objective. Two paradigms must be distinguished.
+
+\begin{defn}
+Call an inference objective \emph{Paradigm E} if it is an additively separable combination of a data term and an extrinsic penalty term, of the form \eqref{eq:paradigmE}; call it \emph{Paradigm I} if it is a single generative objective in which candidate structures are given by the predictions of a generative model and only the data term itself is retained:
+\begin{equation}
+\mathcal{I}(x, p) = \sum_{i \in I} (x_i - p_i)^2 ,
+\label{eq:paradigmI}
+\end{equation}
+where $p$ is the prediction field given by the generative model, and no separate additive regularization term exists any longer.
+\end{defn}
+
+\begin{lemma}
+Let an extrinsic rule be an extrinsic quantity whose values are frozen at inference time; in the indexed notation of Definition~2 it is a family $(R_i)_{i \in I}$ whose values pre-exist inference, and it may be constant or position-wise. Such a quantity has no effect at the level of the configuration: its optimization problem remains well-posed for any positive coefficient, with a unique solution that is merely biased and oversmoothed; if the task demands a heterogeneous strength profile, frozen coefficients cannot realize that profile at a stationary point, and if they enter the stationarity conditions they fall within the exclusion of Lemma 1, while if they do not enter they cause no causal effect in the solution. The viability of the context rule is independent of its form and depends only on the source of its values.
+\end{lemma}
+
+\argument The extrinsic side reuses Lemma 1's algebra: Paradigm E's stationarity condition at a fitting point requires $\lambda \cdot \kappa_i (d) = 0$ at all positions simultaneously, and a heterogeneous consistency term, some $i, j$ with $\kappa_i (d) \neq \kappa_j (d)$, admits no nonzero $\lambda$ at all positions. The endogenous side is constructive: \eqref{eq:paradigmI} always has a unique minimizer, nonnegativity of the sum of squares giving $\mathcal{I}(x,p) \ge 0$ with the lower bound attained when the candidate field equals the prediction field, and the sum vanishing if and only if every term does; context is then a prediction grown inside the generative model, computing into $p$ where it should be strong and where weak. What is excluded is the realization of a heterogeneous profile by frozen coefficients at a fitting point, not the well-posedness of the frozen extrinsic problem: frozen priors combined with data-consistent learned reconstruction are routinely used for robust reconstruction within, and to a certain extent beyond, the training distribution \citep{haltmeier2026}, their failure being not a lack of definition but a lack of worst-case guarantee.\qedbox
+
+The form is not the criterion: position-wise weights computed online make the stationarity equations solvable position by position, and anisotropic diffusion \citep{perona1990}, like strengths chosen by Stein's unbiased risk estimation \citep{stein1981}, are Paradigm E in form and Mode A in source. Lemma 2 therefore rests not on an enumeration of paradigms but on a decidable property: whether the rule's values are frozen at inference time.
+
+\subsection{Lemma 3: The Open Set Demands Mode A}
+
+Let the test distribution be $P$ and let the loss $\ell(R, d)$ of a rule $R$ on input $d$ measure the error of the rule's values relative to the demand rule $t = (t_i)_{i \in I}$, for example the aggregate squared error $\sum_{i \in I} (R_i(d) - t_i(d))^2$, with $t_i(d)$ the context strength the task requires at position $i$, its existence given by the content-addressing of Criterion P2 and its measurability secured by the integrability requirement on the loss. Let $\mathrm{risk}(R) = \mathbb{E}_P[\ell(R,d)]$ over the distribution of inputs, let $\mathrm{risk}^*(R)$ be the infimum of the risks attainable by evidence-instantiated rules, and let the risk gap be
+\begin{equation}
+g(R) = \mathrm{risk}(R) - \mathrm{risk}^*(R) .
+\label{eq:gap}
+\end{equation}
+Generalization on the open set is taken in its strongest form: there is $\epsilon > 0$ with $\ell(R,d) \le \epsilon$ for \emph{every} input $d$ in the test distribution, the literal reading of ``cross-scenario reuse''.
+
+\begin{lemma}
+Suppose three premises hold. First, upper-tail realization: there exists an input $d_0$ such that $\ell(R, d_0) \ge \mathrm{risk}(R)$. Second, the risk gap exceeds the bound: $g(R) > \epsilon$. Third, the minimum risk is nonnegative: $\mathrm{risk}^*(R) \ge 0$. Then a generalization bound in the open-set sense cannot hold: the requirement that $\ell(R, d) \le \epsilon$ for all inputs in the test distribution is unattainable. In this sense, no rule with offline-frozen values can satisfy a uniform bound on the open set, and by the mutual exclusivity and exhaustiveness of Modes A and B, generalization requires the context rule to belong to Mode A.
+\end{lemma}
+
+\argument The derivation has four lines. By the generalization requirement, $\ell(R, d_0) \le \epsilon$; by upper-tail realization, $\mathrm{risk}(R) \le \ell(R, d_0)$; hence $\mathrm{risk}(R) \le \epsilon$. On the other hand, by nonnegativity of the minimum risk and \eqref{eq:gap}, $g(R) \le \mathrm{risk}(R)$, which with $g(R) > \epsilon$ gives $\mathrm{risk}(R) > \epsilon$. The two estimates contradict, so the generalization requirement cannot hold.\qedbox
+
+Upper-tail realization holds universally---for any integrable random variable the probability of attaining a value no less than its mean is positive---and nonnegativity holds trivially under squared loss, so what carries content is the risk gap exceeding the bound, which is Criterion P4 consumed at the fixed tolerance of the claimed bound. A mechanistic support is the amortization gap of variational inference \citep{cremer2018}: Mode B's fixed function family corresponds to the amortized posterior family and Mode A's instantiated rules to the per-instance optimum.
+
+\subsection{The Two Components of Criterion P4}
+\label{sec:p4}
+
+Criterion P4 carries the whole negation, so the charge that it presupposes the conclusion deserves a mechanism: P4 has two components, a barrier condition on the demand and a realization condition on the test distribution, plus a bounded-description condition that objects with pre-existing values satisfy, and the risk gap follows from the three by an elementary inequality.
+
+Fix the notation of Lemma 3: instances $d$ range over the open set of Criterion P3, $t = (t_i)_{i \in I}$ is the demand rule, and for a profile $s = (s_i)_{i \in I}$ write $\|s\|^2 = \sum_{i \in I} s_i^2$, so that $\ell(R,d) = \|R(d) - t(d)\|^2$, the benchmark $\mathrm{risk}^*$ is as in Lemma 3, and $g(R)$ is \eqref{eq:gap}. Let $d_{\mathrm{in}}$ be a metric on instances, $\mathrm{diam}_{\mathrm{in}}$ the diameter it induces.
+
+\paragraph{Barrier condition (P4a).} The demand has no pre-given modulus: there is a separation $\delta > 0$ such that for every scale $\eta > 0$ there are two disjoint sets of instances $A_\eta$ and $B_\eta$ with
+\begin{equation}
+\inf_{d \in A_\eta,\, e \in B_\eta} \| t(d) - t(e) \| \ge \delta , \qquad \mathrm{diam}_{\mathrm{in}} (A_\eta \cup B_\eta) \le \eta .
+\label{eq:barrier}
+\end{equation}
+The demand separates two sets of instances as close together as the scale $\eta$ prescribes, with a separation that does not shrink as $\eta$ does; equivalently, the demand map is not Lipschitz on the open set with any pre-given constant. It mentions no rule and has the shape of the classical approximation barrier \citep{kolmogorov1936,pinkus1985}; its ground is Criterion P2's content-addressing, a displacement smaller than any pre-given scale being able to carry a boundary across a position and reverse the strength demanded there, so a fixed-grid simulation fails the condition, as does any demand Lipschitz in the instance.
+
+\paragraph{Bounded-description condition (BD).} An object whose values pre-exist inference carries a finite description, and the values it can give respond to the instance at a rate bounded by it: there is a finite constant $\Lambda = \Lambda(R)$, determined by the carrying parameters, with
+\begin{equation}
+\| R(d) - R(e) \| \le \Lambda \cdot d_{\mathrm{in}}(d, e)
+\label{eq:rate}
+\end{equation}
+for all instances $d$ and $e$: a feedforward computation with bounded parameters satisfies it, and so does a stored table, with the bound determined by its entries and index resolution. It excludes one kind of object and no other: one whose values are computed by an analytic expression of the instance rather than carried by a finite description, which by the implementer clause of Definition~3 belongs to Mode A. A larger rate is no escape: $\Lambda$ is finite and fixed, and the barrier supplies a scale below which no finite rate resolves the demand.
+
+\paragraph{Realization condition (P4b).} The separation is realized with positive frequency: there is a level $p > 0$ such that at every scale $\eta$ the sets of \eqref{eq:barrier} can be chosen so that each carries probability at least $p$ under the test distribution,
+\begin{equation}
+P (A_\eta) \ge p, \qquad P (B_\eta) \ge p .
+\label{eq:realization}
+\end{equation}
+This is the empirical component of Criterion P4, which this paper neither proves nor claims to prove: the open set admits fine-scale demand reversals with a frequency bounded away from zero. It is directly measurable, a single number attached to a task, and when it fails the reversals are rare, a rule with pre-existing values spending most of its probability where the absolute level of the demand is what a fixed description can carry.
+
+\begin{uprop}[Barrier to Gap]
+Suppose the barrier condition \eqref{eq:barrier} holds with separation $\delta$, the realization condition \eqref{eq:realization} holds at level $p$, and every rule whose values pre-exist inference satisfies the bounded-description condition \eqref{eq:rate} with its own finite rate. Then every such rule satisfies
+\begin{equation}
+\mathrm{risk}(R) \ge \frac{p \delta^2}{16} , \qquad \text{and hence} \qquad g(R) \ge \frac{p \delta^2}{16} - \rho = \kappa ,
+\label{eq:floor}
+\end{equation}
+where $\rho$ is any upper bound on the benchmark risk $\mathrm{risk}^*$. In particular, if $\rho < p \delta^2 / 16$, then $\kappa > 0$, the risk gap is at least $\kappa$ for every rule whose values pre-exist inference, and no generalization bound in the sense of Lemma 3 holds at any tolerance $\epsilon < \kappa$.
+\end{uprop}
+
+\argument Fix a rule $R$ whose values pre-exist inference, let $\Lambda$ be its rate, and choose a scale $\eta \le \delta/(2\Lambda)$ with the sets $A = A_\eta$, $B = B_\eta$ of \eqref{eq:barrier}. For $d \in A$ and $e \in B$ the triangle inequality gives
+\begin{equation}
+\| R(d) - t(d) \| + \| R(e) - t(e) \| \ge \| t(d) - t(e) \| - \| R(d) - R(e) \| \ge \delta - \Lambda \eta \ge \frac{\delta}{2},
+\label{eq:deficit}
+\end{equation}
+the middle step using \eqref{eq:barrier} and \eqref{eq:rate}, so at least one member of every pair has a deficit of at least $\delta/4$: were both below $\delta/4$, that inequality would fail for the pair, so the set $S$ of instances whose deficit is at least $\delta/4$ contains all of $A$ or all of $B$ and by \eqref{eq:realization} carries probability at least $p$, whence $\mathrm{risk}(R) \ge p\,(\delta/4)^2$. The bound on $g(R)$ follows from \eqref{eq:gap} and $\mathrm{risk}^* \le \rho$, and the final sentence repeats the derivation of Lemma 3 with $\epsilon < \kappa$.\qedbox
+
+The gap is derived rather than assumed, from a statement about the demand alone, a statement about implementations, and one measurable number; nor does a usual relaxation create a third mode, an implementation Mode A except for a finite budget of frozen metaparameters being still Mode B, already inside the quantitative statement.
+
+\subsection{Classification and Closure: Neural Networks}
+
+Inference by a neural network feeds the current input into a set of weights in a forward computation; the weights do not change at inference time, and their values come from the statistics of a training corpus or from manual setting.
+
+\begin{proposition}
+The context rule of a neural network, insofar as its values vary with corpus statistics or manual setting, is carried by weights fixed at inference time and belongs to Mode B.
+\end{proposition}
+
+\argument The network's rule satisfies \eqref{eq:modeB}, with the parameter object $W$ the weights and the computational processes $F_i$ forward propagation: the weights already exist when inference begins, and whether their values came from gradient descent or manual setting does not change their prior existence, so membership in Mode B follows from the definition. The more substantive part is the converse: a rule carried by fixed weights does not belong to Mode A. Take the collision sample pair of Criterion P3, two inputs $d$ and $e$ with identical evidence and freely bifurcating context, $d|_{\ev} = e|_{\ev}$ and different values at context positions: were the rule Mode A, \eqref{eq:modeA} would force the same value at every position on the two inputs, but a nondegenerate rule with fixed parameters gives different values there, so the requirements conflict. The collision argument excludes rules nondegenerate with respect to evidence--context bifurcation; a network computing only an analytic function of the evidence is not within its reach, but by the implementer clause of Definition~3 its rule's source is then an analytic invariant rather than the component's memory. The degenerate rule with $W = 0$ is excluded by the hypothesis, and a rule with $W$ arbitrarily close to zero is reached by the component form of Criterion P4 through a different argument path.\qedbox
+
+\begin{theorem}
+Neural networks alone cannot independently complete open inversion tasks; Claim $\mathcal{P}$ is false.
+\end{theorem}
+
+\argument Open inversion tasks satisfy Criterion P3, so collision sample pairs exist, and Proposition 4 gives that the network's rule belongs to Mode B and not to Mode A. Were Claim $\mathcal{P}$ true, there would be a bound $\epsilon$ under which the network rule satisfies the uniform bound, and the component form of Criterion P4 gives a risk gap bounded below by the positive floor $\kappa$ of \eqref{eq:floor} for every rule whose values pre-exist inference, so at every tolerance $\epsilon < \kappa$ the second premise of Lemma 3 is satisfied and Lemma 3 gives that generalization requires Mode A; the necessary condition conflicts with the nature of the carrier, so Claim $\mathcal{P}$ is false.\qedbox
+
+On the four-position toy carrier of the machine verification, the mechanism is exhibited for two demands: every frozen coefficient suffers a total loss of at least $1$ where a constructive evidence-instantiated rule attains $1/2$, and at least $3/2$ where the rule $R(d) = d_0^2$ attains $0$. A linear demand, by contrast, is pinned exactly by a frozen family, which is complete on that sample at $\epsilon = 0$: the task fails Criterion P4 and Theorem 5 is silent on it.
+
+Beyond the algebra, the exclusion does not depend on the form of the parameter object: a position-wise or layer-wise table is Mode B of higher dimension, and \eqref{eq:tablecondition} excludes the frozen family as soon as one position changes its demanded ratio between two admissible configurations. Approximate inference---loopy belief propagation, structured variational inference, learned proposals---changes the cost and the accuracy of evaluation, not the provenance of the rule, and composite systems pairing a frozen prior with likelihood guidance driven online credit their completeness to the Mode A part.
+
+\section{Formal Verification}
+\label{ch:verify}
+
+The algebraic skeleton is machine-verified in Lean~4 with Mathlib, with zero \texttt{sorry}, zero \texttt{axiom} of its own and zero warnings \citep{yang2023}. It covers Definitions 1 to 4, Lemmas 1 to 3, Proposition 4, Theorem 5 and the final theorem \texttt{finale}, which conjoins both sides: under Criterion P3 and the measure-theoretic premises of Lemma 3, a rule carried by fixed parameters neither belongs to Mode A nor can satisfy the generalization bound on the open set. Every premise not explicit in the paper is a theorem parameter, none implicit.
+
+The guarantee divides into three levels, recorded per paper item in the artifact index of the online appendix. Tier A is the carrier-independent algebraic core, proved at general types with proofs citing no carrier property: both forms of Lemma 1's proportionality identities, the shape exclusion of Lemma 2, the classification and closure of Proposition 4 and Theorem 5, and the derivation of the general first-order condition. Tier B comprises structured general forms anchored on Mathlib theorems: ill-posedness and the collision construction over arbitrary index types, the endogenous paradigm's minimizer from positive definiteness of inner-product-space norms, and Lemma 3's measure framework, where upper-tail realization is demoted from a premise to \texttt{tail\ttu realization}. Tier C is the uncovered residue: the continuous-side Euler--Lagrange derivation, network nondegeneracy, and the component form of Criterion P4 with the barrier-to-gap inequality.
+
+The artifact is in the \texttt{lean-proof} directory of the repository \texttt{https://github.com/\hspace{0pt}aki-xavier/\hspace{0pt}frozen-axis}: a self-contained Lake project pinning Mathlib and all transitive dependencies to exact revisions, and the toolchain to \texttt{leanprover/\hspace{0pt}lean4:v4.34.0}; the reproduction command is \texttt{lake build}. Its development file is 1219 lines, identified by the blob hash \texttt{5c6cc73a}. The build completes with zero errors and zero warnings, contains no \texttt{sorry}, and \texttt{\#print axioms} on \texttt{finale}, \texttt{lemma1\ttu sharp} and \texttt{tail\ttu realization} returns \texttt{propext}, \texttt{Classical.choice} and \texttt{Quot.sound}, Lean's standard set, with no \texttt{sorryAx}. The artifact index maps every paper item to the Lean declaration that discharges it, with the premises of the load-bearing declarations printed in full.
+
+\section{Discussion}
+\label{ch:discussion}
+
+The symptoms of Mode B are recorded empirically: deep networks memorize random labels with near-zero training error, so frozen weights suffice to hold a corpus's numerical table \citep{zhang2021}.
+
+\subsection{A Minimal Empirical Probe of the Risk Gap}
+\label{sec:probe}
+
+The measurable trace of the negation is the risk gap of Lemma 3, measured on a constructed open inversion task whose demanded profile is computable offline (\texttt{experiments/probe.py}, \texttt{experiments/p4\ttu task.py}): the frozen table is the best of five rules on the training distribution, at RMSE $0.096$ against $0.071$ for the per-position ideal, and its excess over the ideal rises from $0.024$ to $0.068$ at an unseen location, $0.064$ at an unseen width and $0.046$ at twice the noise---a factor between $1.9$ and $2.8$, while the ideal is unchanged when only the location moves---so a corpus-fitted table describes the demanded profile better in-distribution without carrying the guarantee over the open set. The excess is measured against the per-position ideal, at or below the infimum over evidence-instantiated rules of Lemma 3, so it upper-bounds $g(R)$ wherever the ideal is attainable from evidence.
+
+\subsection{Existence, Cost and Design Implications}
+\label{sec:cost}
+
+Whether Mode A exists determines the practical reading of the conclusion: the analytic-invariant path takes its values directly from calibration and geometry, and the per-instance optimization path solves the rule values separately for each input \citep{sun2020}. The analytic path costs constant to linear time, the per-instance path about $10^2$ to $10^3$ forward computations, and the temptation of Mode B comes exactly from that difference, which is also the motivation for composite systems: Mode B in cost-sensitive and in-distribution stages, Mode A in the critical stage of rule generation. Three questions then follow for design: where the rule's values come from; whether they are frozen at inference time; and who on the open set instantiates the rule, no responsible mechanism meaning no completeness for open inversion tasks.
+
+Three limitations delimit the result. First, the satisfiability of Criterion P4 is a load-bearing empirical question: tasks whose demand is exactly identifiable from a fixed corpus fail the barrier condition, and tasks whose fine-scale demand reversals are rare fail the realization condition, both outside the class where a fixed-memory component can be complete; the floor $\kappa$ of \eqref{eq:floor} is attached to the task rather than unbounded. Second, the positive claims need Assumption A0, which tasks whose demand depends on unobserved structure fail. Third, what is falsified is solo use: for composite systems the credit for completeness goes to the Mode A mechanism, and the falsification targets components whose rules are borne by values frozen at inference time, whatever their architecture.
+
+\section{Conclusion}
+\label{ch:conclusion}
+
+Once context-rule values are solidified by a corpus and frozen at inference, no fixed-memory component is complete for open inversion tasks on its own. The argument unfolds along a decision axis: ill-posedness forces inference to use context; Lemma 1 excludes the global scalar, and Lemma 2 frozen extrinsic coefficients, from realizing a heterogeneous profile; Criterion P4 and Lemma 3 require values instantiated by current evidence; Proposition 4 completes the classification; Theorem 5 closes the case.
+
+The reach is not limited to neural networks: Markov random fields, conditional random fields, mixtures, dictionary learning and kernel methods whose context rules are carried by offline-trained or hand-set parameters are Mode B and fall within the same falsification, while implementations whose coupling strengths are computed online from current evidence are Mode A. The boundary is equally sharp: tasks whose demand can be exactly identified from a fixed corpus are outside the class, and there a fixed-memory component can be complete. The exclusion is independent of the quadratic smoothing form, and its minimal obstruction is an equivalence: one position whose strength ratio changes between two admissible configurations excludes every frozen family. Negation is not disparagement: what is negated is only the universal claim that solo use is complete.
+
+\acks{The verified artifact described in Section~\ref{ch:verify} was developed with the Lean~4 proof assistant and its mathematical library Mathlib, and is distributed in the \texttt{lean-proof} directory of the repository with the \texttt{lean-toolchain} file that pins the toolchain version.
+
+Funding: this research received no specific funding.
+
+Competing interests: the author declares no competing interests.}
+
+\vskip 0.2in
+\bibliography{reference}
+
+% This is the condensed version: the full paper, with the related-work
+% survey, the worked examples, the three tables and the remaining
+% discussion subsections, is paper.tex, built from main.tex and
+% sections/*.tex.
+
+\end{document}

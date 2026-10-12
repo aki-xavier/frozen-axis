@@ -19,6 +19,8 @@ This repository contains a theoretical paper (English, LaTeX source) together wi
 | `online-appendix/main.tex`, `online-appendix/body.tex` | Online appendix (artifact index, reproduction, axiom budget, premise lists of the load-bearing declarations). Kept out of the paper deliberately: appendix pages count toward the JMLR page limit, so the paper points to it from Section 6 instead |
 | `paper.tex` | Single-file submission version (flattened from `main.tex` by `flatten.py`; do not edit by hand) |
 | `paper.pdf` | Released PDF (40 pages) built from `paper.tex`, committed at the repository root |
+| `paper-slim.tex` | 15-page condensation of the paper (hand-maintained, standalone, keeps the full paper's numbering of Claim R, Definitions 1-4, Lemmas 1-3, Proposition 4, Theorem 5); rebuild with `./build.sh slim` |
+| `paper-slim.pdf` | Released PDF (15 pages) built from `paper-slim.tex`, committed at the repository root |
 | `online-appendix.pdf` | Released online appendix (4 pages), committed at the repository root |
 | `jmlr2e.sty` | Official JMLR style file (do not modify; third-party, not covered by the licenses below) |
 | `reference.bib` | References (78 entries, all verified against Crossref/DBLP/arXiv or publisher sites; 30+ carry a DOI) |

@@ -35,6 +35,9 @@
 \usepackage{styles/jmlr2e}
 \usepackage{amsmath}
 \usepackage{array}
+% The JMLR geometry is fixed. Allow natural bottom whitespace instead of
+% stretching short pages to the full text height.
+\raggedbottom % chktex 1
 
 % --- theorem environments -------------------------------------------
 % jmlr2e defines theorem, lemma, proposition, corollary, remark,
@@ -48,8 +51,8 @@
 % Criterion]). Defined by hand so that amsthm is not needed and the
 % official .sty stays untouched.
 \makeatletter
-\newenvironment{claim}[1][]{\par\medskip\noindent\textbf{Claim\ifx\relax#1\relax\else\ #1\fi:}\ \itshape}{\par\medskip}
-\newenvironment{uprop}[1][]{\par\medskip\noindent\textbf{Proposition\ifx\relax#1\relax\else\ (#1)\fi:}\ \itshape}{\par\medskip}
+\newenvironment{claim}[1][]{\par\medskip\noindent\textbf{Claim\ifx\relax#1\relax\else\ #1\fi:}\ \itshape}{\par\medskip} % chktex 6
+\newenvironment{uprop}[1][]{\par\medskip\noindent\textbf{Proposition\ifx\relax#1\relax\else\ (#1)\fi:}\ \itshape}{\par\medskip} % chktex 6
 \makeatother
 
 % --- helpers --------------------------------------------------------
@@ -87,7 +90,7 @@
 % the PDF byte-reproducible, so that a rebuilt paper.pdf differs only when the
 % paper's content changed. \ifdefined keeps the file compilable by engines
 % without the primitive.
-\ifdefined\pdftrailerid
+\ifdefined\pdftrailerid % chktex 1
   \pdftrailerid{C0FFEE0123456789ABCDEF0123456789}% synthetic constant, not a real identifier
 \fi
 
@@ -97,8 +100,8 @@
 
 % NOTE: the author block is present because JMLR submissions are not
 % anonymous.
-\author{\name Shuo Zhang \email 202400103083@stumail.sztu.edu.cn \\
-       \addr Shenzhen Technology University\\
+\author{\name Shuo Zhang \email 202400103083@stumail.sztu.edu.cn \\ % chktex 1
+       \addr Shenzhen Technology University\\ % chktex 1
        3002 Lantian Road, Pingshan District\\
        Shenzhen, Guangdong, China 518118}
 
@@ -108,7 +111,8 @@
 \maketitle
 
 \begin{abstract}%
-Many inference tasks are open inversion tasks, delimited by four criteria: observations are ill-posed, so local observations cannot determine the structure sought; required context strength is heterogeneous and content-addressed by the evidence; inference inputs are unconstrained by the training distribution; and the demand rule cannot be given within any pre-given tolerance by values frozen before inference begins. No fixed-memory component completes such tasks alone; neural networks are its canonical instance. A context rule's content is a set of numbers, from two exclusive and exhaustive sources: current evidence or analytic invariants (Mode A), and corpus statistics or manual setting frozen at inference (Mode B). Generalization on the open set requires Mode A; a fixed-memory component's rules are Mode B. The exclusion holds for any even differentiable pairwise potential, not only the quadratic form: one position whose demand ratio changes between two admissible configurations suffices. What is falsified is solo use, not usefulness. The algebraic skeleton is machine-verified in Lean 4 and Mathlib at general types, with zero sorry and no warnings.
+% chktex 13
+Many inference tasks are open inversion tasks, delimited by four criteria: observations are ill-posed, so local observations cannot determine the structure sought; required context strength is heterogeneous and content-addressed by the evidence; inference inputs are unconstrained by the training distribution; and the demand rule cannot be given within any pre-given tolerance by values frozen before inference begins. No fixed-memory component completes such tasks alone; neural networks are its canonical instance. A context rule's content is a set of numbers, from two exclusive and exhaustive sources: current evidence or analytic invariants (Mode A), and corpus statistics or manual setting frozen at inference (Mode B). Generalization on the open set requires Mode A; a fixed-memory component's rules are Mode B. The exclusion holds for any even differentiable pairwise potential, not only the quadratic form: one position whose demand ratio changes between two admissible configurations suffices. What is falsified is solo use, not usefulness. The algebraic skeleton is machine-verified in Lean 4 and Mathlib at general types, with zero sorry and no warnings. % chktex 13
 \end{abstract}
 
 \begin{keywords}
@@ -136,6 +140,12 @@ Many inference tasks are open inversion tasks, delimited by four criteria: obser
 Funding: this research received no specific funding.
 
 Competing interests: the author declares no competing interests.}
+
+% Give long bibliography URLs an additional line-breaking allowance without
+% changing the bibliography style or entry text.
+\makeatletter
+\AtBeginDocument{\g@addto@macro\UrlBreaks{\UrlOrds}}
+\makeatother
 
 \vskip 0.2in
 \bibliography{reference}

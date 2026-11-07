@@ -4,7 +4,7 @@
 %% Produced by flatten.py from main.tex and sections/*.tex, so that the
 %% archive submitted to JMLR contains a single .tex file as its final
 %% preparation instructions request.
-%% Edit main.tex / sections/*.tex and re-run:  python3 flatten.py
+%% Edit main.tex / sections/*.tex and re-run:  python3 scripts/flatten.py
 %%=======================================================================
 %=======================================================================
 % Formal Falsification of the Completeness of a Single Fixed-Memory
@@ -39,7 +39,7 @@
 
 % Any additional packages must be included after jmlr2e.
 % jmlr2e already provides epsfig, amssymb, natbib, graphicx and hyperref.
-\usepackage{jmlr2e}
+\usepackage{styles/jmlr2e}
 \usepackage{amsmath}
 \usepackage{array}
 
@@ -766,7 +766,7 @@ Competing interests: the author declares no competing interests.}
 % The artifact index (layout, reproduction, axiom budget, the map from paper
 % items to Lean declarations, and the premise lists of the load-bearing
 % declarations) is published as the separately hosted online appendix, built
-% from online-appendix/ by  ./build.sh appendix . It is deliberately kept out
+% from paper/appendix/ by  ./scripts/build.sh appendix . It is deliberately kept out
 % of this file: appendix pages count toward the JMLR page limit, and the paper
 % points to the online appendix from its verification section instead.
 

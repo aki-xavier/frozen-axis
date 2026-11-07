@@ -48,4 +48,4 @@ preferred-citation:
   notes: >-
     Manuscript submitted to the Journal of Machine Learning Research. The LaTeX sources of the paper
     (CC BY 4.0) and the Lean 4 verification artifact (MIT) are in this repository; the paper is
-    paper.pdf at the repository root, and the artifact is under lean-proof/.
+    dist/paper.pdf, and the artifact is under lean-proof/.

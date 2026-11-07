@@ -1,17 +1,17 @@
-# latexmk configuration for this repository. latexmk reads it automatically when
-# it runs from the repository root (its documented search order is ./latexmkrc,
-# ./.latexmkrc, then $HOME/.latexmkrc), so everything that is common to the build
-# targets lives here and build.sh only has to name the source file.
+# latexmk configuration for the paper. latexmk reads it automatically when
+# scripts/build.sh runs from paper/ (its documented search order is ./latexmkrc,
+# ./.latexmkrc, then $HOME/.latexmkrc), so everything common to the build targets
+# lives here and build.sh only has to name the source file.
 #
-# build.sh exports:
-#   OUTDIR     the output directory for this target (build-paper/, build-appendix/)
+# scripts/build.sh exports:
+#   OUTDIR     the absolute output directory for this target (build/paper/, etc.)
 #   PDFLATEX   an alternative pdflatex executable, if the user overrode it
 # It also passes -bibtex or -bibtex- on the command line, because the online
 # appendix has no bibliography and must not send latexmk looking for one.
 #
-# Invoked by hand, the same two variables are the only ones that matter:
+# Invoked by hand from paper/, the same two variables are the only ones that matter:
 #
-#   OUTDIR=build-paper latexmk -pdf -bibtex paper.tex
+#   OUTDIR=../build/paper latexmk -pdf -bibtex -outdir=../build/paper paper.tex
 
 $pdf_mode = 1;                                   # pdflatex -> PDF
 

@@ -276,8 +276,8 @@ def main():
         json.dump(results, fh, indent=1)
     try:
         import figure
-        figure.plot(results, os.path.join(here, os.pardir, "figures"))
-        print("\nfigure written to figures/probe.pdf")
+        figure.plot(results, os.path.join(here, os.pardir, "paper", "figures"))
+        print("\nfigure written to paper/figures/probe.pdf")
     except ImportError as exc:            # numpy-only runs still work
         print(f"\n(matplotlib not available: {exc})")
     return results

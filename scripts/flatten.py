@@ -6,15 +6,16 @@ ideally contain only one .tex file" (they suggest latexpand). This script
 does the same job without an external dependency: it expands every
 \\input{...} in main.tex recursively and writes paper.tex next to it.
 
-Usage:  python3 flatten.py
+Usage:  python3 scripts/flatten.py
 """
 
 import os
 import re
 
-HERE = os.path.dirname(os.path.abspath(__file__))
-ENTRY = os.path.join(HERE, 'main.tex')
-OUTPUT = os.path.join(HERE, 'paper.tex')
+PAPER_DIR = os.path.abspath(os.path.join(
+    os.path.dirname(os.path.abspath(__file__)), os.pardir, 'paper'))
+ENTRY = os.path.join(PAPER_DIR, 'main.tex')
+OUTPUT = os.path.join(PAPER_DIR, 'paper.tex')
 
 INPUT_RE = re.compile(r'^[ \t]*\\input\{([^}]+)\}[ \t]*$', re.M)
 
@@ -32,7 +33,7 @@ def expand(path, depth=0):
         child = os.path.join(base, target)
         if not os.path.isfile(child):
             raise FileNotFoundError(child)
-        rel = os.path.relpath(child, HERE)
+        rel = os.path.relpath(child, PAPER_DIR)
         body = expand(child, depth + 1)
         bar = '%' * 70
         return (bar + '\n%% --- inlined from ' + rel + '\n' + bar + '\n' + body)
@@ -48,7 +49,7 @@ def main():
         '%% Produced by flatten.py from main.tex and sections/*.tex, so that the\n'
         '%% archive submitted to JMLR contains a single .tex file as its final\n'
         '%% preparation instructions request.\n'
-        '%% Edit main.tex / sections/*.tex and re-run:  python3 flatten.py\n'
+        '%% Edit main.tex / sections/*.tex and re-run:  python3 scripts/flatten.py\n'
         '%%=======================================================================\n'
     )
     # keep the "% !TeX program" line first if present

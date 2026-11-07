@@ -6,7 +6,7 @@
 
 The project name frozen-axis comes from the paper's core concept: one side of the decision axis holds values frozen into the training corpus and fixed at inference time (Mode B), while the other side holds values given on the spot by current evidence or by analytic invariants (Mode A); on the open set only the latter can satisfy generalization, and the falsification closes there.
 
-📄 **Paper: [paper.pdf](paper.pdf) (40 pages, released); online appendix: [online-appendix.pdf](online-appendix.pdf) (4 pages). LaTeX source in the official JMLR jmlr2e style, rebuild with `./build.sh`**
+📄 **Paper: [paper.pdf](dist/paper.pdf) (40 pages, released); online appendix: [online-appendix.pdf](dist/online-appendix.pdf) (4 pages). LaTeX source in the official JMLR jmlr2e style, rebuild with `./scripts/build.sh`**
 
 This repository contains a theoretical paper (English, LaTeX source) together with its Lean 4 machine-verification artifact. The paper proves that once the values of context rules are frozen into a corpus and fixed at inference time, no fixed-memory component (a neural network, for instance) is complete on its own for open inversion tasks. Open inversion tasks are delimited by four criteria: observations are ill-posed, the required context strength is heterogeneous and content-addressed by the evidence, inference inputs are not constrained by the training distribution, and the demand rule cannot be given within any pre-given tolerance on the open set by any values frozen before inference begins. The last criterion is stated in two components, a barrier condition saying that the demand separates nearby instances by a fixed amount at every scale and a realization condition saying that the separated instances carry probability bounded away from zero, and the two are shown to imply a positive floor on the risk gap of every rule whose values pre-exist inference, so the criterion is a sufficient condition implying a bound rather than a restatement of the negation. The argument unfolds along a decision axis: the content of a context rule is a set of numbers; values given on the spot by current evidence or by analytic invariants belong to Mode A, while values given offline from training-corpus statistics or manual setting and frozen at inference time belong to Mode B; generalization on the open set requires Mode A, fixed-memory components belong to Mode B, and the two are mutually exclusive, so the falsification closes. The algebraic skeleton of the argument chain is machine-verified with Lean 4 + Mathlib, with zero `sorry` and zero warnings.
 
@@ -14,19 +14,19 @@ This repository contains a theoretical paper (English, LaTeX source) together wi
 
 | Path | Contents |
 |---|---|
-| `main.tex` | Paper LaTeX main file (official JMLR jmlr2e style; `\input`s each chapter) |
-| `sections/*.tex` | Per-chapter LaTeX sources (01 Introduction … 08 Conclusion) |
-| `online-appendix/main.tex`, `online-appendix/body.tex` | Online appendix (artifact index, reproduction, axiom budget, premise lists of the load-bearing declarations). Kept out of the paper deliberately: appendix pages count toward the JMLR page limit, so the paper points to it from Section 6 instead |
-| `paper.tex` | Single-file submission version (flattened from `main.tex` by `flatten.py`; do not edit by hand) |
-| `paper.pdf` | Released PDF (40 pages) built from `paper.tex`, committed at the repository root |
-| `paper-slim.tex` | 15-page condensation of the paper (hand-maintained, standalone, keeps the full paper's numbering of Claim R, Definitions 1-4, Lemmas 1-3, Proposition 4, Theorem 5); rebuild with `./build.sh slim` |
-| `paper-slim.pdf` | Released PDF (15 pages) built from `paper-slim.tex`, committed at the repository root |
-| `online-appendix.pdf` | Released online appendix (4 pages), committed at the repository root |
-| `jmlr2e.sty` | Official JMLR style file (do not modify; third-party, not covered by the licenses below) |
-| `reference.bib` | References (78 entries, all verified against Crossref/DBLP/arXiv or publisher sites; 30+ carry a DOI) |
-| `build.sh` | Build script: `latexmk` driving pdflatex + bibtex, with an explicit pdflatex x3 + bibtex fallback; output to `build-main/`, `build-paper/` or `build-appendix/` |
-| `latexmkrc` | `latexmk` configuration, read automatically from the repository root (pdflatex flags, output directory, bibliography mode) |
-| `flatten.py` | Flattening script: expands `main.tex` + `sections/*.tex` into the single-file `paper.tex` |
+| `paper/main.tex` | Paper LaTeX main file (official JMLR jmlr2e style; `\input`s each chapter) |
+| `paper/sections/*.tex` | Per-chapter LaTeX sources (01 Introduction … 08 Conclusion) |
+| `paper/appendix/main.tex`, `paper/appendix/body.tex` | Online appendix (artifact index, reproduction, axiom budget, premise lists of the load-bearing declarations). Kept out of the paper deliberately: appendix pages count toward the JMLR page limit, so the paper points to it from Section 6 instead |
+| `paper/paper.tex` | Single-file submission version (flattened from `paper/main.tex` by `scripts/flatten.py`; do not edit by hand) |
+| `dist/paper.pdf` | Released PDF (40 pages) built from `paper/paper.tex` |
+| `paper/paper-slim.tex` | 15-page condensation of the paper (hand-maintained, standalone, keeps the full paper's numbering of Claim R, Definitions 1-4, Lemmas 1-3, Proposition 4, Theorem 5); rebuild with `./scripts/build.sh slim` |
+| `dist/paper-slim.pdf` | Released PDF (15 pages) built from `paper/paper-slim.tex` |
+| `dist/online-appendix.pdf` | Released online appendix (4 pages) |
+| `paper/styles/jmlr2e.sty` | Official JMLR style file (do not modify; third-party, not covered by the licenses below) |
+| `paper/reference.bib` | References (78 entries, all verified against Crossref/DBLP/arXiv or publisher sites; 30+ carry a DOI) |
+| `scripts/build.sh` | Build script: `latexmk` driving pdflatex + bibtex, with an explicit pdflatex x3 + bibtex fallback; intermediate output to `build/{main,paper,slim,appendix}/` |
+| `paper/latexmkrc` | `latexmk` configuration, read automatically from `paper/` (pdflatex flags, output directory, bibliography mode) |
+| `scripts/flatten.py` | Flattening script: expands `paper/main.tex` + `paper/sections/*.tex` into the single-file `paper/paper.tex` |
 | `lean-proof/FormalProof.lean` | Lean 4 formal proof (1,219 lines, comments in English) |
 | `lean-proof.zip` | Packaged Lean artifact (generated by the script) |
 | `package-lean-proof.sh` | Packaging script: includes source and version-lock files, excludes the build cache |
@@ -34,7 +34,7 @@ This repository contains a theoretical paper (English, LaTeX source) together wi
 | `experiments/p4_task.py` | Canonical thresholded task on which the components of Criterion P4 are measured (separation, realized mass, benchmark risk) and the risk-gap floor is evaluated; writes `experiments/p4_task.json` |
 | `experiments/p4_components.py` | The same components measured on the probe's own task, where the floor comes out vacuous; writes `experiments/p4_components.json` |
 | `experiments/figure.py` | Figure 1 of the paper, drawn from `experiments/probe_results.json` (matplotlib) |
-| `figures/probe.pdf` | Figure 1, committed so that the paper builds without a Python environment |
+| `paper/figures/probe.pdf` | Figure 1, committed so that the paper builds without a Python environment |
 | `LICENSE` | MIT license, covering the code and the Lean artifact |
 | `LICENSE-PAPER` | CC BY 4.0, covering the paper text, bibliography and compiled PDF |
 | `CITATION.cff` | Citation metadata (Citation File Format 1.2.0), with the paper as the preferred citation |
@@ -44,12 +44,12 @@ This repository contains a theoretical paper (English, LaTeX source) together wi
 Paper (a local TeX distribution is required: TeX Live, MacTeX or TinyTeX with `latexmk`, `pdflatex` and `bibtex` — JMLR production also compiles with latexmk via pdflatex):
 
 ```bash
-./build.sh          # build main.tex (modular source, output to build-main/)
-./build.sh paper    # build paper.tex (single-file submission version, output to build-paper/)
-./build.sh appendix # build online-appendix/main.tex (output to build-appendix/)
+./scripts/build.sh          # build paper/main.tex (modular source, output to build/main/)
+./scripts/build.sh paper    # build paper/paper.tex (single-file submission version, output to build/paper/)
+./scripts/build.sh appendix # build paper/appendix/main.tex (output to build/appendix/)
 ```
 
-The driver is `latexmk`, which re-runs `pdflatex` and `bibtex` until the cross-references and the bibliography settle; the compile flags live in [`latexmkrc`](latexmkrc). Set `USE_LATEXMK=0` to fall back to an explicit `pdflatex` ×3 + `bibtex` sequence, which is also what a machine without `latexmk` gets.
+The driver is `latexmk`, which re-runs `pdflatex` and `bibtex` until the cross-references and the bibliography settle; the compile flags live in [`paper/latexmkrc`](paper/latexmkrc). Set `USE_LATEXMK=0` to fall back to an explicit `pdflatex` ×3 + `bibtex` sequence, which is also what a machine without `latexmk` gets.
 
 A minimal TeX installation needs one extra package. `jmlr2e.sty` typesets the `©` of the first-page copyright footnote and the itemize bullets in TS1, and TinyTeX carries the EC/TC Computer Modern fonts only as METAFONT sources, so `pdflatex` would have to render a bitmap for every size used:
 
@@ -57,20 +57,20 @@ A minimal TeX installation needs one extra package. `jmlr2e.sty` typesets the `�
 tlmgr install cm-super   # Type 1 EC/TC fonts, identical metrics, no bitmaps
 ```
 
-`build.sh` names that command when a missing font is what stopped a build. The bibliography is processed by BibTeX rather than biber, because `jmlr2e.sty` loads `natbib` and the paper uses `\bibliographystyle{plainnat}`, a BibTeX style; biber only works with `biblatex`, which this style does not use.
+`scripts/build.sh` names that command when a missing font is what stopped a build. The bibliography is processed by BibTeX rather than biber, because `jmlr2e.sty` loads `natbib` and the paper uses `\bibliographystyle{plainnat}`, a BibTeX style; biber only works with `biblatex`, which this style does not use.
 
-Publish the released PDFs. This refreshes `paper.tex` from `main.tex` + `sections/*.tex` first, builds it, copies the result over the committed `paper.pdf` at the repository root, then builds the online appendix and copies it over `online-appendix.pdf`, so neither published PDF can drift from the sources; it refuses to overwrite `paper.pdf` if the build reports LaTeX errors, and refuses to publish the appendix unless that build is clean too:
+Publish the released PDFs. This refreshes `paper/paper.tex` from `paper/main.tex` + `paper/sections/*.tex` first, builds it, copies the result over the committed `dist/paper.pdf`, then builds the online appendix and copies it over `dist/online-appendix.pdf`, so neither published PDF can drift from the sources; it refuses to overwrite `dist/paper.pdf` if the build reports LaTeX errors, and refuses to publish the appendix unless that build is clean too:
 
 ```bash
-./build.sh release
+./scripts/build.sh release
 ```
 
-Builds are byte-reproducible. pdfTeX would otherwise stamp the wall-clock time into the PDF and derive the trailer `/ID` from it, so two builds of identical sources would differ byte-wise; `build.sh` pins `SOURCE_DATE_EPOCH` for the embedded dates and `main.tex` seeds the trailer id through `\pdftrailerid`. Rebuilding unchanged sources therefore reproduces `paper.pdf` and `online-appendix.pdf` exactly, and `git status` is a reliable signal that the committed PDFs match the sources. Export `SOURCE_DATE_EPOCH` to override the pinned date.
+Builds are byte-reproducible. pdfTeX would otherwise stamp the wall-clock time into the PDF and derive the trailer `/ID` from it, so two builds of identical sources would differ byte-wise; `scripts/build.sh` pins `SOURCE_DATE_EPOCH` for the embedded dates and `paper/main.tex` seeds the trailer id through `\pdftrailerid`. Rebuilding unchanged sources therefore reproduces `dist/paper.pdf` and `dist/online-appendix.pdf` exactly, and `git status` is a reliable signal that the committed PDFs match the sources. Export `SOURCE_DATE_EPOCH` to override the pinned date.
 
-Refresh the single-file submission version after editing `sections/*.tex`:
+Refresh the single-file submission version after editing `paper/sections/*.tex`:
 
 ```bash
-python3 flatten.py
+python3 scripts/flatten.py
 ```
 
 Lean artifact (the toolchain version is pinned in `lean-proof/lean-toolchain`, currently `leanprover/lean4:v4.34.0`):
@@ -87,7 +87,7 @@ uv run --with numpy --with matplotlib python experiments/probe.py
 ```
 
 It runs in about two minutes from fixed seeds, prints the table of Section 7.2 and rewrites
-`figures/probe.pdf` from `experiments/probe_results.json`.
+`paper/figures/probe.pdf` from `experiments/probe_results.json`.
 
 Package the Lean artifact:
 
@@ -123,7 +123,7 @@ This repository is dual-licensed by material:
 
 | Material | License |
 |---|---|
-| Code and artifact — `build.sh`, `flatten.py`, `package-lean-proof.sh`, and everything under `lean-proof/` and `experiments/` | MIT, see [`LICENSE`](LICENSE) |
-| Paper — `main.tex`, `paper.tex`, `sections/*.tex`, `online-appendix/*.tex`, `reference.bib`, `paper.pdf`, and `online-appendix.pdf` | CC BY 4.0, see [`LICENSE-PAPER`](LICENSE-PAPER) |
+| Code and artifact — `scripts/build.sh`, `scripts/flatten.py`, `package-lean-proof.sh`, and everything under `lean-proof/` and `experiments/` | MIT, see [`LICENSE`](LICENSE) |
+| Paper — `paper/*.tex`, `paper/sections/*.tex`, `paper/appendix/*.tex`, `paper/reference.bib`, `dist/paper.pdf`, and `dist/online-appendix.pdf` | CC BY 4.0, see [`LICENSE-PAPER`](LICENSE-PAPER) |
 
-`jmlr2e.sty` is the official JMLR style file, redistributed here unmodified so that the paper compiles as submitted. It is third-party material and is not covered by either license above; see the upstream project at <https://github.com/JmlrOrg/jmlr-style-file>.
+`paper/styles/jmlr2e.sty` is the official JMLR style file, redistributed here unmodified so that the paper compiles as submitted. It is third-party material and is not covered by either license above; see the upstream project at <https://github.com/JmlrOrg/jmlr-style-file>.

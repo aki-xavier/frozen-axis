@@ -50,7 +50,7 @@ warnings.
 | `paper/paper.tex` | Single-file submission version (flattened from `paper/main.tex` by `scripts/flatten.py`; do not edit by hand) |
 | `dist/paper.pdf` | Released PDF (40 pages) built from `paper/paper.tex` |
 | `paper/paper-slim.tex` | Condensed paper (hand-maintained, standalone, keeps the full paper's numbering of Claim R, Definitions 1-4, Lemmas 1-3, Proposition 4, Theorem 5); rebuild with `./scripts/build.sh slim` |
-| `dist/paper-slim.pdf` | Released PDF (17 pages) built from `paper/paper-slim.tex` |
+| `dist/paper-slim.pdf` | Released PDF (19 pages) built from `paper/paper-slim.tex` |
 | `dist/online-appendix.pdf` | Released online appendix (4 pages) |
 | `paper/styles/jmlr2e.sty` | Official JMLR style file (do not modify; third-party, not covered by the licenses below) |
 | `paper/reference.bib` | References (78 entries, all verified against Crossref/DBLP/arXiv or publisher sites; 30+ carry a DOI) |

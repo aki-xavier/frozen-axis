@@ -25,6 +25,7 @@
 % chktex-file 13
 % chktex-file 24
 % chktex-file 25
+% chktex-file 44
 % Compilation is checked separately; these are intentional math and JMLR forms.
 % Build:  latexmk -pdf -bibtex paper-slim.tex (or ./scripts/build.sh slim)
 %=======================================================================
@@ -33,11 +34,13 @@
 
 \usepackage{styles/jmlr2e}
 \usepackage{amsmath}
-% Loaded as in main.tex. This document sets no table, but the tools array
-% package must be loaded here: without it, this toolchain's epstopdf-base
+% Loaded as in main.tex. The tools array package supports the verification
+% table and must be loaded here: without it, this toolchain's epstopdf-base
 % takes the branch that requires grfext.sty, which a minimal TinyTeX does
 % not ship, and the build stops with "File `grfext.sty' not found".
 \usepackage{array}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,calc,positioning}
 % Preserve the JMLR geometry without vertically stretching short pages.
 \raggedbottom
 % Long commit hashes and command paths need emergency stretch rather than
@@ -177,6 +180,46 @@ A rule belongs to \emph{Mode A} if all its values are instantiated by current ev
 \end{defn}
 
 Pre-existence alone is not the criterion: analytic and calibration invariants may pre-exist inference and remain Mode A. Classification concerns the substantive source of the function and its values, not their storage location, magnitude, or input dependence.
+
+\begin{figure}[t]
+\centering
+\small
+\begin{tikzpicture}[
+  x=1cm, y=1cm,
+  font=\small,
+  mode/.style={font=\bfseries, anchor=east},
+  source/.style={draw, align=center, text width=3.6cm,
+    minimum height=11ex, inner sep=5pt},
+  process/.style={draw, align=center, text width=2.7cm,
+    minimum height=11ex, inner sep=5pt},
+  output/.style={align=center, minimum width=1.3cm},
+  input/.style={font=\footnotesize, align=center},
+  flow/.style={-{Latex[length=2mm]}, thick}
+]
+\node[mode] at (-1.4,2) {Mode A};
+\node[source] (a-source) at (1.5,2)
+  {current evidence \emph{or}\\ analytic/calibration invariants};
+\node[process] (a-process) at (5.4,2)
+  {evidence and\\ analytic instantiation};
+\node[output] (a-output) at (8.6,2) {$R_i(d)$};
+\draw[flow] (a-source) -- (a-process);
+\draw[flow] (a-process) -- (a-output);
+
+\node[mode] at (-1.4,-1) {Mode B};
+\node[source] (b-source) at (1.5,-1)
+  {corpus statistics \emph{or}\\ manual setting};
+\node[process] (b-process) at (5.4,-1) {$F_i(W,d)$};
+\node[output] (b-output) at (8.6,-1) {$R_i(d)$};
+\node[input] (b-frozen) at (5.4,0.3) {frozen $W$ at inference};
+\node[input] (b-current) at (5.4,-2.3) {current input $d$};
+\draw[flow] (b-source) -- (b-process);
+\draw[flow] (b-frozen) -- (b-process);
+\draw[flow] (b-current) -- (b-process);
+\draw[flow] (b-process) -- (b-output);
+\end{tikzpicture}
+\caption{Decision-axis schematic: provenance of rule-carrying values, not storage location or input dependence. Analytic and calibration invariants may be fixed yet remain Mode A; a corpus-fitted evidence map remains Mode B. This classification alone implies neither correctness nor completeness.}
+\label{fig:decision-axis}
+\end{figure}
 
 For a Mode A rule there exists, for each position $i$, a mapping $\Phi_i$ such that for every structure field $d$,
 \begin{equation}
@@ -325,6 +368,62 @@ P(A_{\eta_*})\geq p, \qquad P(B_{\eta_*})\geq p, \qquad \Lambda_0\eta_*\leq\frac
 \end{equation}%
 When $\Lambda_0>0$, the last requirement is $\eta_*\leq\delta/(2\Lambda_0)$; when $\Lambda_0=0$, any available $\eta_*>0$ is admissible. This is an empirical hypothesis about the fixed test distribution and comparison class, not something this paper proves from P1--P3.
 
+\begin{figure}[t]
+\centering
+\footnotesize
+\begin{tikzpicture}[
+  x=1cm, y=1cm,
+  font=\footnotesize,
+  stage/.style={font=\small\bfseries},
+  set/.style={draw, thick},
+  map/.style={-{Latex[length=2mm]}, thick},
+  bound/.style={{Latex[length=1.5mm]}-{Latex[length=1.5mm]}, thick}
+]
+% Realized input sets and their separated demand values.
+\node[stage] at (0,3.7) {Realized input sets};
+\draw[set] (0.35,1.9) .. controls (0.05,2.4) and (0.25,3.1) .. (0.85,3.0)
+  .. controls (1.45,3.15) and (1.75,2.6) .. (1.35,2.05)
+  .. controls (1.05,1.6) and (0.55,1.5) .. cycle;
+\node at (0.9,2.4) {$A_{\eta_*}$};
+\draw[set] (2.45,1.6) .. controls (2.2,2.1) and (2.45,2.65) .. (2.95,2.5)
+  .. controls (3.45,2.7) and (3.65,2.1) .. (3.3,1.75)
+  .. controls (3.05,1.35) and (2.65,1.25) .. cycle;
+\node at (2.95,2.05) {$B_{\eta_*}$};
+\node[align=left] at (0,0.95)
+  {$\mathrm{diam}_{\mathrm{in}}(A_{\eta_*}\cup B_{\eta_*})\leq\eta_*$};
+\node[align=left] at (0,0.4) {$P(A_{\eta_*})\geq p,\quad P(B_{\eta_*})\geq p$};
+
+\node[stage] at (5.45,3.7) {Separated demand values};
+\node[set, minimum width=4.7em, minimum height=4ex] (ta) at (5.45,2.9)
+  {$t(A_{\eta_*})$};
+\node[set, minimum width=4.7em, minimum height=4ex] (tb) at (5.45,1.35)
+  {$t(B_{\eta_*})$};
+\draw[bound] (ta) -- node[right, xshift=4pt]
+  {$\|t(d)-t(e)\|\geq\delta$} (tb);
+\node at (5.45,0.4) {$d\in A_{\eta_*},\quad e\in B_{\eta_*}$};
+
+\draw[map] (3.75,2.4) -- node[above] {$t$} (4.5,2.4);
+
+% The same pair under the bounded-description rule, followed by the deficit.
+\node[stage] at (0.7,-0.85) {Bounded rule variation};
+\node[set, minimum width=3.4em, minimum height=4ex] (ra) at (0,-1.65)
+  {$R(d)$};
+\node[set, minimum width=3.4em, minimum height=4ex] (rb) at (1.5,-1.65)
+  {$R(e)$};
+\draw[bound] (ra) -- (rb);
+\node[anchor=west] at (2.1,-1.65)
+  {$\|R(d)-R(e)\|\leq\Lambda_0\eta_*\leq\delta/2$};
+\node[stage] at (0.7,-2.75) {Deficit consequence};
+\draw[map] (0.75,-2.15) -- (0.75,-2.5);
+\node[anchor=west] at (0,-3.25)
+  {$\|R(d)-t(d)\|+\|R(e)-t(e)\|\geq\delta-\Lambda_R\eta_*\geq\delta/2$};
+\node[anchor=west] at (0,-3.9)
+  {$\displaystyle\max\{\|R(d)-t(d)\|,\|R(e)-t(e)\|\}\geq\delta/4$};
+\end{tikzpicture}
+\caption{Schematic of P4 and the risk-gap argument at the realized scale $\eta_*$ (not empirical certification). Sets need not be intervals or connected. Realization gives probability at least $p$ to a deficit of $\delta/4$ or more, so $\mathrm{risk}(R)\geq p\delta^2/16$; the gap floor $\kappa=p\delta^2/16-\rho$ is positive only when $\rho<p\delta^2/16$.}
+\label{fig:p4-geometry}
+\end{figure}
+
 The one-scale quantifier is essential. Requiring instead $P(A_\eta),P(B_\eta)\geq p>0$ at \emph{every} $\eta>0$ would make the usual non-atomic Euclidean Borel model vacuous. For independent $D,E\sim P$, disjointness and the diameter bound imply $P\times P(0<d_{\mathrm{in}}(D,E)\leq\eta)\geq p^2$ for every $\eta$, whereas these nested events decrease to the empty set as $\eta\downarrow0$ and their probabilities tend to zero. The present formulation removes that contradictory all-scales requirement.
 
 The repaired conditions are consistent. For example, take instances in $[-1,1]$ with uniform $P$, scalar demand $t(d)=0$ for $d\leq0$ and $t(d)=\delta$ for $d>0$, and $h=\min\{\eta,1\}$. The sets $A_\eta=(-h/2,0)$ and $B_\eta=(0,h/2)$ have union diameter at most $\eta$, demand separation $\delta$, and probability $h/4$ each. Choosing a sufficiently small $\eta_*$ satisfies \eqref{eq:realization} for any prescribed finite $\Lambda_0$, with $p=\eta_*/4$. This mathematical example does not establish P4 for a real inverse problem or establish that the resulting $\kappa$ below is positive.
@@ -374,6 +473,24 @@ The algebraic skeleton and a toy-carrier closure are machine-verified in Lean~4 
 
 The guarantee divides into three levels. Tier A is carrier-independent algebra: Lemma 1's proportionality identities and general first-order condition, together with the mode-composition steps used in the toy closure. Tier B comprises structured general forms anchored on Mathlib: ill-posedness and collision constructions, the \emph{unconstrained} Paradigm I minimizer, and Lemma 3's measure framework, including \texttt{tail\ttu realization}. Tier C is the uncovered residue: continuous-side Euler--Lagrange arguments, general network output variation, the zero-safe table equivalence in its full paper generality, BD, scale-restricted P4, and the barrier-to-gap inequality. The Lean toy theorem must therefore not be cited as proof of those general analytic or empirical assumptions.
 
+\begin{table}[t]
+\caption{Lean 4 verification coverage. Tiers A and B identify formalized components; Tier C is the uncovered analytic and modeling residue. The toy declarations \texttt{theorem5} and \texttt{finale} do not verify the general Theorem 5, BD, P4, or real-task premises.}
+\label{tab:verification-tiers}
+\centering
+\small
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{0.24\textwidth}>{\raggedright\arraybackslash}p{0.70\textwidth}@{}}
+\hline
+\textbf{Tier} & \textbf{Covered content or residue}\\
+\hline
+A: carrier-independent algebra & Lemma 1's proportionality identities and general first-order condition; mode-composition steps used in the toy closure.\\
+\hline
+B: structured general forms & Ill-posedness and collision constructions; the unconstrained Paradigm I minimizer; Lemma 3's measure framework, including \texttt{tail\ttu realization}.\\
+\hline
+C: not machine-verified & Continuous-side Euler--Lagrange arguments; general network output variation; the zero-safe table equivalence in full paper generality; BD, P4a/P4b, and Barrier-to-Gap.\\
+\hline
+\end{tabular}
+\end{table}
+
 The artifact is in the \texttt{lean-proof} directory of the repository \texttt{https://github.com/\hspace{0pt}aki-xavier/\hspace{0pt}frozen-axis}. The audited repository commit is \texttt{1d2dc22b\allowbreak c884d827\allowbreak f859981d\allowbreak e0d3bac1\allowbreak 2c4c78b9}, and the complete tracked blob identifier of \texttt{FormalProof.lean} is \texttt{5c6cc73a\allowbreak 0c3dd08a\allowbreak fd03af45\allowbreak 9b9918d3\allowbreak 59ee3409}. The Lake project pins Mathlib and transitive dependencies, pins the toolchain to \texttt{leanprover/}\allowbreak\texttt{lean4:v4.34.0}, and builds with \texttt{lake build}. The reported build has zero errors and warnings, contains no \texttt{sorry}, and \texttt{\#print axioms} on \texttt{finale}, \texttt{lemma1\ttu sharp}, and \texttt{tail\ttu realization} returns only \texttt{propext}, \texttt{Classical.choice}, and \texttt{Quot.sound}, with no \texttt{sorryAx}. These identifiers pin the verified artifact; they do not turn its toy assumptions into general theorems.
 
 \section{Discussion}
@@ -385,6 +502,13 @@ The symptoms of Mode B are recorded empirically: deep networks memorize random l
 \label{sec:probe}%
 
 An exploratory constructed-task probe compares four non-oracle rules and two oracle references; it uses \texttt{experiments/probe.py} with Python. The frozen table has the lowest training RMSE among the four non-oracle rules, $0.096$ against $0.071$ for the per-position oracle. Its RMSE excess over that oracle rises from $0.024$ in-distribution to $0.068$ at an unseen location, $0.064$ at an unseen width, and $0.046$ at twice the noise. These observations illustrate distribution shift on one constructed task; they do not establish an open-set impossibility result.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\linewidth]{figures/probe.pdf}
+\caption{\rightskip=0pt plus 1fil\relax Constructed-task reconstruction probe (\texttt{experiments/probe.py}). (a) Reconstruction RMSE for four non-oracle rules and the per-position oracle reference; (b) excess RMSE over that reference. The frozen table's excess rises from $0.024$ in-distribution to $0.068$, $0.064$, and $0.046$ under location, width, and noise shifts. These reconstruction errors are not Lemma 3's squared rule-value gap and do not estimate $\kappa$ or certify P4.}
+\label{fig:probe}
+\end{figure}
 
 In particular, oracle-excess RMSE is not Lemma 3's squared rule-value gap $g(R)$: the losses and normalizations differ, and the tested oracle, SURE rule, and amortized rule do not identify the infimum over the full evidence-instantiated benchmark class $\mathcal{A}$. Consequently these numbers neither bound $g(R)$ nor estimate $\kappa$. The auxiliary \texttt{p4\ttu task.py} statistics are likewise not estimates of $P(A_{\eta_*})$ or $P(B_{\eta_*})$, and finite-resolution samples cannot certify the every-scale barrier P4a. No theoretical floor is reported from these experiments. Evaluation on standardized inverse-problem benchmarks, for example LoDoPaB-CT \citep{leuschner2021}, remains future work.
 

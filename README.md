@@ -7,37 +7,38 @@ Original Chinese title: 开放反演任务中单一固定记忆组件完备性�
 The project name frozen-axis comes from the paper's core concept: one side of
 the decision axis holds values frozen into the training corpus and fixed at
 inference time (Mode B), while the other side holds values given on the spot
-by current evidence or by analytic invariants (Mode A); on the open set only
-the latter can satisfy generalization, and the falsification closes there.
+by current evidence or by analytic invariants (Mode A); the paper's conditional
+result concerns whether frozen values can satisfy its non-freezability and
+bounded-description hypotheses on the open set.
 
-📄 **Paper: [paper.pdf](dist/paper.pdf) (40 pages, released); online appendix:
+📄 **Full paper: [paper.pdf](dist/paper.pdf) (41 pages); condensed submission:
+[paper-slim.pdf](dist/paper-slim.pdf) (19 pages); online appendix:
 [online-appendix.pdf](dist/online-appendix.pdf) (4 pages). LaTeX source in the
 official JMLR jmlr2e style, rebuild with `./scripts/build.sh`**
 
 This repository contains a theoretical paper (English, LaTeX source) together
-with its Lean 4 machine-verification artifact. The paper proves that once the
-values of context rules are frozen into a corpus and fixed at inference time,
-no fixed-memory component (a neural network, for instance) is complete on its
-own for open inversion tasks. Open inversion tasks are delimited by four
+with its Lean 4 machine-verification artifact. Under explicit and separately
+checkable assumptions, the paper proves a conditional class-exclusion: a
+specified class of offline-frozen rules satisfying uniform bounded description
+and scale-restricted realization cannot be complete on its own for open
+inversion tasks. Open inversion tasks are delimited by four
 criteria: observations are ill-posed, the required context strength is
 heterogeneous and content-addressed by the evidence, inference inputs are not
 constrained by the training distribution, and the demand rule cannot be given
 within any pre-given tolerance on the open set by any values frozen before
-inference begins. The last criterion is stated in two components, a barrier
-condition saying that the demand separates nearby instances by a fixed amount
-at every scale and a realization condition saying that the separated instances
-carry probability bounded away from zero, and the two are shown to imply a
-positive floor on the risk gap of every rule whose values pre-exist inference,
-so the criterion is a sufficient condition implying a bound rather than a
-restatement of the negation. The argument unfolds along a decision axis: the
-content of a context rule is a set of numbers; values given on the spot by
-current evidence or by analytic invariants belong to Mode A, while values given
-offline from training-corpus statistics or manual setting and frozen at
-inference time belong to Mode B; generalization on the open set requires Mode
-A, fixed-memory components belong to Mode B, and the two are mutually
-exclusive, so the falsification closes. The algebraic skeleton of the argument
-chain is machine-verified with Lean 4 + Mathlib, with zero `sorry` and zero
-warnings.
+inference begins. The last criterion is class-relative: a demand barrier holds
+at every scale, while realization is required at one class-admissible scale
+rather than at every scale. Together with a uniform bounded-description rate
+and a fixed evidence-instantiated benchmark, these hypotheses imply a positive
+floor on the risk gap, so P4 is a sufficient condition for a bound rather than a
+restatement of the negation. The argument unfolds along a decision axis: values
+given on the spot by current evidence or analytic invariants belong to Mode A,
+while values given offline from training-corpus statistics or manual setting
+and frozen at inference time belong to Mode B. Mode B provenance alone does not
+prove failure; the conditional theorem excludes a specified bounded-description
+class under P4 and a positive gap, and composite systems containing Mode A are
+not ruled out. The algebra and a toy closure are machine-verified with Lean 4 +
+Mathlib, with zero `sorry` and zero warnings.
 
 ## Repository layout
 
@@ -48,7 +49,7 @@ warnings.
 | `paper/sections/*.tex` | Per-chapter LaTeX sources (01 Introduction … 08 Conclusion) |
 | `paper/appendix/main.tex`, `paper/appendix/body.tex` | Online appendix (artifact index, reproduction, axiom budget, premise lists of the load-bearing declarations). Kept out of the paper deliberately: appendix pages count toward the JMLR page limit, so the paper points to it from Section 6 instead |
 | `paper/paper.tex` | Single-file submission version (flattened from `paper/main.tex` by `scripts/flatten.py`; do not edit by hand) |
-| `dist/paper.pdf` | Released PDF (40 pages) built from `paper/paper.tex` |
+| `dist/paper.pdf` | Released PDF (41 pages) built from `paper/paper.tex` |
 | `paper/paper-slim.tex` | Condensed paper (hand-maintained, standalone, keeps the full paper's numbering of Claim R, Definitions 1-4, Lemmas 1-3, Proposition 4, Theorem 5); rebuild with `./scripts/build.sh slim` |
 | `dist/paper-slim.pdf` | Released PDF (19 pages) built from `paper/paper-slim.tex` |
 | `dist/online-appendix.pdf` | Released online appendix (4 pages) |
@@ -203,7 +204,7 @@ This repository is dual-licensed by material:
 | Material | License |
 | --- | --- |
 | Code and artifact — `scripts/build.sh`, `scripts/flatten.py`, `package-lean-proof.sh`, and everything under `lean-proof/` and `experiments/` | MIT, see [`LICENSE`](LICENSE) |
-| Paper — `paper/*.tex`, `paper/sections/*.tex`, `paper/appendix/*.tex`, `paper/reference.bib`, `dist/paper.pdf`, and `dist/online-appendix.pdf` | CC BY 4.0, see [`LICENSE-PAPER`](LICENSE-PAPER) |
+| Paper — `paper/*.tex`, `paper/sections/*.tex`, `paper/appendix/*.tex`, `paper/reference.bib`, `dist/paper.pdf`, `dist/paper-slim.pdf`, and `dist/online-appendix.pdf` | CC BY 4.0, see [`LICENSE-PAPER`](LICENSE-PAPER) |
 
 `paper/styles/jmlr2e.sty` is the official JMLR style file, redistributed here
 unmodified so that the paper compiles as submitted. It is third-party material

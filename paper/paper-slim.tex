@@ -66,13 +66,13 @@
 % Underscore of a Lean declaration name with a line break allowed after it.
 \newcommand{\ttu}{\textunderscore\allowbreak}
 
-\jmlrheading{}{}{}{9/26}{}{}{Shuo Zhang}
-\ShortHeadings{Formal Falsification of Solo Completeness (condensed)}{Zhang}
+\jmlrheading{}{}{}{9/26}{}{}{Shuo Zhang, Yiping Zeng, and Haichuan Zhang}
+\ShortHeadings{Formal Falsification of Solo Completeness}{Zhang, Zeng, and Zhang}
 \firstpageno{1}
 
 \hypersetup{hidelinks,
   pdftitle={Formal Falsification of the Completeness of a Single Fixed-Memory Component for Open Inversion Tasks (condensed)},
-  pdfauthor={Shuo Zhang},
+  pdfauthor={Shuo Zhang, Yiping Zeng, and Haichuan Zhang},
   pdfsubject={Open inversion tasks; formal falsification; fixed-memory component; decision axis; distributional openness},
   pdfkeywords={open inversion tasks, formal falsification, fixed-memory component, decision axis, distributional openness}}
 
@@ -86,7 +86,9 @@
 
 \title{Formal Falsification of the Completeness of a Single Fixed-Memory Component for Open Inversion Tasks}
 
-\author{\name Shuo Zhang \email 202400103083@stumail.sztu.edu.cn \\ % chktex 1
+\author{\name Shuo Zhang \email aki.petit@icloud.com \\ % chktex 1
+       \name Yiping Zeng \email zengyiping@sztu.edu.cn \\
+       \name Haichuan Zhang \email zhanghaichuan@sztu.edu.cn\thanks{Corresponding author.} \\[2pt]
        \addr Shenzhen Technology University\\ % chktex 1
        3002 Lantian Road, Pingshan District\\
        Shenzhen, Guangdong, China 518118}
@@ -96,7 +98,7 @@
 \maketitle
 
 \begin{abstract}
-Can a fixed-memory component solve every open inversion task on its own? This paper shifts the question from model scale to the source of the values that govern context: are they instantiated from current evidence and analytic or calibration invariants (Mode A), or frozen at inference from corpus statistics or manual setting (Mode B)? We define open inversion tasks by ill-posedness, heterogeneous evidence-addressed context, and distributional openness (P1--P3), and isolate a subclass satisfying class-relative non-freezability (P4). For mask-modeled inputs, a fixed test distribution, integrable squared rule-value loss, and a fixed evidence-instantiated benchmark, we show that a specified class of offline-frozen rules with a uniform bounded-description rate has risk gap at least $\kappa=p\delta^2/16-\mathrm{risk}^*$ when both the barrier and scale-restricted realization conditions hold. If $\kappa>0$, no rule in that class achieves uniform tolerance $0<\epsilon<\kappa$; the neural-network conclusion additionally assumes output variation on a specified evidence-collision pair. On the nondegenerate locus of the stationarity conditions, a single position whose demand ratio changes between admissible configurations obstructs every frozen position-wise family. Thus, under explicit and separately checkable assumptions, more frozen memory alone cannot guarantee independent open-set inversion; the result limits solo use, not the usefulness of frozen components in composite systems. The algebraic core and a toy-carrier closure are formalized in Lean~4 with Mathlib, without \texttt{sorry}; this verification does not establish the general neural theorem, BD, P4, or their real-world applicability.
+Can a fixed-memory component solve every open inversion task? We shift from model scale to the source of context values: values instantiated from evidence and analytic invariants are Mode A; values frozen at inference from corpus statistics or manual setting are Mode B. Open inversion tasks require ill-posed observations, heterogeneous evidence-addressed context, and distributional openness (P1--P3); a subclass satisfies class-relative non-freezability (P4). For mask-modeled inputs, with fixed test distribution $P$, integrable squared loss, and an evidence-instantiated benchmark, a specified offline-frozen class with uniform bounded-description rate has gap at least $\kappa=p\delta^2/16-\mathrm{risk}^*$ when barrier and scale-restricted realization hold. If $\kappa>0$, no rule in that class achieves uniform tolerance $0<\epsilon<\kappa$; the neural corollary assumes output variation on an evidence-collision pair. On the nondegenerate locus, a position whose demand ratio changes between admissible configurations obstructs every frozen position-wise family. Under checkable assumptions, frozen memory cannot guarantee independent open-set inversion; the result limits solo use, not the usefulness of frozen components in composites. The algebra and a toy closure are formalized in Lean~4 with Mathlib, without \texttt{sorry}, but this does not establish general neural theorem, BD, P4, or real-world use.
 \end{abstract}
 
 \begin{keywords}
@@ -526,11 +528,11 @@ Lemma 1 excludes a shared scalar when cross-position demand ratios differ and gi
 
 The same classification can be applied to Markov random fields, conditional random fields, mixtures, dictionary learning, and kernel methods, but the quantitative exclusion follows only when their rules belong to a class satisfying the theorem's hypotheses. Online updating alone does not imply Mode A: evidence plus analytic or calibration invariants is Mode A, while corpus-statistical or manual frozen content remains Mode B, including a corpus-fitted generator of online updates. Tasks outside P4 or BD are not thereby shown to admit complete frozen solvers. Composite systems containing Mode A remain possible and require separate correctness arguments. Negation is therefore not disparagement: it is a scoped boundary claim, with constructive design and standardized empirical evaluation left as future work.
 
-\acks{The verified artifact described in Section~\ref{ch:verify} was developed with the Lean~4 proof assistant and its mathematical library Mathlib, and is distributed in the \texttt{lean-proof} directory of the repository with the \texttt{lean-toolchain} file that pins the toolchain version.
+\acks{The authors would like to sincerely thank all participants who provided valuable suggestions for optimizing the work presented in this paper. This research was financially supported by the National Natural Science Foundation of China (Grant nos. 52306144, 72404254, and 72604262), the Shenzhen Science and Technology Program (Grant nos. KCXFZ20230731093902005, JCYJ20241202124703004, and CJGJZD20250902091259006), the Guangdong Basic and Applied Basic Research Foundation (Grant 2026A1515010187), and the Guangdong Provincial Key Laboratory of Low-Altitude Intelligent Perception and Navigation Safety (No. 2026B1201010001).
 
-Funding: this research received no specific funding.
+The verified artifact described in Section~\ref{ch:verify} was developed with the Lean~4 proof assistant and its mathematical library Mathlib, and is distributed in the \texttt{lean-proof} directory of the repository with the \texttt{lean-toolchain} file that pins the toolchain version.
 
-Competing interests: the author declares no competing interests.}
+Competing interests: the authors declare no competing interests.}
 
 \vskip 0.2in
 \bibliography{reference}

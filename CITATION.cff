@@ -2,22 +2,33 @@ cff-version: 1.2.0
 message: "If you use this paper or its Lean 4 verification artifact, please cite it as below."
 title: "Formal Falsification of the Completeness of a Single Fixed-Memory Component for Open Inversion Tasks"
 abstract: >-
-  The paper proves, by a deductive impossibility argument, that no single fixed-memory component can be
-  complete on its own for open inversion tasks: tasks whose observations are ill-posed, whose required
-  context strength is heterogeneous and content-addressed by the evidence, whose inference inputs are not
-  constrained by the training distribution, and whose demand rule cannot be given within any pre-given
-  tolerance on the open set by any values frozen before inference begins. The argument runs along a
-  decision axis: the content of a context rule is a set of numbers; values instantiated by current
-  evidence or by analytic invariants are Mode A, and values frozen at inference time from training-corpus
-  statistics or manual setting are Mode B. Generalization on the open set requires Mode A, while neural
-  networks are Mode B carriers, so the falsification closes. The algebraic skeleton
-  of the argument chain is machine verified with Lean 4 and Mathlib, with zero sorry and zero warnings,
-  and the axiom budget of the load-bearing declarations is Lean's own standard set. This repository holds
-  the JMLR LaTeX sources, the compiled paper, the online appendix carrying the artifact index, and the Lean 4 artifact.
+  This paper asks whether a single fixed-memory component can be complete, on its own, for open
+  inversion tasks: inverse problems whose observations are ill-posed, whose required context is
+  heterogeneous and addressed by the evidence, and whose inference inputs are not constrained by the
+  training distribution. The analysis distinguishes values instantiated from evidence or analytic
+  invariants (Mode A) from values frozen at inference from corpus statistics or manual setting (Mode B).
+  For mask-modeled inputs, under a fixed test distribution, integrable squared loss, a fixed
+  evidence-instantiated benchmark, a specified offline-frozen class with a uniform bounded-description
+  rate, and both barrier and scale-restricted realization conditions, the paper proves a conditional
+  risk gap kappa = p delta^2 / 16 - risk*; when kappa > 0, no rule in that class achieves uniform
+  tolerance 0 < epsilon < kappa. The neural corollary additionally assumes output variation on an
+  evidence-collision pair. The result limits solo use; it does not deny the usefulness of frozen
+  components in composite systems, and it does not establish BD, P4, or real-world applicability. The
+  algebraic core and a toy closure are formalized in Lean 4 with Mathlib, without sorry. This repository
+  holds the JMLR LaTeX sources, the full and condensed compiled papers, the online appendix carrying the
+  artifact index, and the Lean 4 artifact.
 authors:
   - family-names: Zhang
     given-names: Shuo
-    email: 202400103083@stumail.sztu.edu.cn
+    email: aki.petit@icloud.com
+    affiliation: "Shenzhen Technology University"
+  - family-names: Zeng
+    given-names: Yiping
+    email: zengyiping@sztu.edu.cn
+    affiliation: "Shenzhen Technology University"
+  - family-names: Zhang
+    given-names: Haichuan
+    email: zhanghaichuan@sztu.edu.cn
     affiliation: "Shenzhen Technology University"
 type: software
 date-released: "2026-09-21"
@@ -40,6 +51,12 @@ preferred-citation:
     - family-names: Zhang
       given-names: Shuo
       affiliation: "Shenzhen Technology University"
+    - family-names: Zeng
+      given-names: Yiping
+      affiliation: "Shenzhen Technology University"
+    - family-names: Zhang
+      given-names: Haichuan
+      affiliation: "Shenzhen Technology University"
   year: 2026
   status: submitted
   license: CC-BY-4.0
@@ -47,5 +64,5 @@ preferred-citation:
   url: "https://github.com/aki-xavier/frozen-axis"
   notes: >-
     Manuscript submitted to the Journal of Machine Learning Research. The LaTeX sources of the paper
-    (CC BY 4.0) and the Lean 4 verification artifact (MIT) are in this repository; the paper is
-    dist/paper.pdf, and the artifact is under lean-proof/.
+    (CC BY 4.0) and the Lean 4 verification artifact (MIT) are in this repository; the full paper is
+    dist/paper.pdf, the condensed submission is dist/paper-slim.pdf, and the artifact is under lean-proof/.

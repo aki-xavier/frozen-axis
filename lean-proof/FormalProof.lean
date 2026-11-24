@@ -12,11 +12,11 @@ This file formalizes the paper's algebraic skeleton, fully implemented with zero
 (tail realization, positive risk gap, non-negative minimum risk) is included
 explicitly as a **hypothesis parameter of the theorem**, never assumed
 implicitly; "positive risk gap" is additionally substantiated by the
-two-sided toy: `modeB_positive_gap` bounds every frozen rule's total loss below
-by 1, while `modeA_loss_lower_bound` and `modeA_loss_attained` show the best
+two-sided toy: `frozenScalar_positive_gap` bounds every frozen rule's total loss below
+by 1, while `evidenceOnly_loss_lower_bound` and `evidenceOnly_loss_attained` show the best
 evidence-only rule attains exactly 1/2, so the class gap is a positive 1/2.
-A second, evidence-computable variant (`evidenceTarget`, `modeB_evidence_gap`,
-`modeA_evidence_attained`, `evidence_gap_is_full`) replaces the demand by one
+A second, evidence-computable variant (`evidenceTarget`, `frozenScalar_evidence_gap`,
+`evidenceOnly_evidence_attained`, `evidence_gap_is_full`) replaces the demand by one
 computable from evidence alone, the case Assumption A0 asks for: a constructive
 evidence-instantiated rule then attains the optimal risk 0, so the whole frozen
 loss of 3/2 on the same sample is gap.
@@ -24,16 +24,21 @@ loss of 3/2 on the same sample is gap.
 Core components:
   Definition 1 (ill-posedness: the observation mask has holes, with the
   bidirectional criteria `illPosed_of_hole` and `not_illPosed_of_full`),
-  Definition 2 (Modes A/B), Definition 3 (Paradigms E/I).
+  task-level predicates `P2` (evidence-addressed demand heterogeneity) and
+  `P3` (support-level distributional openness), with the separation witnesses
+  `P2_not_implies_P1` and `P3_not_implies_maskOpen`; the toy closure still uses
+  `MaskOpen` and `HeteroKappa`, not these predicates,
+  toy projections of Definition 2 (evidence-only and frozen-scalar behavior),
+  Definition 3 (Paradigms E/I).
   Lemma 1 (a single λ at an arbitrary fitting point forces data residuals and
   consistency terms to be proportional across locations).
   Lemma 2 (Paradigm E has no nonzero stationary point under heterogeneity;
   the Paradigm I objective always has a unique minimizer).
   Lemma 3 (measure premises made explicit, plus toy instantiation).
-  Proposition 4 (the network rule is Mode B and not Mode A).
-  Theorem 5 (collision sample pair from criterion P3 ⇒ not Mode A).
-  `finale`: the conjunctive composition of Lemma 3 and Theorem 5, joining the
-  generalization side and the carrier side.
+  Proposition 4 (the scalar network rule is frozen and not evidence-only).
+  Theorem 5 (toy `MaskOpen` collision pair ⇒ not evidence-only).
+  `finale`: the conjunctive composition of the single-rule measure lemma and the
+  toy Theorem 5, joining the generalization side and the carrier side.
   Section 8.8: the generalization layer from the toy carrier to the continuous
   setting (domain-free algebraic cores and structured general forms).
 -/
@@ -89,26 +94,23 @@ theorem not_illPosed_of_full {obs : Observation} (hf : ∀ i, obs.mask i = true)
   obtain ⟨h1, h2⟩ := hfit i (hf i)
   rw [h1, h2]
 
-/-! ## 3. Definition 2: context rules and Modes A / B -/
+/-! ## 3. Toy projections of Definition 2: evidence-only and frozen-scalar rules -/
 
 abbrev ContextRule := Depth → ℝ
 
-/-- Mode A (dependence criterion): there exists Φ such that the rule value
-depends only on the evidence pixel.
-Note: the essence of Definition 3 in the paper is the provenance criterion,
-where values are instantiated by current evidence or analytic invariants. The
-dependence criterion is the decidable projection of the provenance criterion
-onto the toy carrier: the evidence-only functional form is the only decidable
-form of provenance on the toy carrier. Classification concerns the provenance
-of the function, not its carrier: frozen parameters implementing an analytic
-invariant still count as Mode A; frozen parameters implementing a
-corpus-statistical function still count as Mode B. -/
-def IsModeA (R : ContextRule) : Prop :=
+/-- Toy evidence-only predicate: there exists Φ such that the rule value depends
+only on the evidence pixel. This is a behavioral projection onto the toy carrier,
+not paper Mode A: paper Mode A is provenance, and a frozen parameter implementing
+an analytic invariant can be Mode A even when its functional form looks like a
+parameterized rule. Conversely, a corpus-trained function is Mode B by provenance
+even if it happens to depend only on the evidence. -/
+def IsEvidenceOnlyToy (R : ContextRule) : Prop :=
   ∃ Φ : (ℝ → ℝ), ∀ d : Depth, R d = Φ (d 0)
 
-/-- Mode B: the rule is computed from a fixed parameter W (the parameter is
-fixed; the value may vary with the input). -/
-def IsModeB (W : ℝ) (R : ContextRule) : Prop :=
+/-- Toy frozen-scalar predicate: the rule is the fixed linear form W(d0-d1).
+This is not paper Mode B, which is a provenance classification and covers general
+frozen networks, tables, and parameterized rule families. -/
+def IsFrozenScalarToy (W : ℝ) (R : ContextRule) : Prop :=
   ∀ d : Depth, R d = W * (d 0 - d 1)
 
 /-! ## 4. Definition 3: objective paradigms E / I -/
@@ -260,19 +262,18 @@ theorem hetero_gives_nonconst
     rw [hzero i, hzero j]
   exact hK hkappa_eq
 
-/-! ## 6. Proposition 4: neural networks are Mode B (frozen weights)
-and not Mode A -/
+/-! ## 6. Toy Proposition 4: scalar frozen network is not evidence-only -/
 
 def neuralRule (W : ℝ) (d : Depth) : ℝ := W * (d 0 - d 1)
 
-theorem neural_isModeB (W : ℝ) : IsModeB W (neuralRule W) := by
+theorem neural_isFrozenScalarToy (W : ℝ) : IsFrozenScalarToy W (neuralRule W) := by
   intro d
   rfl
 
-theorem neural_not_modeA
+theorem neural_not_evidenceOnlyToy
   (W : ℝ) (hW : W ≠ 0)
   (d e : Depth) (hd0 : d 0 = e 0) (hd1 : d 1 ≠ e 1) :
-  ¬ IsModeA (neuralRule W) := by
+  ¬ IsEvidenceOnlyToy (neuralRule W) := by
   intro hA
   rcases hA with ⟨Φ, hΦ⟩
   have hRd : neuralRule W d = Φ (d 0) := hΦ d
@@ -289,65 +290,67 @@ theorem neural_not_modeA
     nlinarith [hcore, hd0]
   exact hd1 hfeq
 
-/-! ## 7. Lemma 3: a measure framework with explicit premises,
-plus toy instantiation
+/-! ## 7. Single-rule algebraic risk lemma, plus toy instantiation
 
-Lemma 3 of the paper: the generalization requirement ⇒ the rule is Mode A.
-The argument rests on measure theory (tail realization, positive risk gap,
-non-negative minimum risk). Tail realization holds for every distribution
-(the mean inequality: a random variable exceeds its mean with positive
-probability); on the Lean side it is still included in premise form, to keep
-the derivation explicit and to avoid extra measure structure.
+This is **not** the paper's class-level Lemma 3. It is the algebraic core for
+one candidate rule with a fixed benchmark `riskStar` and a specified test
+support. The paper's class quantification, fixed benchmark class, and empirical
+realization premise are outside this file.
+The argument rests on measure theory (tail realization on the test support,
+positive risk gap, non-negative benchmark risk). Tail realization is included
+as a premise rather than derived from an arbitrary test set; on a support that
+contains a tail witness it follows from the mean inequality.
 Per Route A, all measure premises are **listed explicitly as theorem
 hypotheses**, giving a zero-`sorry` deductive skeleton; "positive risk gap" is
 substantiated by the two-sided toy `toy_positive_gap`, which combines
-`modeB_positive_gap` with `modeA_loss_attained` and `modeA_loss_lower_bound`. -/
+`frozenScalar_positive_gap` with `evidenceOnly_loss_attained` and `evidenceOnly_loss_lower_bound`. -/
 
-/-- Measure-theoretic setup: loss, risk (expectation), and the gap to the
-minimum risk. -/
+/-- Measure-theoretic setup: loss, risk (expectation), fixed benchmark risk,
+and the gap to that benchmark. `riskStar` is a single number fixed independently
+of the candidate rule; it does not depend on `R`. -/
 structure MeasureSetup where
+  testSet : Set Depth                    -- specified test support
   lossR : (Depth → ℝ) → Depth → ℝ         -- ℓ(R, d)
   riskP : (Depth → ℝ) → ℝ                 -- E_P[ℓ(R,·)]
-  riskMin : (Depth → ℝ) → ℝ               -- min_{R'} E_P[ℓ(R',·)]
-  gapP : (Depth → ℝ) → ℝ                  -- risk R − riskMin
-  gap_def : ∀ R : Depth → ℝ, gapP R = riskP R - riskMin R   -- defining equation of gap
+  riskStar : ℝ                            -- fixed benchmark risk
+  gapP : (Depth → ℝ) → ℝ                  -- risk R − riskStar
+  gap_def : ∀ R : Depth → ℝ, gapP R = riskP R - riskStar
 
-/-- Generalization requirement: the loss is bounded on every input of the
-test distribution. -/
+/-- Generalization requirement: the loss is bounded on the specified test
+support. -/
 def GeneralizationBound (m : MeasureSetup) (ε : ℝ) (R : Depth → ℝ) : Prop :=
-  ∀ d : Depth, m.lossR R d ≤ ε
+  ∀ d : Depth, d ∈ m.testSet → m.lossR R d ≤ ε
 
-/-- Corollary: non-negative minimum risk ⇒ gap ≤ risk (pure algebra from the
+/-- Corollary: non-negative benchmark risk ⇒ gap ≤ risk (pure algebra from the
 defining equation of gap). -/
 theorem gap_le_risk_of_nonneg
   (m : MeasureSetup) (R : Depth → ℝ)
-  (hNonnegMin : m.riskMin R ≥ 0) :
+  (hNonnegStar : m.riskStar ≥ 0) :
   m.gapP R ≤ m.riskP R := by
   rw [m.gap_def R]
   linarith
 
-/-- Lemma 3 (final, zero sorry): under the explicit measure premises (tail
-realization, non-negative minimum risk, risk gap above the bound), the
-generalization bound cannot hold.
-Tail realization means some input attains a loss no smaller than the risk;
-it holds for every distribution (mean inequality).
-Proof: non-negative minimum risk ⇒ gap ≤ risk (corollary), combined with
+/-- Lemma 3 (single-rule algebraic version): under the explicit measure
+premises (tail realization on the specified test support, non-negative fixed
+benchmark risk, risk gap above the bound), the generalization bound on that
+support cannot hold. This is not the paper's class-level Lemma 3, which
+quantifies over a benchmark class and a candidate class.
+Proof: non-negative benchmark risk ⇒ gap ≤ risk (corollary), combined with
 gap > ε gives risk > ε; tail realization plus the generalization bound gives
 risk ≤ loss(d0) ≤ ε, contradiction. -/
 theorem lemma3_final2
   (m : MeasureSetup)
   (ε : ℝ) (_hε : ε > 0)
   (R : Depth → ℝ)
-  (hTail : ∃ d : Depth, m.lossR R d ≥ m.riskP R)  -- tail realization: some input has loss ≥ risk
-  (hGapPositive : m.gapP R > ε)                   -- risk gap above the bound
-  (hNonnegMin : m.riskMin R ≥ 0)                  -- non-negative minimum risk
-  :
+  (hTail : ∃ d : Depth, d ∈ m.testSet ∧ m.lossR R d ≥ m.riskP R)
+  (hGapPositive : m.gapP R > ε)
+  (hNonnegStar : m.riskStar ≥ 0) :
   ¬ GeneralizationBound m ε R := by
   intro hBound
-  rcases hTail with ⟨d0, hTail0⟩
-  have hb : m.lossR R d0 ≤ ε := hBound d0
+  rcases hTail with ⟨d0, hd0, hTail0⟩
+  have hb : m.lossR R d0 ≤ ε := hBound d0 hd0
   have hrisk : m.riskP R ≤ ε := le_trans hTail0 hb
-  have hGapLe : m.gapP R ≤ m.riskP R := gap_le_risk_of_nonneg m R hNonnegMin
+  have hGapLe : m.gapP R ≤ m.riskP R := gap_le_risk_of_nonneg m R hNonnegStar
   have hriskgt : m.riskP R > ε := by
     linarith [hGapPositive, hGapLe]
   linarith
@@ -363,7 +366,7 @@ On the points (1,0), (0,1), (1,1), the fixed linear form W·(d0−d1) fitting th
 first two points forces W=0, while the third point demands 0=1, so positive
 loss is unavoidable; this is exactly the shape of the `hGapPositive` premise
 of `lemma3_final2` in the toy model. -/
-theorem modeB_positive_gap {W : ℝ} {R : Depth → ℝ} (hB : IsModeB W R) :
+theorem frozenScalar_positive_gap {W : ℝ} {R : Depth → ℝ} (hB : IsFrozenScalarToy W R) :
     1 ≤ (R ![1, 0, 0, 0] - targetRule ![1, 0, 0, 0]) ^ 2
       + (R ![0, 1, 0, 0] - targetRule ![0, 1, 0, 0]) ^ 2
       + (R ![1, 1, 0, 0] - targetRule ![1, 1, 0, 0]) ^ 2 := by
@@ -377,7 +380,7 @@ v = Φ 0, the total is u² + v² + (u − 1)² = 2(u − 1/2)² + v² + 1/2. The
 demand d 0 * d 1 depends on the context pixel, so no evidence-only rule can
 attain zero loss here; the toy demonstrates the gap mechanism, not Mode A
 completeness. -/
-theorem modeA_loss_lower_bound {R : Depth → ℝ} (hA : IsModeA R) :
+theorem evidenceOnly_loss_lower_bound {R : Depth → ℝ} (hA : IsEvidenceOnlyToy R) :
     1 / 2 ≤ (R ![1, 0, 0, 0] - targetRule ![1, 0, 0, 0]) ^ 2
       + (R ![0, 1, 0, 0] - targetRule ![0, 1, 0, 0]) ^ 2
       + (R ![1, 1, 0, 0] - targetRule ![1, 1, 0, 0]) ^ 2 := by
@@ -388,8 +391,8 @@ theorem modeA_loss_lower_bound {R : Depth → ℝ} (hA : IsModeA R) :
 
 /-- Toy, Mode A side (attainment): the bound 1/2 is attained by the
 evidence-only rule R(d) = d 0 / 2. -/
-theorem modeA_loss_attained :
-    ∃ R : Depth → ℝ, IsModeA R ∧
+theorem evidenceOnly_loss_attained :
+    ∃ R : Depth → ℝ, IsEvidenceOnlyToy R ∧
       (R ![1, 0, 0, 0] - targetRule ![1, 0, 0, 0]) ^ 2
         + (R ![0, 1, 0, 0] - targetRule ![0, 1, 0, 0]) ^ 2
         + (R ![1, 1, 0, 0] - targetRule ![1, 1, 0, 0]) ^ 2 = 1 / 2 := by
@@ -400,16 +403,16 @@ theorem modeA_loss_attained :
 /-- Toy substantiation of the positive risk gap (criterion P4 in miniature):
 on the three-point sample there is an evidence-only (Mode A) rule whose total
 loss beats every frozen (Mode B) rule's total loss by at least 1/2. -/
-theorem toy_positive_gap {W : ℝ} {RB : Depth → ℝ} (hB : IsModeB W RB) :
-    ∃ RA : Depth → ℝ, IsModeA RA ∧
+theorem toy_positive_gap {W : ℝ} {RB : Depth → ℝ} (hB : IsFrozenScalarToy W RB) :
+    ∃ RA : Depth → ℝ, IsEvidenceOnlyToy RA ∧
       (RA ![1, 0, 0, 0] - targetRule ![1, 0, 0, 0]) ^ 2
         + (RA ![0, 1, 0, 0] - targetRule ![0, 1, 0, 0]) ^ 2
         + (RA ![1, 1, 0, 0] - targetRule ![1, 1, 0, 0]) ^ 2 + 1 / 2
       ≤ (RB ![1, 0, 0, 0] - targetRule ![1, 0, 0, 0]) ^ 2
         + (RB ![0, 1, 0, 0] - targetRule ![0, 1, 0, 0]) ^ 2
         + (RB ![1, 1, 0, 0] - targetRule ![1, 1, 0, 0]) ^ 2 := by
-  obtain ⟨RA, hA, hRA⟩ := modeA_loss_attained
-  have hB1 := modeB_positive_gap hB
+  obtain ⟨RA, hA, hRA⟩ := evidenceOnly_loss_attained
+  have hB1 := frozenScalar_positive_gap hB
   exact ⟨RA, hA, by linarith⟩
 
 /-! ### Evidence-computable variant of the toy (Assumption A0)
@@ -430,7 +433,7 @@ def evidenceTarget (d : Depth) : ℝ := (d 0)^2
 /-- Variant, frozen side: every Mode B rule has total loss at least 3/2 on the
 three-point sample. Writing u = W, the total is (u − 1)² + u² + 1, whose minimum
 over u is 3/2 at u = 1/2. -/
-theorem modeB_evidence_gap {W : ℝ} {R : Depth → ℝ} (hB : IsModeB W R) :
+theorem frozenScalar_evidence_gap {W : ℝ} {R : Depth → ℝ} (hB : IsFrozenScalarToy W R) :
     3 / 2 ≤ (R ![1, 0, 0, 0] - evidenceTarget ![1, 0, 0, 0]) ^ 2
       + (R ![0, 1, 0, 0] - evidenceTarget ![0, 1, 0, 0]) ^ 2
       + (R ![1, 1, 0, 0] - evidenceTarget ![1, 1, 0, 0]) ^ 2 := by
@@ -441,8 +444,8 @@ theorem modeB_evidence_gap {W : ℝ} {R : Depth → ℝ} (hB : IsModeB W R) :
 /-- Variant, Mode A side: the constructive rule R(d) = (d 0)² is Mode A and
 attains total loss 0 on the same sample, hence the optimal risk. The demand is a
 function of the evidence alone, so this rule recovers it exactly. -/
-theorem modeA_evidence_attained :
-    ∃ R : Depth → ℝ, IsModeA R ∧
+theorem evidenceOnly_evidence_attained :
+    ∃ R : Depth → ℝ, IsEvidenceOnlyToy R ∧
       (R ![1, 0, 0, 0] - evidenceTarget ![1, 0, 0, 0]) ^ 2
         + (R ![0, 1, 0, 0] - evidenceTarget ![0, 1, 0, 0]) ^ 2
         + (R ![1, 1, 0, 0] - evidenceTarget ![1, 1, 0, 0]) ^ 2 = 0 := by
@@ -452,18 +455,18 @@ theorem modeA_evidence_attained :
 /-- Variant, two-sided: on the same sample an evidence-instantiated (Mode A) rule
 attains the optimal risk 0 while every frozen (Mode B) rule's loss is at least
 3/2, so the benchmark risk vanishes and the whole frozen loss is gap. -/
-theorem evidence_gap_is_full {W : ℝ} {RB : Depth → ℝ} (hB : IsModeB W RB) :
-    ∃ RA : Depth → ℝ, IsModeA RA ∧
+theorem evidence_gap_is_full {W : ℝ} {RB : Depth → ℝ} (hB : IsFrozenScalarToy W RB) :
+    ∃ RA : Depth → ℝ, IsEvidenceOnlyToy RA ∧
       ((RA ![1, 0, 0, 0] - evidenceTarget ![1, 0, 0, 0]) ^ 2
         + (RA ![0, 1, 0, 0] - evidenceTarget ![0, 1, 0, 0]) ^ 2
         + (RA ![1, 1, 0, 0] - evidenceTarget ![1, 1, 0, 0]) ^ 2 = 0)
       ∧ 3 / 2 ≤ (RB ![1, 0, 0, 0] - evidenceTarget ![1, 0, 0, 0]) ^ 2
         + (RB ![0, 1, 0, 0] - evidenceTarget ![0, 1, 0, 0]) ^ 2
         + (RB ![1, 1, 0, 0] - evidenceTarget ![1, 1, 0, 0]) ^ 2 := by
-  obtain ⟨RA, hA, hRA⟩ := modeA_evidence_attained
-  exact ⟨RA, hA, hRA, modeB_evidence_gap hB⟩
+  obtain ⟨RA, hA, hRA⟩ := evidenceOnly_evidence_attained
+  exact ⟨RA, hA, hRA, frozenScalar_evidence_gap hB⟩
 
-/-! ## 8. Criteria and Theorem 5 -/
+/-! ## 8. Toy criteria and Theorem 5 -/
 
 structure System where
   obs : Observation
@@ -472,21 +475,248 @@ structure System where
 /-- Criterion P1: the observation is ill-posed. -/
 def P1 (sys : System) : Prop := IllPosed sys.obs
 
-/-- Criterion P2: heterogeneous consistency. -/
-def P2 (sys : System) : Prop :=
+/-- A task carries the objects that P2 and P3 quantify over: an observation,
+the current structure field, an evidence-addressed demand and boundary profile,
+and training/test supports. `testSet` is a set-level stand-in for the support
+of the paper's test distribution; this file does not formalize its probability
+measure. -/
+structure Task where
+  obs : Observation
+  depth : Depth
+  demand : Depth → Pixel → ℝ
+  boundary : Depth → Pixel → Prop
+  trainSet : Set Depth
+  testSet : Set Depth
+
+/-- The observation-only part of a task. -/
+def Task.toSystem (task : Task) : System :=
+  { obs := task.obs, depth := task.depth }
+
+/-- Two structure fields agree on the evidence part fixed by the mask. -/
+def SameEvidence (obs : Observation) (d e : Depth) : Prop :=
+  ∀ i : Pixel, obs.mask i = true → d i = e i
+
+/-- Paper P2 at the task level: the demand and boundary/interior classification
+are content-addressed by the evidence, and at the current instance a boundary
+and an interior position require different strengths. This is a predicate on
+the task's demand profile, not on a candidate rule's consistency coefficient. -/
+def EvidenceAddressed (task : Task) : Prop :=
+  (∀ d e : Depth, SameEvidence task.obs d e → task.demand d = task.demand e) ∧
+    (∀ d e : Depth, SameEvidence task.obs d e →
+      ∀ i : Pixel, task.boundary d i ↔ task.boundary e i)
+
+def P2 (task : Task) : Prop :=
+  EvidenceAddressed task ∧
+    ∃ i j : Pixel,
+      task.boundary task.depth i ∧ ¬ task.boundary task.depth j ∧
+        task.demand task.depth i ≠ task.demand task.depth j
+
+/-- Paper P3 at support level: some inference input lies outside the training
+support. This is deliberately weaker than a measure-theoretic statement about a
+test distribution, and it does not mention a mask hole. -/
+def P3 (task : Task) : Prop :=
+  ∃ d : Depth, d ∈ task.testSet ∧ d ∉ task.trainSet
+
+/-- P2 gives the heterogeneous-demand property explicitly. -/
+theorem P2_demand_heterogeneous (task : Task) (h : P2 task) :
+    ∃ i j : Pixel, task.demand task.depth i ≠ task.demand task.depth j := by
+  rcases h with ⟨_, i, j, _, _, hdemand⟩
+  exact ⟨i, j, hdemand⟩
+
+/-! ## 8.1 Two finite witnesses for P1--P3
+
+These tasks instantiate the paper-level predicates `P2` and `P3`. Their supports
+are finite, so they are base-class witnesses only: they do not satisfy the
+all-scales P4a condition and therefore do not instantiate Theorem 5. -/
+
+/-- Evidence-driven boundary: position 0 is the boundary when `d 0 > 0`, and
+position 1 is the boundary otherwise. Both the demand and the classification
+therefore depend only on the observed evidence pixel 0. -/
+def flipBoundary (d : Depth) (i : Pixel) : Prop :=
+  (i = 0 ∧ d 0 > 0) ∨ (i = 1 ∧ d 0 ≤ 0)
+
+/-- Demand profile for `flipTask`: boundary and interior require different
+strengths. -/
+noncomputable def flipDemand (d : Depth) (i : Pixel) : ℝ :=
+  if i = 0 then (if d 0 > 0 then 1 else 0)
+  else if i = 1 then (if d 0 > 0 then 0 else 1)
+  else 0
+
+noncomputable def flipTask : Task :=
+  { obs :=
+      { mask := fun i => decide (i = 0)
+        value := fun i => if i = 0 then (1 / 2 : ℝ) else 0 }
+    depth := ![1 / 2, 0, 0, 0]
+    demand := flipDemand
+    boundary := flipBoundary
+    trainSet := {d : Depth | d 0 ≤ 0}
+    testSet := {d : Depth | 0 < d 0} }
+
+theorem flipTask_P1 : P1 flipTask.toSystem := by
+  exact illPosed_of_hole (obs := flipTask.obs) (j := 1) (by simp [flipTask])
+
+theorem flipTask_P2 : P2 flipTask := by
+  classical
+  constructor
+  · constructor
+    · intro d e h
+      have h0 : d 0 = e 0 := h 0 (by simp [flipTask])
+      funext i
+      change flipDemand d i = flipDemand e i
+      by_cases hi0 : i = 0
+      · subst i
+        unfold flipDemand
+        rw [h0]
+      · by_cases hi1 : i = 1
+        · subst i
+          unfold flipDemand
+          rw [h0]
+        · unfold flipDemand
+          simp [hi0, hi1, h0]
+    · intro d e h i
+      have h0 : d 0 = e 0 := h 0 (by simp [flipTask])
+      change flipBoundary d i ↔ flipBoundary e i
+      unfold flipBoundary
+      simp [h0]
+  · refine ⟨0, 1, ?_, ?_, ?_⟩
+    · norm_num [flipTask, flipBoundary]
+    · norm_num [flipTask, flipBoundary]
+    · norm_num [flipTask, flipDemand]
+
+theorem flipTask_P3 : P3 flipTask := by
+  refine ⟨flipTask.depth, ?_, ?_⟩
+  · norm_num [flipTask]
+  · norm_num [flipTask]
+
+/-- Two-sided inpainting witness: pixels 0 and 3 are observed, 1 and 2 are the
+mask hole. The observed contrast `d 0 < d 3` decides which hidden side is the
+boundary. -/
+def inpaintBoundary (d : Depth) (i : Pixel) : Prop :=
+  (i = 1 ∧ d 0 < d 3) ∨ (i = 2 ∧ d 3 ≤ d 0)
+
+noncomputable def inpaintDemand (d : Depth) (i : Pixel) : ℝ :=
+  if i = 1 then (if d 0 < d 3 then 1 else 0)
+  else if i = 2 then (if d 0 < d 3 then 0 else 1)
+  else 0
+
+noncomputable def inpaintTask : Task :=
+  { obs :=
+      { mask := fun i => decide (i = 0 ∨ i = 3)
+        value := fun i => if i = 0 then (0 : ℝ) else if i = 3 then 1 else 0 }
+    depth := ![0, 0, 0, 1]
+    demand := inpaintDemand
+    boundary := inpaintBoundary
+    trainSet := {d : Depth | d 0 < d 3}
+    testSet := {d : Depth | d 3 < d 0} }
+
+theorem inpaintTask_P1 : P1 inpaintTask.toSystem := by
+  exact illPosed_of_hole (obs := inpaintTask.obs) (j := 1) (by simp [inpaintTask])
+
+theorem inpaintTask_P2 : P2 inpaintTask := by
+  classical
+  constructor
+  · constructor
+    · intro d e h
+      have h0 : d 0 = e 0 := h 0 (by simp [inpaintTask])
+      have h3 : d 3 = e 3 := h 3 (by simp [inpaintTask])
+      funext i
+      change inpaintDemand d i = inpaintDemand e i
+      by_cases hi1 : i = 1
+      · subst i
+        unfold inpaintDemand
+        rw [h0, h3]
+      · by_cases hi2 : i = 2
+        · subst i
+          unfold inpaintDemand
+          rw [h0, h3]
+        · unfold inpaintDemand
+          simp [hi1, hi2, h0, h3]
+    · intro d e h i
+      have h0 : d 0 = e 0 := h 0 (by simp [inpaintTask])
+      have h3 : d 3 = e 3 := h 3 (by simp [inpaintTask])
+      change inpaintBoundary d i ↔ inpaintBoundary e i
+      unfold inpaintBoundary
+      simp [h0, h3]
+  · refine ⟨1, 2, ?_, ?_, ?_⟩
+    · norm_num [inpaintTask, inpaintBoundary]
+    · norm_num [inpaintTask, inpaintBoundary]
+    · norm_num [inpaintTask, inpaintDemand]
+
+theorem inpaintTask_P3 : P3 inpaintTask := by
+  refine ⟨![1, 0, 0, 0], ?_, ?_⟩
+  · norm_num [inpaintTask]
+  · norm_num [inpaintTask]
+
+theorem finite_base_witnesses :
+    (P1 flipTask.toSystem ∧ P2 flipTask ∧ P3 flipTask) ∧
+      (P1 inpaintTask.toSystem ∧ P2 inpaintTask ∧ P3 inpaintTask) :=
+  ⟨⟨flipTask_P1, flipTask_P2, flipTask_P3⟩,
+    ⟨inpaintTask_P1, inpaintTask_P2, inpaintTask_P3⟩⟩
+
+/-- Toy heterogeneity criterion: some boundary and interior position have
+    different consistency coefficients. This is not paper P2, which is about
+    evidence-addressed demand heterogeneity. -/
+def HeteroKappa (sys : System) : Prop :=
   ∃ i j : Pixel, IsBoundary i ∧ IsInterior j ∧ kappa sys.depth i ≠ kappa sys.depth j
 
-/-- Criterion P3 (open set): the evidence pixel is pinned by observation;
-the context pixel is unobserved. -/
-def P3 (sys : System) : Prop :=
+/-- Toy mask-openness criterion: the evidence pixel is pinned by observation
+    and the context pixel is unobserved. This is the mask-openness bridge used
+    on the toy carrier, not paper P3 (distributional openness). -/
+def MaskOpen (sys : System) : Prop :=
   sys.obs.mask 0 = true ∧ sys.obs.mask 1 = false
 
-/-- Open set ⇒ ill-posed: the mask shape of criterion P3 directly gives the
-forking pair of Definition 1. -/
-theorem p3_implies_p1 (sys : System) (h : P3 sys) : P1 sys :=
+/-- A full-mask task with heterogeneous demand: P2 holds while the observation
+is not ill-posed. This witnesses that paper P2 is not a restatement of P1. -/
+private def fullMaskObs : Observation :=
+  { mask := fun _ => true, value := fun _ => 0 }
+
+private def heteroDemandTask : Task :=
+  { obs := fullMaskObs
+    depth := fun _ => 0
+    demand := fun _ i => if i = 1 then 1 else 0
+    boundary := fun _ i => i = 0
+    trainSet := ∅
+    testSet := Set.univ }
+
+theorem P2_not_implies_P1 :
+    ∃ task : Task, P2 task ∧ ¬ P1 task.toSystem := by
+  refine ⟨heteroDemandTask, ?_, ?_⟩
+  · constructor
+    · constructor
+      · intro d e _
+        funext i
+        by_cases hi : i = 1 <;> simp [heteroDemandTask, hi]
+      · intro d e _ i
+        simp [heteroDemandTask]
+    · refine ⟨0, 1, ?_, ?_, ?_⟩
+      · simp [heteroDemandTask]
+      · simp [heteroDemandTask]
+      · simp [heteroDemandTask]
+  · exact not_illPosed_of_full (fun _ => rfl)
+
+/-- A task with a full mask but a test point outside the training support: P3
+holds while the toy mask-openness bridge fails. This witnesses the paper's
+warning that distributional openness alone does not supply a mask hole. -/
+private def openButFullTask : Task :=
+  { obs := fullMaskObs
+    depth := fun _ => 0
+    demand := fun _ _ => 0
+    boundary := fun _ _ => False
+    trainSet := ∅
+    testSet := Set.univ }
+
+theorem P3_not_implies_maskOpen :
+    ∃ task : Task, P3 task ∧ ¬ MaskOpen task.toSystem := by
+  refine ⟨openButFullTask, ?_, ?_⟩
+  · exact ⟨fun _ => 0, by simp [openButFullTask]⟩
+  · simp [MaskOpen, openButFullTask, Task.toSystem, fullMaskObs]
+
+/-- Toy `MaskOpen` ⇒ ill-posed: the mask shape directly gives the forking pair
+of Definition 1. This is the mask-openness bridge, not paper P3. -/
+theorem maskOpen_implies_p1 (sys : System) (h : MaskOpen sys) : P1 sys :=
   illPosed_of_hole h.2
 
-/-- Open-set construction: under P3, one evidence is compatible with two
+/-- Toy open-set construction: under `MaskOpen`, one evidence is compatible with two
 structure fields that differ at the context pixel, and both fields agree with
 the observation on the mask. -/
 theorem collision_of_masked {obs : Observation}
@@ -514,45 +744,44 @@ theorem collision_of_masked {obs : Observation}
       exact Bool.noConfusion hi
     simp [hij]
 
-/-- Direct consequence of criterion P2: heterogeneous consistency terms ⇒
+/-- Direct consequence of toy `HeteroKappa`: heterogeneous consistency terms ⇒
 the structure field is non-constant. -/
-theorem p2_gives_nonconst (sys : System) (hP2 : P2 sys) :
+theorem heteroKappa_gives_nonconst (sys : System) (hP2 : HeteroKappa sys) :
     ∃ x y : Pixel, sys.depth x ≠ sys.depth y := by
   rcases hP2 with ⟨i, j, _, _, hK⟩
   exact hetero_gives_nonconst hK
 
-/-- Theorem 5: under criterion P3 (open-set collision sample pair), the
-network rule (frozen weights) is not Mode A.
-The deduction actually consumes the collision pair supplied by P3 via
-`collision_of_masked`; the heterogeneity criterion P2 is consumed at Lemmas 1
-and 2. -/
+/-- Theorem 5 on the toy carrier: under `MaskOpen` (the mask-openness bridge,
+not paper P3), the scalar frozen network rule is not evidence-only.
+The deduction consumes the collision pair supplied by `MaskOpen` via
+`collision_of_masked`; the toy `HeteroKappa` condition is used elsewhere, not
+here. -/
 theorem theorem5
   (sys : System)
-  (hP3 : P3 sys)
+  (hOpen : MaskOpen sys)
   (W : ℝ) (hW : W ≠ 0) :
-  ¬ IsModeA (neuralRule W) := by
-  obtain ⟨d, e, hd0, hd1, -, -⟩ := collision_of_masked hP3.1 hP3.2
-  exact neural_not_modeA W hW d e hd0 hd1
+  ¬ IsEvidenceOnlyToy (neuralRule W) := by
+  obtain ⟨d, e, hd0, hd1, -, -⟩ := collision_of_masked hOpen.1 hOpen.2
+  exact neural_not_evidenceOnlyToy W hW d e hd0 hd1
 
-/-! ## 8.5 Final theorem: the conjunctive composition of Lemma 3 and
-Theorem 5 -/
+/-! ## 8.5 Final theorem: the conjunctive composition of the single-rule
+measure lemma and toy Theorem 5 -/
 
-/-- Final theorem finale: under criterion P3 and the measure premises of
-Lemma 3, a frozen-weight network rule is neither Mode A nor capable of the
-generalization bound. The algebraic form of the paper's "Proposition 𝒫 is
-false": the conjunction of the carrier side (not Mode A) and the
-generalization side (generalization impossible). -/
+/-- Final theorem finale: under `MaskOpen` and the single-rule measure premises,
+a frozen-weight scalar network rule is neither evidence-only nor capable of the
+generalization bound on the specified test support. This is the toy algebraic
+form, not the paper's class-level Theorem 5. -/
 theorem finale
   (sys : System)
-  (hP3 : P3 sys)
+  (hOpen : MaskOpen sys)
   (m : MeasureSetup) (ε : ℝ) (hε : ε > 0)
   (W : ℝ) (hW : W ≠ 0)
-  (hTail : ∃ d : Depth, m.lossR (neuralRule W) d ≥ m.riskP (neuralRule W))
+  (hTail : ∃ d : Depth, d ∈ m.testSet ∧ m.lossR (neuralRule W) d ≥ m.riskP (neuralRule W))
   (hGapPositive : m.gapP (neuralRule W) > ε)
-  (hNonnegMin : m.riskMin (neuralRule W) ≥ 0) :
-  ¬ IsModeA (neuralRule W) ∧ ¬ GeneralizationBound m ε (neuralRule W) :=
-  ⟨theorem5 sys hP3 W hW,
-   lemma3_final2 m ε hε (neuralRule W) hTail hGapPositive hNonnegMin⟩
+  (hNonnegStar : m.riskStar ≥ 0) :
+  ¬ IsEvidenceOnlyToy (neuralRule W) ∧ ¬ GeneralizationBound m ε (neuralRule W) :=
+  ⟨theorem5 sys hOpen W hW,
+   lemma3_final2 m ε hε (neuralRule W) hTail hGapPositive hNonnegStar⟩
 
 /-! ## 8.8 The generalization layer from the toy carrier to the continuous
 setting
@@ -679,7 +908,7 @@ escape is the source criterion, because its values are fixed before inference:
 one position whose demanded ratio changes between two admissible configurations
 excludes every frozen family, whatever its number of entries
 (`frozen_family_two_configs_iff`), and the classification is per position and
-does not turn on the size of the table (`frozen_table_not_modeA`).
+does not turn on the size of the table (`frozen_table_not_evidenceOnlyToy`).
 
 The general potential enters only through the per-position coefficient of the
 pairwise term. For a separable data term `Σ_i f_i(d_i)` and an even
@@ -872,9 +1101,9 @@ def tableRule (W : Pixel → ℝ) (i : Pixel) : ContextRule := fun d => W i * (d
 is not evidence-instantiated, whatever the number of entries: the classification
 is per position, so "one scalar is a parameter table and a million entries are a
 parameter table as well". -/
-theorem frozen_table_not_modeA (W : Pixel → ℝ) (i : Pixel) (hW : W i ≠ 0)
+theorem frozen_table_not_evidenceOnlyToy (W : Pixel → ℝ) (i : Pixel) (hW : W i ≠ 0)
     (d e : Depth) (hd0 : d 0 = e 0) (hd1 : d 1 ≠ e 1) :
-    ¬ IsModeA (tableRule W i) := by
+    ¬ IsEvidenceOnlyToy (tableRule W i) := by
   intro hA
   rcases hA with ⟨Φ, hΦ⟩
   have hRd : tableRule W i d = Φ (d 0) := hΦ d
@@ -1155,7 +1384,7 @@ theorem FirstOrder_of_quadratic_local_min (x d : Depth) (lambda : ℝ) (i : Pixe
 
 #check illPosed_of_hole
 #check not_illPosed_of_full
-#check p3_implies_p1
+#check maskOpen_implies_p1
 #check collision_of_masked
 #check lemma1_sharp
 #check lemma1_final
@@ -1163,20 +1392,32 @@ theorem FirstOrder_of_quadratic_local_min (x d : Depth) (lambda : ℝ) (i : Pixe
 #check paradigmI_unique_minimizer
 #check lemma2_full
 #check hetero_gives_nonconst
-#check p2_gives_nonconst
-#check neural_isModeB
-#check neural_not_modeA
+#check heteroKappa_gives_nonconst
+#check neural_isFrozenScalarToy
+#check neural_not_evidenceOnlyToy
 #check gap_le_risk_of_nonneg
 #check lemma3_final2
 #check targetRule
-#check modeB_positive_gap
-#check modeA_loss_lower_bound
-#check modeA_loss_attained
+#check frozenScalar_positive_gap
+#check evidenceOnly_loss_lower_bound
+#check evidenceOnly_loss_attained
 #check toy_positive_gap
 #check evidenceTarget
-#check modeB_evidence_gap
-#check modeA_evidence_attained
+#check frozenScalar_evidence_gap
+#check evidenceOnly_evidence_attained
 #check evidence_gap_is_full
+#check P2
+#check P3
+#check P2_demand_heterogeneous
+#check flipTask_P1
+#check flipTask_P2
+#check flipTask_P3
+#check inpaintTask_P1
+#check inpaintTask_P2
+#check inpaintTask_P3
+#check finite_base_witnesses
+#check P2_not_implies_P1
+#check P3_not_implies_maskOpen
 #check theorem5
 #check finale
 #check foc_proportionality
@@ -1202,7 +1443,7 @@ theorem FirstOrder_of_quadratic_local_min (x d : Depth) (lambda : ℝ) (i : Pixe
 #check frozen_family_infeasible_of_ratio_differs
 #check position_wise_escape_witness
 #check tableRule
-#check frozen_table_not_modeA
+#check frozen_table_not_evidenceOnlyToy
 #check KappaPhi
 #check PairwiseTerm
 #check GeneralObjective

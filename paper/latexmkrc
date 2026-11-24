@@ -25,6 +25,13 @@ $pdflatex = ($ENV{'PDFLATEX'} || 'pdflatex')
 # Keep every generated file beside the PDF that was produced from it.
 $out_dir = $ENV{'OUTDIR'} if $ENV{'OUTDIR'};
 
+# BibTeX runs with the output directory as its working directory. Include the
+# directory containing this file (paper/) on its search path so that
+# \bibliography{reference} resolves when latexmk is driven from build/slim/.
+my $bibdir = $ENV{'PWD'};
+my $oldbib = $ENV{'BIBINPUTS'} // '';
+$ENV{'BIBINPUTS'} = length($oldbib) ? "$bibdir:$oldbib" : "$bibdir:";
+
 # Run bibtex only when the .aux actually requests a bibliography.
 $bibtex_use = 1;
 

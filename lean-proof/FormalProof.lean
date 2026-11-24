@@ -3,8 +3,8 @@ import Mathlib
 /-!
 # Formal proof: falsifying the completeness of a single fixed-memory component
   on open inversion tasks
-  (Lean 4 + Mathlib; accompanies the paper "Formal Falsification of the
-  Completeness of a Single Fixed-Memory Component for Open Inversion Tasks")
+  (Lean 4 + Mathlib; accompanies the paper "Frozen Memory and Open
+  Inversion: A Conditional Risk-Gap Bound")
 
 **Integrity statement (Route A)**
 This file formalizes the paper's algebraic skeleton, fully implemented with zero

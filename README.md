@@ -11,7 +11,7 @@ by current evidence or by analytic invariants (Mode A); the paper's conditional
 result concerns whether frozen values can satisfy its non-freezability and
 bounded-description hypotheses on the open set.
 
-📄 **Paper: [paper-slim.pdf](dist/paper-slim.pdf) (30 pages). LaTeX source in
+📄 **Paper: [paper.pdf](dist/paper.pdf) (30 pages). LaTeX source in
 the official JMLR jmlr2e style, rebuild with `./scripts/build.sh`**
 
 This repository contains a theoretical paper (English, LaTeX source) together
@@ -19,12 +19,12 @@ with its Lean 4 machine-verification artifact. Under explicit and separately
 checkable assumptions, the paper proves a conditional class-exclusion: a
 specified class of offline-frozen rules satisfying uniform bounded description
 and scale-restricted realization cannot be complete on its own for open
-inversion tasks. Open inversion tasks are delimited by four
+inversion tasks. The base class is delimited by three
 criteria: observations are ill-posed, the required context strength is
-heterogeneous and content-addressed by the evidence, inference inputs are not
-constrained by the training distribution, and the demand rule cannot be given
-within any pre-given tolerance on the open set by any values frozen before
-inference begins. The last criterion is class-relative: a demand barrier holds
+heterogeneous and content-addressed by the evidence, and inference inputs are
+not constrained by the training distribution. A subclass adds a fourth,
+class-relative criterion: the demand rule cannot be given within any pre-given
+tolerance on the open set by any values frozen before inference begins. a demand barrier holds
 at every scale, while realization is required at one class-admissible scale
 rather than at every scale. Together with a uniform bounded-description rate
 and a fixed evidence-instantiated benchmark, these hypotheses imply a positive
@@ -43,8 +43,8 @@ Mathlib, with zero `sorry` and only Lean's standard axioms.
 <!-- markdownlint-disable MD013 -->
 | Path | Contents |
 | --- | --- |
-| `paper/paper-slim.tex` | Standalone JMLR paper source; rebuild with `./scripts/build.sh` |
-| `dist/paper-slim.pdf` | Released PDF (30 pages) built from `paper/paper-slim.tex` |
+| `paper/paper.tex` | Standalone JMLR paper source; rebuild with `./scripts/build.sh` |
+| `dist/paper.pdf` | Released PDF (30 pages) built from `paper/paper.tex` |
 | `paper/styles/jmlr2e.sty` | Official JMLR style file (do not modify; third-party, not covered by the licenses below) |
 | `paper/reference.bib` | References (84 entries, all verified against Crossref/DBLP/arXiv or publisher sites; 30+ carry a DOI) |
 | `scripts/build.sh` | Build script: `latexmk` driving pdflatex + bibtex, with an explicit pdflatex x3 + bibtex fallback; intermediate output to `build/slim/` |
@@ -64,12 +64,12 @@ Paper (a local TeX distribution is required: TeX Live, MacTeX or TinyTeX with
 latexmk via pdflatex):
 
 ```bash
-./scripts/build.sh          # build paper/paper-slim.tex
+./scripts/build.sh          # build paper/paper.tex
 ./scripts/build.sh slim     # same target
 ```
 
 Intermediate output is written to `build/slim/`. A clean build is copied to
-`dist/paper-slim.pdf`; a build with LaTeX errors leaves the published PDF
+`dist/paper.pdf`; a build with LaTeX errors leaves the published PDF
 untouched.
 
 The driver is `latexmk`, which re-runs `pdflatex` and `bibtex` until the
@@ -96,9 +96,9 @@ use.
 Builds are byte-reproducible. pdfTeX would otherwise stamp the wall-clock time
 into the PDF and derive the trailer `/ID` from it, so two builds of identical
 sources would differ byte-wise; `scripts/build.sh` pins `SOURCE_DATE_EPOCH`
-for the embedded dates and `paper/paper-slim.tex` seeds the trailer id through
+for the embedded dates and `paper/paper.tex` seeds the trailer id through
 `\pdftrailerid`. Rebuilding unchanged sources therefore reproduces
-`dist/paper-slim.pdf` exactly, and `git status` is a reliable signal that the
+`dist/paper.pdf` exactly, and `git status` is a reliable signal that the
 committed PDF matches the source. Export `SOURCE_DATE_EPOCH` to override the
 pinned date.
 
@@ -156,7 +156,7 @@ This repository is dual-licensed by material:
 | Material | License |
 | --- | --- |
 | Code and artifact — `scripts/build.sh`, `package-lean-proof.sh`, and everything under `lean-proof/` | MIT, see [`LICENSE`](LICENSE) |
-| Paper — `paper/paper-slim.tex`, `paper/reference.bib`, and `dist/paper-slim.pdf` | CC BY 4.0, see [`LICENSE-PAPER`](LICENSE-PAPER) |
+| Paper — `paper/paper.tex`, `paper/reference.bib`, and `dist/paper.pdf` | CC BY 4.0, see [`LICENSE-PAPER`](LICENSE-PAPER) |
 
 `paper/styles/jmlr2e.sty` is the official JMLR style file, redistributed here
 unmodified so that the paper compiles as submitted. It is third-party material

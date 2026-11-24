@@ -9,7 +9,7 @@
 #
 # Invoked by hand from paper/, the same variable is the only one that matters:
 #
-#   OUTDIR=../build/slim latexmk -pdf -bibtex -outdir=../build/slim paper-slim.tex
+#   OUTDIR=../build/slim latexmk -pdf -bibtex -outdir=../build/slim paper.tex
 
 $pdf_mode = 1;                                   # pdflatex -> PDF
 

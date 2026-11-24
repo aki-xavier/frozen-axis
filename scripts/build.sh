@@ -7,7 +7,7 @@
 # toolchain that matters (not XeTeX/tectonic), and latexmk is the driver that
 # re-runs passes until the cross-references and the bibliography settle.
 #
-#   ./scripts/build.sh          # build paper/paper-slim.tex (out: build/slim/)
+#   ./scripts/build.sh          # build paper/paper.tex (out: build/slim/)
 #                               driver: latexmk when installed, else pdflatex x3 + bibtex
 #                               (USE_LATEXMK=0 forces the fallback; LATEXMK=... overrides)
 #   ./scripts/build.sh slim     # same target
@@ -41,8 +41,8 @@ usage() {
   cat <<'EOF'
 Usage: ./scripts/build.sh [slim]
 
-  slim      build paper/paper-slim.tex (out: build/slim/paper-slim.pdf,
-            copied to dist/paper-slim.pdf)
+  slim      build paper/paper.tex (out: build/slim/paper.pdf,
+            copied to dist/paper.pdf)
   (default: slim)
 
 Environment overrides:
@@ -58,7 +58,7 @@ TARGET="${1:-slim}"
 SRC_TEX=""
 case "$TARGET" in
   -h|--help) usage; exit 0 ;;
-  slim) SRC_TEX="paper-slim.tex" ;;
+  slim) SRC_TEX="paper.tex" ;;
   *) echo "build.sh: unknown target '$TARGET'" >&2; usage >&2; exit 2 ;;
 esac
 [ -n "$SRC_TEX" ] || SRC_TEX="$TARGET.tex"
@@ -123,8 +123,8 @@ count() { grep -cE "$1" "$2" 2>/dev/null || true; }
 # --- reproducible output -------------------------------------------------
 # pdfTeX takes the embedded CreationDate/ModDate from the clock, so rebuilding
 # unchanged sources would otherwise produce a different file every time. Pin
-# the timestamp here; paper-slim.tex pins the trailer /ID for the same reason.
-# Together they make the output byte-reproducible, so a rebuilt paper-slim.pdf
+# the timestamp here; paper.tex pins the trailer /ID for the same reason.
+# Together they make the output byte-reproducible, so a rebuilt paper.pdf
 # differs only when the paper's content changed. Export SOURCE_DATE_EPOCH
 # yourself to override the pinned value.
 if [ -z "${SOURCE_DATE_EPOCH:-}" ]; then
@@ -217,13 +217,13 @@ fi
 # Publish only a clean build: a broken PDF never reaches dist/.
 ERRORS="$(count '^! ' "$LOG")"
 if [ "$ERRORS" != "0" ]; then
-  echo "slim: $ERRORS LaTeX error(s); see $LOG. dist/paper-slim.pdf NOT updated." >&2
+  echo "slim: $ERRORS LaTeX error(s); see $LOG. dist/paper.pdf NOT updated." >&2
   exit 1
 fi
-cp -f -- "$OUT/$STEM.pdf" "$DIST_DIR/paper-slim.pdf"
+cp -f -- "$OUT/$STEM.pdf" "$DIST_DIR/paper.pdf"
 echo "--- slim ---"
-echo "updated dist/paper-slim.pdf from $OUT/$STEM.pdf ($(wc -c < "$DIST_DIR/paper-slim.pdf" | tr -d ' ') bytes)"
+echo "updated dist/paper.pdf from $OUT/$STEM.pdf ($(wc -c < "$DIST_DIR/paper.pdf" | tr -d ' ') bytes)"
 # The build is reproducible, so a byte-identical result means the paper's
 # content did not change rather than that the build merely repeated itself.
 echo "note: the build is byte-reproducible, so after rebuilding unchanged sources"
-echo "      dist/paper-slim.pdf is unchanged too; 'git status' is a reliable signal."
+echo "      dist/paper.pdf is unchanged too; 'git status' is a reliable signal."

@@ -11,10 +11,9 @@ abstract: >-
   evidence-instantiated benchmark, a specified offline-frozen class with a uniform bounded-description
   rate, and barrier and scale-restricted realization conditions, it proves a conditional risk gap
   kappa = p delta^2 / 16 - risk*. When kappa > 0, no rule in that class achieves uniform tolerance
-  0 < epsilon < kappa. A minimal instance shows the hypotheses are jointly satisfiable. The neural
-  corollary additionally assumes output variation on an evidence-collision pair. The result limits
-  solo use; it does not deny the usefulness of frozen components in composite systems, and it does not
-  establish BD, P4, or real-world applicability. The algebraic core and a toy closure are formalized
+  0 < epsilon < kappa. A minimal instance shows the hypotheses are jointly satisfiable. A separate collision
+  proposition isolates the evidence-only (A1) behavior. The result limits solo use; it does not deny the usefulness of frozen components in composite systems, and it assumes, rather than
+  establishes, BD, P4, and real-world applicability. The algebraic core and a toy closure are formalized
   in Lean 4 with Mathlib, without sorry. This repository holds the JMLR LaTeX source, the compiled
   paper, and the Lean 4 artifact.
 authors:
@@ -72,4 +71,4 @@ preferred-citation:
   notes: >-
     Manuscript submitted to the Journal of Machine Learning Research. The LaTeX source
     (CC BY 4.0) and the Lean 4 verification artifact (MIT) are in this repository; the paper is
-    dist/paper-slim.pdf, and the artifact is under lean-proof/.
+    dist/paper.pdf, and the artifact is under lean-proof/.

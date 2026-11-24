@@ -1,17 +1,15 @@
 # latexmk configuration for the paper. latexmk reads it automatically when
 # scripts/build.sh runs from paper/ (its documented search order is ./latexmkrc,
-# ./.latexmkrc, then $HOME/.latexmkrc), so everything common to the build targets
-# lives here and build.sh only has to name the source file.
+# ./.latexmkrc, then $HOME/.latexmkrc), so the shared build settings live here
+# and build.sh only has to name the source file.
 #
 # scripts/build.sh exports:
-#   OUTDIR     the absolute output directory for this target (build/paper/, etc.)
+#   OUTDIR     the absolute output directory (build/slim/)
 #   PDFLATEX   an alternative pdflatex executable, if the user overrode it
-# It also passes -bibtex or -bibtex- on the command line, because the online
-# appendix has no bibliography and must not send latexmk looking for one.
 #
-# Invoked by hand from paper/, the same two variables are the only ones that matter:
+# Invoked by hand from paper/, the same variable is the only one that matters:
 #
-#   OUTDIR=../build/paper latexmk -pdf -bibtex -outdir=../build/paper paper.tex
+#   OUTDIR=../build/slim latexmk -pdf -bibtex -outdir=../build/slim paper-slim.tex
 
 $pdf_mode = 1;                                   # pdflatex -> PDF
 
@@ -31,7 +29,7 @@ $out_dir = $ENV{'OUTDIR'} if $ENV{'OUTDIR'};
 $bibtex_use = 1;
 
 # The file-recorder output makes latexmk's dependency check exact, so it knows
-# a rebuild is needed when a section file changes.
+# a rebuild is needed when the source file changes.
 $recorder = 1;
 
 # Say what is being run, and stop at the first error rather than looping.

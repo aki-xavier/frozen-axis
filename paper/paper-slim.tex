@@ -1,21 +1,10 @@
 % !TeX program = pdflatex
 %=======================================================================
-% paper-slim.tex -- the condensed version of paper.tex.
+% paper-slim.tex -- JMLR submission source.
 %
-% Hand-maintained companion to the full paper. main.tex + sections/*.tex
-% remain the source of paper.tex; this file is a standalone condensation
-% written from it, in the same jmlr2e style and against the same
-% bibliography, and it keeps the full paper's numbering: Claim R,
-% Definitions 1-4, Lemmas 1-3, Proposition 4 and Theorem 5 carry the
-% numbers the full paper gives them.
-%
-% Every claim made here is a claim of the full paper. What the
-% condensation drops is the related-work survey (Section 2 of the full
-% paper), the two worked examples, the three tables, the paragraphs on
-% classification of implementations, uncertainty quantification, adaptive
-% control, abstention and the composite path, and the approximate-
-% inference and reach subsections; each survives here only as a summary
-% sentence or not at all.
+% Standalone paper in the official jmlr2e style, with its own bibliography
+% and figures. Its numbered statements are self-contained: Claim R,
+% Definitions 1-4, Lemmas 1-3, Proposition 4 and Theorem 5.
 %
 % chktex-file 1
 % chktex-file 2
@@ -34,10 +23,10 @@
 
 \usepackage{styles/jmlr2e}
 \usepackage{amsmath}
-% Loaded as in main.tex. The tools array package supports the verification
-% table and must be loaded here: without it, this toolchain's epstopdf-base
-% takes the branch that requires grfext.sty, which a minimal TinyTeX does
-% not ship, and the build stops with "File `grfext.sty' not found".
+% The array package supports the verification table and must be loaded here:
+% without it, this toolchain's epstopdf-base takes the branch that requires
+% grfext.sty, which a minimal TinyTeX does not ship, and the build stops with
+% "File `grfext.sty' not found".
 \usepackage{array}
 \usepackage{tikz}
 \usetikzlibrary{arrows.meta,calc,positioning}
@@ -66,13 +55,13 @@
 % Underscore of a Lean declaration name with a line break allowed after it.
 \newcommand{\ttu}{\textunderscore\allowbreak}
 
-\jmlrheading{}{}{}{9/26}{}{}{Shuo Zhang, Yiping Zeng, and Haichuan Zhang}
-\ShortHeadings{Formal Falsification of Solo Completeness}{Zhang, Zeng, and Zhang}
+\jmlrheading{}{}{}{11/26}{}{}{Shuo Zhang, Yiping Zeng, Shengfeng Luo, and Haichuan Zhang}
+\ShortHeadings{Formal Falsification of Solo Completeness}{Zhang, Zeng, Luo, and Zhang}
 \firstpageno{1}
 
 \hypersetup{hidelinks,
-  pdftitle={Formal Falsification of the Completeness of a Single Fixed-Memory Component for Open Inversion Tasks (condensed)},
-  pdfauthor={Shuo Zhang, Yiping Zeng, and Haichuan Zhang},
+  pdftitle={Formal Falsification of the Completeness of a Single Fixed-Memory Component for Open Inversion Tasks},
+  pdfauthor={Shuo Zhang, Yiping Zeng, Shengfeng Luo, and Haichuan Zhang},
   pdfsubject={Open inversion tasks; formal falsification; fixed-memory component; decision axis; distributional openness},
   pdfkeywords={open inversion tasks, formal falsification, fixed-memory component, decision axis, distributional openness}}
 
@@ -88,6 +77,7 @@
 
 \author{\name Shuo Zhang \email aki.petit@icloud.com \\ % chktex 1
        \name Yiping Zeng \email zengyiping@sztu.edu.cn \\
+       \name Shengfeng Luo \email luoshengfeng@sztu.edu.cn \\
        \name Haichuan Zhang \email zhanghaichuan@sztu.edu.cn\thanks{Corresponding author.} \\[2pt]
        \addr Shenzhen Technology University\\ % chktex 1
        3002 Lantian Road, Pingshan District\\
@@ -473,7 +463,7 @@ Beyond the algebra, the exclusion does not depend on the dimension of the parame
 
 The algebraic skeleton and a toy-carrier closure are machine-verified in Lean~4 with Mathlib, with zero \texttt{sorry}, zero project-specific \texttt{axiom}, and zero build warnings \citep{yang2023}. This is not a machine verification of the revised general Theorem 5. In particular, the declarations \texttt{theorem5} and \texttt{finale} concern the scalar toy rule $\texttt{neuralRule}\ W\ d=W(d_0-d_1)$ with $W\neq0$; \texttt{finale} additionally takes upper-tail realization, a directly assumed positive risk gap, and benchmark nonnegativity as hypotheses. The artifact does not prove general neural-network output variation, BD, P4a/P4b, Barrier-to-Gap, or any real-world modeling premise. Each declaration exposes its formal hypotheses, but an exposed hypothesis is not thereby validated.
 
-The guarantee divides into three levels. Tier A is carrier-independent algebra: Lemma 1's proportionality identities and general first-order condition, together with the mode-composition steps used in the toy closure. Tier B comprises structured general forms anchored on Mathlib: ill-posedness and collision constructions, the \emph{unconstrained} Paradigm I minimizer, and Lemma 3's measure framework, including \texttt{tail\ttu realization}. Tier C is the uncovered residue: continuous-side Euler--Lagrange arguments, general network output variation, the zero-safe table equivalence in its full paper generality, BD, scale-restricted P4, and the barrier-to-gap inequality. The Lean toy theorem must therefore not be cited as proof of those general analytic or empirical assumptions.
+The guarantee divides into three levels. Tier A is carrier-independent algebra: Lemma 1's proportionality identities and general first-order condition, together with the mode-composition steps used in the toy closure. Tier B comprises structured general forms anchored on Mathlib: ill-posedness and collision constructions, the \emph{unconstrained} Paradigm I minimizer, and Lemma 3's measure framework, including \texttt{tail\ttu realization}. Tier C is the uncovered residue: continuous-side Euler--Lagrange arguments, general network output variation, the zero-safe table equivalence in general form, BD, scale-restricted P4, and the barrier-to-gap inequality. The Lean toy theorem must therefore not be cited as proof of those general analytic or empirical assumptions.
 
 \begin{table}[t]
 \caption{Lean 4 verification coverage. Tiers A and B identify formalized components; Tier C is the uncovered analytic and modeling residue. The toy declarations \texttt{theorem5} and \texttt{finale} do not verify the general Theorem 5, BD, P4, or real-task premises.}
@@ -488,7 +478,7 @@ A: carrier-independent algebra & Lemma 1's proportionality identities and genera
 \hline
 B: structured general forms & Ill-posedness and collision constructions; the unconstrained Paradigm I minimizer; Lemma 3's measure framework, including \texttt{tail\ttu realization}.\\
 \hline
-C: not machine-verified & Continuous-side Euler--Lagrange arguments; general network output variation; the zero-safe table equivalence in full paper generality; BD, P4a/P4b, and Barrier-to-Gap.\\
+C: not machine-verified & Continuous-side Euler--Lagrange arguments; general network output variation; the zero-safe table equivalence in general form; BD, P4a/P4b, and Barrier-to-Gap.\\
 \hline
 \end{tabular}
 \end{table}
@@ -528,7 +518,7 @@ Lemma 1 excludes a shared scalar when cross-position demand ratios differ and gi
 
 The same classification can be applied to Markov random fields, conditional random fields, mixtures, dictionary learning, and kernel methods, but the quantitative exclusion follows only when their rules belong to a class satisfying the theorem's hypotheses. Online updating alone does not imply Mode A: evidence plus analytic or calibration invariants is Mode A, while corpus-statistical or manual frozen content remains Mode B, including a corpus-fitted generator of online updates. Tasks outside P4 or BD are not thereby shown to admit complete frozen solvers. Composite systems containing Mode A remain possible and require separate correctness arguments. Negation is therefore not disparagement: it is a scoped boundary claim, with constructive design and standardized empirical evaluation left as future work.
 
-\acks{The authors would like to sincerely thank all participants who provided valuable suggestions for optimizing the work presented in this paper. This research was financially supported by the National Natural Science Foundation of China (Grant nos. 52306144, 72404254, and 72604262), the Shenzhen Science and Technology Program (Grant nos. KCXFZ20230731093902005, JCYJ20241202124703004, and CJGJZD20250902091259006), the Guangdong Basic and Applied Basic Research Foundation (Grant 2026A1515010187), and the Guangdong Provincial Key Laboratory of Low-Altitude Intelligent Perception and Navigation Safety (No. 2026B1201010001).
+\acks{The authors would like to sincerely thank all participants who provided valuable suggestions for optimizing the work presented in this paper. This research was financially supported by the National Natural Science Foundation of China (Grant nos. 52306144, 72404254, and 72604262), the University-Enterprise Cooperative Research Fund with DALIAN WINDTUNER TECHNOLOGY CO.,LTD. (Grant No. 20231061030006), the Shenzhen Science and Technology Program (Grant nos. KCXFZ20230731093902005, JCYJ20241202124703004, CJGJZD20250902091259006, and KJZD20240903103806009), the Guangdong Basic and Applied Basic Research Foundation (Grant 2026A1515010187), and the Guangdong Provincial Key Laboratory of Low-Altitude Intelligent Perception and Navigation Safety (No. 2026B1201010001).
 
 The verified artifact described in Section~\ref{ch:verify} was developed with the Lean~4 proof assistant and its mathematical library Mathlib, and is distributed in the \texttt{lean-proof} directory of the repository with the \texttt{lean-toolchain} file that pins the toolchain version.
 
@@ -536,10 +526,5 @@ Competing interests: the authors declare no competing interests.}
 
 \vskip 0.2in
 \bibliography{reference}
-
-% This is the condensed version: the full paper, with the related-work
-% survey, the worked examples, the three tables and the remaining
-% discussion subsections, is paper.tex, built from main.tex and
-% sections/*.tex.
 
 \end{document}

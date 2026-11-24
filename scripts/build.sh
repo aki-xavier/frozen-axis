@@ -1,26 +1,17 @@
 #!/usr/bin/env bash
-# Build the paper with latexmk (which drives pdflatex + bibtex underneath),
-# falling back to an explicit pdflatex/bibtex sequence when latexmk is absent.
+# Build the JMLR submission with latexmk (which drives pdflatex + bibtex
+# underneath), falling back to an explicit pdflatex/bibtex sequence when
+# latexmk is absent.
 #
 # JMLR production compiles with latexmk via pdflatex, so pdflatex is the
 # toolchain that matters (not XeTeX/tectonic), and latexmk is the driver that
 # re-runs passes until the cross-references and the bibliography settle.
 #
-#   ./scripts/build.sh          # build paper/main.tex (out: build/main/)
+#   ./scripts/build.sh          # build paper/paper-slim.tex (out: build/slim/)
 #                               driver: latexmk when installed, else pdflatex x3 + bibtex
 #                               (USE_LATEXMK=0 forces the fallback; LATEXMK=... overrides)
-#   ./scripts/build.sh paper    # build paper/paper.tex (out: build/paper/)
-#   ./scripts/build.sh slim     # build the hand-maintained paper/paper-slim.tex
-#                               (out: build/slim/, copies to dist/paper-slim.pdf)
-#   ./scripts/build.sh appendix # build paper/appendix/main.tex
-#                               (out: build/appendix/main.pdf)
-#   ./scripts/build.sh release  # refresh paper.tex from sections/, build it, copy the
-#                               # result to dist/paper.pdf, and build the online
-#                               # appendix into dist/online-appendix.pdf
+#   ./scripts/build.sh slim     # same target
 #   ./scripts/build.sh --help
-#
-# Run `python3 scripts/flatten.py` first if you edited paper/sections/*.tex and
-# want the single-file version refreshed. The `release` target does this for you.
 #
 # Portrait of the TeX installation this expects: TinyTeX or TeX Live with
 # latexmk, pdflatex and bibtex. A *minimal* TeX installation ships the EC/TC
@@ -48,20 +39,11 @@ cd -- "$PAPER_DIR"
 
 usage() {
   cat <<'EOF'
-Usage: ./scripts/build.sh [main|paper|slim|appendix|release]
+Usage: ./scripts/build.sh [slim]
 
-  main      build paper/main.tex (modular source)   -> build/main/main.pdf
-  paper     build paper/paper.tex (single-file)     -> build/paper/paper.pdf
-  slim      build paper/paper-slim.tex (hand-maintained 15-page condensation)
-                                                   -> build/slim/paper-slim.pdf,
-                                                      copied to dist/paper-slim.pdf
-  appendix  build the online appendix               -> build/appendix/main.pdf
-            (paper/appendix/main.tex; no bibtex pass, no \bibliography)
-  release   refresh paper.tex from main.tex + sections/*.tex via flatten.py,
-            build it, and copy the result to dist/paper.pdf; then build the
-            online appendix and copy it to dist/online-appendix.pdf. Refuses
-            to overwrite dist/paper.pdf if the build reports errors.
-  (default: main)
+  slim      build paper/paper-slim.tex (out: build/slim/paper-slim.pdf,
+            copied to dist/paper-slim.pdf)
+  (default: slim)
 
 Environment overrides:
   PDFLATEX      pdflatex executable to use (default: autodetected)
@@ -72,29 +54,14 @@ Environment overrides:
 EOF
 }
 
-TARGET="${1:-main}"
-RELEASE=0
-SLIM=0
+TARGET="${1:-slim}"
 SRC_TEX=""
-WITH_BIBTEX=1
 case "$TARGET" in
   -h|--help) usage; exit 0 ;;
-  main|paper) ;;
-  slim) SRC_TEX="paper-slim.tex"; SLIM=1 ;;
-  appendix) SRC_TEX="appendix/main.tex"; WITH_BIBTEX=0 ;;
-  release) RELEASE=1; TARGET=paper ;;
+  slim) SRC_TEX="paper-slim.tex" ;;
   *) echo "build.sh: unknown target '$TARGET'" >&2; usage >&2; exit 2 ;;
 esac
 [ -n "$SRC_TEX" ] || SRC_TEX="$TARGET.tex"
-
-if [ "$RELEASE" -eq 1 ] && ! command -v python3 >/dev/null 2>&1; then
-  cat >&2 <<'EOF'
-build.sh: python3 not found, and the `release` target needs it to refresh
-paper.tex from main.tex + sections/*.tex. Run `./scripts/build.sh paper` instead and
-copy build/paper/paper.pdf to dist/paper.pdf by hand.
-EOF
-  exit 127
-fi
 
 PDFLATEX_CMD="${PDFLATEX:-pdflatex}"
 BIBTEX_CMD="${BIBTEX:-bibtex}"
@@ -156,22 +123,14 @@ count() { grep -cE "$1" "$2" 2>/dev/null || true; }
 # --- reproducible output -------------------------------------------------
 # pdfTeX takes the embedded CreationDate/ModDate from the clock, so rebuilding
 # unchanged sources would otherwise produce a different file every time. Pin
-# the timestamp here; main.tex pins the trailer /ID for the same reason.
-# Together they make the output byte-reproducible, so a rebuilt paper.pdf
+# the timestamp here; paper-slim.tex pins the trailer /ID for the same reason.
+# Together they make the output byte-reproducible, so a rebuilt paper-slim.pdf
 # differs only when the paper's content changed. Export SOURCE_DATE_EPOCH
 # yourself to override the pinned value.
 if [ -z "${SOURCE_DATE_EPOCH:-}" ]; then
-  SOURCE_DATE_EPOCH=1789948800   # 2026-09-21T00:00:00Z, the release date
+  SOURCE_DATE_EPOCH=1789948800   # 2026-09-21T00:00:00Z
 fi
 export SOURCE_DATE_EPOCH
-
-# The release target publishes the single-file version, so refresh it from the
-# modular sources first; otherwise the committed PDF could silently lag behind
-# sections/*.tex.
-if [ "$RELEASE" -eq 1 ]; then
-  echo "--- flatten (paper.tex from main.tex + sections/*.tex) ---"
-  python3 "$SCRIPT_DIR/flatten.py"
-fi
 
 # Per-pass failures are reported in the summary below rather than aborting the
 # run, so a missing .bbl on the first pass is not fatal.
@@ -188,29 +147,19 @@ BLG="$OUT/$STEM.blg"
 if [ "$USE_LATEXMK" -eq 1 ] && command -v "$LATEXMK_CMD" >/dev/null 2>&1; then
   DRIVER="latexmk ($("$LATEXMK_CMD" --version 2>/dev/null | head -1))"
   # The compile flags live in paper/latexmkrc, which latexmk discovers from the
-  # paper working directory; only the bibliography mode is per document, because
-  # the online appendix has no \bibliography.
-  if [ "$WITH_BIBTEX" -eq 1 ]; then
-    BIBFLAG="-bibtex"
-  else
-    BIBFLAG="-bibtex-"
-  fi
+  # paper working directory.
   # -outdir is repeated here (latexmkrc reads OUTDIR as well) so that the
   # command line alone says where everything goes.
   run_pass "$OUT/latexmk.log" env OUTDIR="$OUT" PDFLATEX="$PDFLATEX_CMD" \
-    "$LATEXMK_CMD" -pdf "$BIBFLAG" -outdir="$OUT" "$SRC_TEX"
+    "$LATEXMK_CMD" -pdf -bibtex -outdir="$OUT" "$SRC_TEX"
   [ -f "$LOG" ] || LOG="$OUT/latexmk.log"
 else
-  DRIVER="$PDFLATEX_CMD (three passes)$([ "$WITH_BIBTEX" -eq 1 ] && printf ' + %s' "$BIBTEX_CMD")"
+  DRIVER="$PDFLATEX_CMD (three passes + $BIBTEX_CMD)"
   run_pass "$OUT/pass1.log" "$PDFLATEX_CMD" -interaction=nonstopmode -output-directory="$OUT" "$SRC_TEX"
   # BibTeX refuses absolute and parent-relative output paths under openout_any=p.
   # Run beside the .aux and search paper/ for reference.bib, then system paths.
-  if [ "$WITH_BIBTEX" -eq 1 ]; then
-    (cd "$OUT" && run_pass "$OUT/bibtex.log" \
-      env BIBINPUTS="$PAPER_DIR:" "$BIBTEX_CMD" "$TARGET")
-  else
-    : > "$OUT/bibtex.log"
-  fi
+  (cd "$OUT" && run_pass "$OUT/bibtex.log" \
+    env BIBINPUTS="$PAPER_DIR:" "$BIBTEX_CMD" "$STEM")
   run_pass "$OUT/pass2.log" "$PDFLATEX_CMD" -interaction=nonstopmode -output-directory="$OUT" "$SRC_TEX"
   run_pass "$OUT/pass3.log" "$PDFLATEX_CMD" -interaction=nonstopmode -output-directory="$OUT" "$SRC_TEX"
   LOG="$OUT/pass3.log"
@@ -265,43 +214,16 @@ if [ ! -f "$OUT/$STEM.pdf" ]; then
   exit 1
 fi
 
-# The slim target publishes its own artifact in dist/, under the same clean-build
-# rule as the release target.
-if [ "$SLIM" -eq 1 ]; then
-  ERRORS="$(count '^! ' "$LOG")"
-  if [ "$ERRORS" != "0" ]; then
-    echo "slim: $ERRORS LaTeX error(s); see $LOG. paper-slim.pdf NOT updated." >&2
-    exit 1
-  fi
-  cp -f -- "$OUT/$STEM.pdf" "$DIST_DIR/paper-slim.pdf"
-  echo "--- slim ---"
-  echo "updated dist/paper-slim.pdf from $OUT/$STEM.pdf ($(wc -c < "$DIST_DIR/paper-slim.pdf" | tr -d ' ') bytes)"
+# Publish only a clean build: a broken PDF never reaches dist/.
+ERRORS="$(count '^! ' "$LOG")"
+if [ "$ERRORS" != "0" ]; then
+  echo "slim: $ERRORS LaTeX error(s); see $LOG. dist/paper-slim.pdf NOT updated." >&2
+  exit 1
 fi
-
-# The release target copies the fresh build over the committed dist/paper.pdf,
-# but only when the build is clean: a broken PDF never reaches dist/.
-if [ "$RELEASE" -eq 1 ]; then
-  ERRORS="$(count '^! ' "$LOG")"
-  SRC="$OUT/$TARGET.pdf"
-  if [ "$ERRORS" != "0" ]; then
-    echo "release: $ERRORS LaTeX error(s); see $LOG. paper.pdf NOT updated." >&2
-    exit 1
-  fi
-  cp -f -- "$SRC" "$DIST_DIR/paper.pdf"
-  echo "--- release ---"
-  echo "updated dist/paper.pdf from $SRC ($(wc -c < "$DIST_DIR/paper.pdf" | tr -d ' ') bytes)"
-  # The build is reproducible, so a byte-identical result means the paper's
-  # content did not change rather than that the build merely repeated itself.
-  echo "note: the build is byte-reproducible, so after rebuilding unchanged sources"
-  echo "      paper.pdf is unchanged too; 'git status' is a reliable signal."
-
-  # The online appendix is a separate published artifact with the same gates.
-  echo "--- online appendix ---"
-  if ! "$SCRIPT_DIR/build.sh" appendix; then
-    echo "release: online appendix build failed; dist/online-appendix.pdf NOT updated." >&2
-    exit 1
-  fi
-  APX_SRC="$ROOT_DIR/build/appendix/main.pdf"
-  cp -f -- "$APX_SRC" "$DIST_DIR/online-appendix.pdf"
-  echo "updated dist/online-appendix.pdf from $APX_SRC ($(wc -c < "$DIST_DIR/online-appendix.pdf" | tr -d ' ') bytes)"
-fi
+cp -f -- "$OUT/$STEM.pdf" "$DIST_DIR/paper-slim.pdf"
+echo "--- slim ---"
+echo "updated dist/paper-slim.pdf from $OUT/$STEM.pdf ($(wc -c < "$DIST_DIR/paper-slim.pdf" | tr -d ' ') bytes)"
+# The build is reproducible, so a byte-identical result means the paper's
+# content did not change rather than that the build merely repeated itself.
+echo "note: the build is byte-reproducible, so after rebuilding unchanged sources"
+echo "      dist/paper-slim.pdf is unchanged too; 'git status' is a reliable signal."

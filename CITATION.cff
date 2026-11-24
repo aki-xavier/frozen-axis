@@ -15,8 +15,7 @@ abstract: >-
   evidence-collision pair. The result limits solo use; it does not deny the usefulness of frozen
   components in composite systems, and it does not establish BD, P4, or real-world applicability. The
   algebraic core and a toy closure are formalized in Lean 4 with Mathlib, without sorry. This repository
-  holds the JMLR LaTeX sources, the full and condensed compiled papers, the online appendix carrying the
-  artifact index, and the Lean 4 artifact.
+  holds the JMLR LaTeX source, the compiled paper, and the Lean 4 artifact.
 authors:
   - family-names: Zhang
     given-names: Shuo
@@ -25,6 +24,10 @@ authors:
   - family-names: Zeng
     given-names: Yiping
     email: zengyiping@sztu.edu.cn
+    affiliation: "Shenzhen Technology University"
+  - family-names: Luo
+    given-names: Shengfeng
+    email: luoshengfeng@sztu.edu.cn
     affiliation: "Shenzhen Technology University"
   - family-names: Zhang
     given-names: Haichuan
@@ -54,6 +57,9 @@ preferred-citation:
     - family-names: Zeng
       given-names: Yiping
       affiliation: "Shenzhen Technology University"
+    - family-names: Luo
+      given-names: Shengfeng
+      affiliation: "Shenzhen Technology University"
     - family-names: Zhang
       given-names: Haichuan
       affiliation: "Shenzhen Technology University"
@@ -63,6 +69,6 @@ preferred-citation:
   license-url: "https://github.com/aki-xavier/frozen-axis/blob/main/LICENSE-PAPER"
   url: "https://github.com/aki-xavier/frozen-axis"
   notes: >-
-    Manuscript submitted to the Journal of Machine Learning Research. The LaTeX sources of the paper
-    (CC BY 4.0) and the Lean 4 verification artifact (MIT) are in this repository; the full paper is
-    dist/paper.pdf, the condensed submission is dist/paper-slim.pdf, and the artifact is under lean-proof/.
+    Manuscript submitted to the Journal of Machine Learning Research. The LaTeX source
+    (CC BY 4.0) and the Lean 4 verification artifact (MIT) are in this repository; the paper is
+    dist/paper-slim.pdf, and the artifact is under lean-proof/.

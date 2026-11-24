@@ -1,6 +1,6 @@
 # frozen-axis
 
-## Frozen Memory and Open Inversion: A Conditional Risk-Gap Bound <!-- markdownlint-disable-line MD013 -->
+## A Conditional Risk-Gap Bound for Frozen Context Rules in Open Inversion Tasks <!-- markdownlint-disable-line MD013 -->
 
 Original Chinese title: 冻结记忆与开放反演：一个条件风险差界
 
@@ -11,7 +11,7 @@ by current evidence or by analytic invariants (Mode A); the paper's conditional
 result concerns whether frozen values can satisfy its non-freezability and
 bounded-description hypotheses on the open set.
 
-📄 **Paper: [paper-slim.pdf](dist/paper-slim.pdf) (24 pages). LaTeX source in
+📄 **Paper: [paper-slim.pdf](dist/paper-slim.pdf) (30 pages). LaTeX source in
 the official JMLR jmlr2e style, rebuild with `./scripts/build.sh`**
 
 This repository contains a theoretical paper (English, LaTeX source) together
@@ -44,7 +44,7 @@ Mathlib, with zero `sorry` and only Lean's standard axioms.
 | Path | Contents |
 | --- | --- |
 | `paper/paper-slim.tex` | Standalone JMLR paper source; rebuild with `./scripts/build.sh` |
-| `dist/paper-slim.pdf` | Released PDF (24 pages) built from `paper/paper-slim.tex` |
+| `dist/paper-slim.pdf` | Released PDF (30 pages) built from `paper/paper-slim.tex` |
 | `paper/styles/jmlr2e.sty` | Official JMLR style file (do not modify; third-party, not covered by the licenses below) |
 | `paper/reference.bib` | References (84 entries, all verified against Crossref/DBLP/arXiv or publisher sites; 30+ carry a DOI) |
 | `scripts/build.sh` | Build script: `latexmk` driving pdflatex + bibtex, with an explicit pdflatex x3 + bibtex fallback; intermediate output to `build/slim/` |

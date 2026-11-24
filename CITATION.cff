@@ -1,8 +1,8 @@
 cff-version: 1.2.0
 message: "If you use this paper or its Lean 4 verification artifact, please cite it as below."
-title: "Frozen Memory and Open Inversion: A Conditional Risk-Gap Bound"
+title: "A Conditional Risk-Gap Bound for Frozen Context Rules in Open Inversion Tasks"
 abstract: >-
-  This paper asks whether a single fixed-memory component can be complete on its own for open
+  This paper asks whether a single frozen context-rule component can be complete on its own for open
   inversion tasks: inverse problems whose observations are ill-posed, whose required context is
   heterogeneous and addressed by the evidence, and whose inference inputs are not constrained by the
   training distribution. It separates values instantiated from evidence and analytic invariants
@@ -42,15 +42,15 @@ repository-code: "https://github.com/aki-xavier/frozen-axis"
 url: "https://github.com/aki-xavier/frozen-axis"
 keywords:
   - open inversion tasks
-  - formal falsification
-  - fixed-memory component
-  - decision axis
-  - distributional openness
+  - conditional risk gap
+  - provenance
+  - frozen context rules
+  - inverse problems
   - Lean 4
   - machine-verified proof
 preferred-citation:
   type: unpublished
-  title: "Frozen Memory and Open Inversion: A Conditional Risk-Gap Bound"
+  title: "A Conditional Risk-Gap Bound for Frozen Context Rules in Open Inversion Tasks"
   authors:
     - family-names: Zhang
       given-names: Shuo

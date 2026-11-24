@@ -1,10 +1,10 @@
 import Mathlib
 
 /-!
-# Formal proof: falsifying the completeness of a single fixed-memory component
-  on open inversion tasks
-  (Lean 4 + Mathlib; accompanies the paper "Frozen Memory and Open
-  Inversion: A Conditional Risk-Gap Bound")
+# Formal companion: a conditional risk-gap bound for frozen context rules
+  in open inversion tasks
+  (Lean 4 + Mathlib; accompanies the paper "A Conditional Risk-Gap Bound
+  for Frozen Context Rules in Open Inversion Tasks")
 
 **Integrity statement (Route A)**
 This file formalizes the paper's algebraic skeleton, fully implemented with zero
@@ -572,7 +572,7 @@ theorem flipTask_P2 : P2 flipTask := by
           unfold flipDemand
           rw [h0]
         · unfold flipDemand
-          simp [hi0, hi1, h0]
+          simp [hi0, hi1]
     · intro d e h i
       have h0 : d 0 = e 0 := h 0 (by simp [flipTask])
       change flipBoundary d i ↔ flipBoundary e i
@@ -630,7 +630,7 @@ theorem inpaintTask_P2 : P2 inpaintTask := by
           unfold inpaintDemand
           rw [h0, h3]
         · unfold inpaintDemand
-          simp [hi1, hi2, h0, h3]
+          simp [hi1, hi2]
     · intro d e h i
       have h0 : d 0 = e 0 := h 0 (by simp [inpaintTask])
       have h3 : d 3 = e 3 := h 3 (by simp [inpaintTask])

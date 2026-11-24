@@ -7,10 +7,9 @@
 # toolchain that matters (not XeTeX/tectonic), and latexmk is the driver that
 # re-runs passes until the cross-references and the bibliography settle.
 #
-#   ./scripts/build.sh          # build paper/paper.tex (out: build/slim/)
+#   ./scripts/build.sh          # build paper/paper.tex (out: build/paper/)
 #                               driver: latexmk when installed, else pdflatex x3 + bibtex
 #                               (USE_LATEXMK=0 forces the fallback; LATEXMK=... overrides)
-#   ./scripts/build.sh slim     # same target
 #   ./scripts/build.sh --help
 #
 # Portrait of the TeX installation this expects: TinyTeX or TeX Live with
@@ -39,11 +38,10 @@ cd -- "$PAPER_DIR"
 
 usage() {
   cat <<'EOF'
-Usage: ./scripts/build.sh [slim]
+Usage: ./scripts/build.sh [paper]
 
-  slim      build paper/paper.tex (out: build/slim/paper.pdf,
-            copied to dist/paper.pdf)
-  (default: slim)
+  paper     build paper/paper.tex (out: build/paper/paper.pdf,
+            copied to dist/paper.pdf); this is also the default
 
 Environment overrides:
   PDFLATEX      pdflatex executable to use (default: autodetected)
@@ -54,11 +52,11 @@ Environment overrides:
 EOF
 }
 
-TARGET="${1:-slim}"
+TARGET="${1:-paper}"
 SRC_TEX=""
 case "$TARGET" in
   -h|--help) usage; exit 0 ;;
-  slim) SRC_TEX="paper.tex" ;;
+  paper) SRC_TEX="paper.tex" ;;
   *) echo "build.sh: unknown target '$TARGET'" >&2; usage >&2; exit 2 ;;
 esac
 [ -n "$SRC_TEX" ] || SRC_TEX="$TARGET.tex"
@@ -114,7 +112,7 @@ EOF
   fi
 done
 
-OUT="$ROOT_DIR/build/$TARGET"
+OUT="$ROOT_DIR/build/paper"
 mkdir -p "$OUT" "$DIST_DIR"
 
 # grep exits 1 on no match, which is a normal result here (not a failure).
@@ -217,11 +215,11 @@ fi
 # Publish only a clean build: a broken PDF never reaches dist/.
 ERRORS="$(count '^! ' "$LOG")"
 if [ "$ERRORS" != "0" ]; then
-  echo "slim: $ERRORS LaTeX error(s); see $LOG. dist/paper.pdf NOT updated." >&2
+  echo "paper: $ERRORS LaTeX error(s); see $LOG. dist/paper.pdf NOT updated." >&2
   exit 1
 fi
 cp -f -- "$OUT/$STEM.pdf" "$DIST_DIR/paper.pdf"
-echo "--- slim ---"
+echo "--- paper ---"
 echo "updated dist/paper.pdf from $OUT/$STEM.pdf ($(wc -c < "$DIST_DIR/paper.pdf" | tr -d ' ') bytes)"
 # The build is reproducible, so a byte-identical result means the paper's
 # content did not change rather than that the build merely repeated itself.

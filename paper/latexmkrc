@@ -4,12 +4,12 @@
 # and build.sh only has to name the source file.
 #
 # scripts/build.sh exports:
-#   OUTDIR     the absolute output directory (build/slim/)
+#   OUTDIR     the absolute output directory (build/paper/)
 #   PDFLATEX   an alternative pdflatex executable, if the user overrode it
 #
 # Invoked by hand from paper/, the same variable is the only one that matters:
 #
-#   OUTDIR=../build/slim latexmk -pdf -bibtex -outdir=../build/slim paper.tex
+#   OUTDIR=../build/paper latexmk -pdf -bibtex -outdir=../build/paper paper.tex
 
 $pdf_mode = 1;                                   # pdflatex -> PDF
 
@@ -27,7 +27,7 @@ $out_dir = $ENV{'OUTDIR'} if $ENV{'OUTDIR'};
 
 # BibTeX runs with the output directory as its working directory. Include the
 # directory containing this file (paper/) on its search path so that
-# \bibliography{reference} resolves when latexmk is driven from build/slim/.
+# \bibliography{reference} resolves when latexmk is driven from build/paper/.
 my $bibdir = $ENV{'PWD'};
 my $oldbib = $ENV{'BIBINPUTS'} // '';
 $ENV{'BIBINPUTS'} = length($oldbib) ? "$bibdir:$oldbib" : "$bibdir:";
